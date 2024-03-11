@@ -1,5 +1,6 @@
 import streamlit as st
 import pandas as pd
+from pyvis.network import Network
 
 def calculate_score(row):
     # Mapping der Auswahlmöglichkeiten auf numerische Werte
@@ -14,8 +15,15 @@ def calculate_score(row):
     
     return score
 
+def get_node_color(score):
+    if score <= 33:
+        return "red"
+    elif score <= 66:
+        return "orange"
+    else:
+        return "green"
+
 def display_page():
-    
     if 'namen_tabelle' not in st.session_state:
         st.session_state['namen_tabelle'] = pd.DataFrame(columns=[
             'Gruppe', 'Bestehende Beziehung', 'Auswirkung auf Interessen', 
@@ -75,7 +83,46 @@ def display_page():
         else:
             st.write("Noch keine Daten vorhanden.")
 
-display_page()
+    with st.expander("**3.** Network Chart & Score-Tabelle", expanded=False):
+        # Netzwerkdiagramm
+        net = Network(height="500px", width="100%", bgcolor="white", font_color="black")
+
+        # Hinzufügen des Unternehmens als Punkt im Netzwerk
+        net.add_node(".", color="black", label="", title="")  # Leeres Label und Titel
+
+        # Platzierungstabelle
+        score_df = st.session_state['namen_tabelle'].copy()
+        score_df['Platzierung'] = score_df['Score'].rank(ascending=False).astype(int)
+        score_table = score_df[['Platzierung', 'Gruppe']].sort_values(by='Platzierung')
+
+        # Hinzufügen aller Stakeholder aus dem DataFrame als Punkte im Netzwerk
+        for _, row in st.session_state['namen_tabelle'].iterrows():
+            # Berechnung der Größe basierend auf dem Score
+            size = row['Score'] / 100  # Wert zwischen 0 und 1
+            size = size * 10 + 15  # Skalierung auf den Bereich von 5 bis 15
+
+            # Bestimmen der Farbe basierend auf dem Score
+            color = get_node_color(row['Score'])
+
+            net.add_node(row['Gruppe'], color=color, label=row['Gruppe'], title=row['Gruppe'], size=size)
+
+            # Hinzufügen einer Kante zwischen dem Unternehmen und dem Stakeholder
+            net.add_edge(".", row['Gruppe'])
+
+        # Speichern des Netzwerkdiagramms als HTML-Datei
+        net.save_graph("network.html")
+
+        # Anzeigen des Netzwerkdiagramms als HTML
+        st.components.v1.html(open("network.html", "r").read(), height=600, width=800)
+
+        # Anzeigen der Platzierungstabelle
+        st.write("**Stakeholder Score Platzierung:**")
+        st.table(score_table[['Platzierung', 'Gruppe']].set_index('Platzierung'))
+
+
+
+
+
 
 
 
