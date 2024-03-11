@@ -1,7 +1,5 @@
 pandas
 plotly
 streamlit
-yfinance
 pandas-datareader
-prophet
 hydrlit components
