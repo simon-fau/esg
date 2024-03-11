@@ -1,4 +1,5 @@
 streamlit
 plotly
 hydralit_components
-pvis
+pyvis
+pandas
