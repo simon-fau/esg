@@ -1,3 +1,4 @@
+pyvis
 pandas
 plotly
 streamlit
