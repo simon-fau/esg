@@ -1,6 +1,0 @@
-pyvis
-pandas
-plotly
-streamlit
-hydrlit components
-os
