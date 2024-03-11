@@ -1,4 +1,4 @@
 streamlit
 plotly
-hydralit-components
+hydralit_components
 os
