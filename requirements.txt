@@ -1,0 +1,5 @@
+streamlit
+plotly
+hydralit_components
+pyvis
+pandas
