@@ -2,6 +2,14 @@ import streamlit as st
 import pandas as pd
 from pyvis.network import Network
 
+def get_empfehlung(score):
+    if score > 66:
+        return "Einladung und Interview von Repräsentanten, Definition gemeinsamer Ziele und Projekte"
+    elif 33 < score <= 66:
+        return "Stakeholder-Dialog mittels Umfrage"
+    else:
+        return "offene Unternehmenkommunikation"
+
 def calculate_score(row):
     # Mapping der Auswahlmöglichkeiten auf numerische Werte
     engagement_mapping = {'Hoch': 3, 'Mittel': 1.5, 'Niedrig': 0}
@@ -42,13 +50,13 @@ def display_page():
         # Sammle Auswahlen aus den Selectboxen
         with col2:
             bestehende_beziehung = st.selectbox('Bestehende Beziehung:', ['', 'Ja', 'Nein'], key='bestehende_beziehung')
-            kommunikation = st.selectbox('Kommunikation:', ['', 'Regelmäßig', 'Gelegentlich', 'Nie'], key='kommunikation')
-            zeithorizont = st.selectbox('Zeithorizont:', ['', 'Kurzfristig', 'Mittelfristig', 'Langfristig'], key='zeithorizont')
+            kommunikation = st.selectbox('Kommunikation*:', ['', 'Regelmäßig', 'Gelegentlich', 'Nie'], key='kommunikation')
+            zeithorizont = st.selectbox('Zeithorizont*:', ['', 'Kurzfristig', 'Mittelfristig', 'Langfristig'], key='zeithorizont')
         with col3:
             auswirkung = st.selectbox('Auswirkung auf Interessen:', ['', 'Hoch', 'Mittel', 'Niedrig'], key='auswirkung')
             stakeholdergruppe = st.selectbox('Stakeholdergruppe:', ['', 'Intern', 'Extern'], key='stakeholdergruppe')
             art_der_betroffenheit = st.selectbox('Art der Betroffenheit:', ['', 'Direkt', 'Indirekt', 'Keine'], key='art_der_betroffenheit')
-            level_des_engagements = st.selectbox('Level des Engagements:', ['', 'Hoch', 'Mittel', 'Niedrig'], key='level_des_engagements')
+            level_des_engagements = st.selectbox('Level des Engagements*:', ['', 'Hoch', 'Mittel', 'Niedrig'], key='level_des_engagements')
 
         add_button = st.button('Hinzufügen', key='add_button')
 
@@ -56,6 +64,8 @@ def display_page():
             # Überprüfe, ob verpflichtende Felder ausgefüllt sind
             if level_des_engagements == '' or kommunikation == '' or zeithorizont == '':
                 st.warning("Bitte füllen Sie die verpflichtenden Felder aus: Level des Engagements, Kommunikation, und Zeithorizont.")
+            elif gruppe in st.session_state['namen_tabelle']['Gruppe'].values:
+                st.warning("Diese Gruppe existiert bereits.")
             else:
                 # Erstelle eine neue Zeile mit allen ausgewählten Werten und berechne den Score
                 new_row = pd.DataFrame([{
@@ -84,47 +94,27 @@ def display_page():
             st.write("Noch keine Daten vorhanden.")
 
     with st.expander("**3.** Network Chart & Score-Tabelle", expanded=False):
-        # Netzwerkdiagramm
-        net = Network(height="500px", width="100%", bgcolor="white", font_color="black")
+        col_network, col_score = st.columns([1, 1], gap="small")
 
-        # Hinzufügen des Unternehmens als Punkt im Netzwerk
-        net.add_node(".", color="black", label="", title="")  # Leeres Label und Titel
+        with col_network:
+            # Netzwerkdiagramm
+            net = Network(height="500px", width="100%", bgcolor="white", font_color="black")
+            net.add_node(".", color="black", label="", title="")  # Leeres Label und Titel
 
-        # Platzierungstabelle
-        score_df = st.session_state['namen_tabelle'].copy()
-        score_df['Platzierung'] = score_df['Score'].rank(ascending=False).astype(int)
-        score_table = score_df[['Platzierung', 'Gruppe']].sort_values(by='Platzierung')
+            for _, row in st.session_state['namen_tabelle'].iterrows():
+                size = row['Score'] / 100 * 10 + 15
+                color = get_node_color(row['Score'])
+                net.add_node(row['Gruppe'], color=color, label=row['Gruppe'], title=row['Gruppe'], size=size)
+                net.add_edge(".", row['Gruppe'])
 
-        # Hinzufügen aller Stakeholder aus dem DataFrame als Punkte im Netzwerk
-        for _, row in st.session_state['namen_tabelle'].iterrows():
-            # Berechnung der Größe basierend auf dem Score
-            size = row['Score'] / 100  # Wert zwischen 0 und 1
-            size = size * 10 + 15  # Skalierung auf den Bereich von 5 bis 15
+            net.save_graph("network.html")
+            st.components.v1.html(open("network.html", "r").read(), height=600)
 
-            # Bestimmen der Farbe basierend auf dem Score
-            color = get_node_color(row['Score'])
-
-            net.add_node(row['Gruppe'], color=color, label=row['Gruppe'], title=row['Gruppe'], size=size)
-
-            # Hinzufügen einer Kante zwischen dem Unternehmen und dem Stakeholder
-            net.add_edge(".", row['Gruppe'])
-
-        # Speichern des Netzwerkdiagramms als HTML-Datei
-        net.save_graph("network.html")
-
-        # Anzeigen des Netzwerkdiagramms als HTML
-        st.components.v1.html(open("network.html", "r").read(), height=600, width=800)
-
-        # Anzeigen der Platzierungstabelle
-        st.write("**Stakeholder Score Platzierung:**")
-        st.table(score_table[['Platzierung', 'Gruppe']].set_index('Platzierung'))
-
-
-
-
-
-
-
-
-
-
+        with col_score:
+             # Platzierungstabelle
+            score_df = st.session_state['namen_tabelle'].copy()
+            score_df['Platzierung'] = score_df['Score'].rank(ascending=False).astype(int)
+            score_df['Empfehlung'] = score_df['Score'].apply(get_empfehlung)
+            score_table = score_df[['Platzierung', 'Gruppe', 'Empfehlung']].sort_values(by='Platzierung')
+            st.write("**Stakeholder Score Platzierung:**")
+            st.table(score_table[['Platzierung', 'Gruppe', 'Empfehlung']].set_index('Platzierung'))

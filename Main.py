@@ -23,7 +23,8 @@ st.markdown("""<style>section[data-testid="stSidebar"][aria-expanded="true"]{dis
 # Definition der Navigationsleiste
 menu_data = [
     {'id': 'how_to', 'label': "How To", 'icon': "fa fa-home"},
-    {'id': 'individual_document', 'label': "Individual Document", 'icon': "fas fa-file-alt"},
+    {'id': 'individual_document', 'label': "Stakeholder", 'icon': "fas fa-file-alt"},
+    {'id': 'Potentielle_Nachhaltigkeitspunkte', 'label': "Potentielle Nachhaltigkeitspunkte", 'icon': "fas fa-chart-line"},
     {'id': 'document_collection', 'label': "Document Collection", 'icon': "fas fa-file-archive"},
 ]
 
@@ -55,3 +56,6 @@ elif selected_menu == 'individual_document':
 elif selected_menu == 'document_collection':
     import pages.document_collection as document_collection_page
     load_page(document_collection_page)
+elif selected_menu == 'Potentielle_Nachhaltigkeitspunkte':
+    import pages.Potentielle_Nachhaltigkeitspunkte as Potentielle_Nachhaltigkeitspunkte_page
+    load_page(Potentielle_Nachhaltigkeitspunkte_page)
