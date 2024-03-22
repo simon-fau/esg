@@ -41,7 +41,7 @@ def display_page():
             columns=["ESRS", "Nachhaltigkeitsaspekt", "Themen", "Unterthemen"]
         )
 
-    col1, col2 = st.columns([3, 1])
+    col1, col2 = st.columns([2, 1])
     with col2:
         
         uploaded_files = st.file_uploader("Wählen Sie ein Dokument aus", accept_multiple_files=True, key="file_uploader")
@@ -74,10 +74,13 @@ def display_page():
     with col1:
         # DataFrame anzeigen
         with col1:
-            # DataFrame anzeigen
-            st.dataframe(st.session_state['dataf'], height=800, width=700)
+            # Expander für die Tabelle
+            with st.expander("Potentielle Nachhaltigkeitspunkte", expanded=False):
+                # DataFrame anzeigen
+                st.dataframe(st.session_state['dataf'], height=750, width=700)
+                # Download-Button
+                csv = convert_df_to_csv(st.session_state['dataf'])
+                st.download_button("Tabelle herunterladen", csv, "dataframe.csv", "text/csv")
 
-    # Download-Button
-    csv = convert_df_to_csv(st.session_state['dataf'])
-    st.download_button("Tabelle herunterladen", csv, "dataframe.csv", "text/csv")
+    
 

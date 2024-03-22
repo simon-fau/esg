@@ -40,7 +40,7 @@ def display_page():
         ])
 
     st.session_state.setdefault('expander_open', False)
-    st.subheader("Wesentlichkeitsanalyse")
+    st.subheader("Stakeholder Indentifikation und Bewertung")
 
     with st.expander("**1.** Stakeholdergruppen hinzufügen", expanded=not st.session_state['expander_open']):
         col1, col2, col3 = st.columns([3, 2, 2], gap="small")

@@ -13,19 +13,17 @@ st.set_page_config(
 # Hauptüberschrift und Untertitel
 st.markdown("<h1 style='text-align: center; width: 100%; margin-left: -100; background-color: #08298A; color: #ece5f6'>ESG-Tool</h1>", unsafe_allow_html=True)
 
-
 # Entfernt den Abstand von Überschrift und Navbar
 st.markdown("""<style>.element-container { margin: -6px !important; padding: 0px !important;}</style>""", unsafe_allow_html=True)
 
 # Sidebar ausblenden
-st.markdown("""<style>section[data-testid="stSidebar"][aria-expanded="true"]{display: none;}</style>""", unsafe_allow_html=True)
+#st.markdown("""<style>section[data-testid="stSidebar"][aria-expanded="true"]{display: none;}</style>""", unsafe_allow_html=True)
 
 # Definition der Navigationsleiste
 menu_data = [
     {'id': 'how_to', 'label': "How To", 'icon': "fa fa-home"},
-    {'id': 'individual_document', 'label': "Stakeholder", 'icon': "fas fa-file-alt"},
-    {'id': 'Potentielle_Nachhaltigkeitspunkte', 'label': "Potentielle Nachhaltigkeitspunkte", 'icon': "fas fa-chart-line"},
-    {'id': 'document_collection', 'label': "Document Collection", 'icon': "fas fa-file-archive"},
+    {'id': 'Wesentlichkeitsanalyse', 'label': "Wesentlichkeitsanalyse", 'icon': "fas fa-file-alt"},
+    {'id': 'Übersicht', 'label': "Übersicht", 'icon': "fas fa-info-circle"}
 ]
 
 # Erstellen der Navigationsleiste
@@ -47,15 +45,20 @@ def load_page(page_module):
         st.error(f"Fehler: Die Seite {page_module.__name__} hat keine Funktion namens 'display_page'.") 
 
 # Verwenden der Auswahl, um die Inhalte der Seite zu ändern
-if selected_menu == 'how_to':
-    import pages.how_to as how_to_page
-    load_page(how_to_page)
-elif selected_menu == 'individual_document':
-    import pages.individual_document as individual_document_page
-    load_page(individual_document_page)
-elif selected_menu == 'document_collection':
-    import pages.document_collection as document_collection_page
-    load_page(document_collection_page)
-elif selected_menu == 'Potentielle_Nachhaltigkeitspunkte':
-    import pages.Potentielle_Nachhaltigkeitspunkte as Potentielle_Nachhaltigkeitspunkte_page
-    load_page(Potentielle_Nachhaltigkeitspunkte_page)
+if selected_menu == 'Wesentlichkeitsanalyse':
+    st.sidebar.title("Ablauf Wesentlichkeitsanalyse")
+    wesentlichkeitsanalyse_options = st.sidebar.radio(
+        "Wählen Sie eine Option:",
+        ('1. Stakeholder', '2. Potentielle Nachhaltigkeitspunkte', '3. Bewertung Nachhaltigkeitspunkte')
+    )
+
+    # Die Optionen werden entsprechend der nummerierten Auswahl angepasst
+    if wesentlichkeitsanalyse_options == '1. Stakeholder':
+        import pages.Stakeholder as Stakeholder_page
+        load_page(Stakeholder_page)
+    elif wesentlichkeitsanalyse_options == '2. Potentielle Nachhaltigkeitspunkte':
+        import pages.Potentielle_Nachhaltigkeitspunkte as Potentielle_Nachhaltigkeitspunkte_page
+        load_page(Potentielle_Nachhaltigkeitspunkte_page)
+    elif wesentlichkeitsanalyse_options == '3. Bewertung Nachhaltigkeitspunkte':
+        import pages.Bewertung_Nachhaltigkeitspunkte as Bewertung_Nachhaltigkeitspunkte_page
+        load_page(Bewertung_Nachhaltigkeitspunkte_page)
