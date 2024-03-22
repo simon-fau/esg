@@ -41,13 +41,9 @@ def display_page():
             columns=["ESRS", "Nachhaltigkeitsaspekt", "Themen", "Unterthemen"]
         )
 
-    col1, col2 = st.columns([2, 1])  # Ändern der Spaltenverhältnisse für eine breitere Darstellung des DataFrames
-    with col1:
-        if 'dataf' not in st.session_state:
-            st.session_state['dataf'] = pd.DataFrame()  # Initialisiere das DataFrame mit leeren Daten
-        st.session_state['dataf'] = st.data_editor(st.session_state['dataf'], num_rows="dynamic", height=700)
-    
+    col1, col2 = st.columns([3, 1])
     with col2:
+        
         uploaded_files = st.file_uploader("Wählen Sie ein Dokument aus", accept_multiple_files=True, key="file_uploader")
         if st.button("Analysieren", key="analyze_button"):
             st.session_state['uploaded_files'] = uploaded_files
@@ -62,32 +58,26 @@ def display_page():
         # Trennlinie zwischen Datei-Uploader und Selectboxen
         st.markdown("---")  # Markdown für eine horizontale Linie
 
-        #Erstelle Selectboxen für die Eingabe neuer Daten
-        esrs = st.selectbox("ESRS", ["E1", "E2", "E3", "E4", "E5"], key="esrs_select")
-        nachhaltigkeitsaspekt = st.selectbox("Nachhaltigkeitsaspekt", ["Klimawandel", "Verschmutzung", "Wasser- und Meeresressourcen",  "Biodiversität und Ökosysteme", "Kreislaufwirtschaft"], key="nachhaltigkeitsaspekt_select")
-        themen = st.text_input("Thema", key="themen_input")
-        unterpunkte = st.text_input("Unterthema", key="unterthemen_input")  
+        # Eingaben direkt außerhalb eines Streamlit-Formulars
+        esrs = st.selectbox("ESRS", ["E1", "E2", "E3", "E4", "E5"])
+        nachhaltigkeitsaspekt = st.selectbox("Nachhaltigkeitsaspekt", ["Klimawandel", "Verschmutzung", "Wasser- und Meeresressourcen", "Biodiversität und Ökosysteme", "Kreislaufwirtschaft"])
+        themen = st.text_input("Thema")
+        unterthemen = st.text_input("Unterthema")
 
-        # Button, um die Auswahl aus den Selectboxen zum DataFrame hinzuzufügen
+        # Button außerhalb eines Streamlit-Formulars
         if st.button("Hinzufügen"):
-            #Füge eine neue Zeile zum DataFrame hinzu
-            neue_zeile = {
-                "ESRS": esrs,
-                "Nachhaltigkeitsaspekt": nachhaltigkeitsaspekt,
-                "Themen": themen,
-                "Unterthemen": unterpunkte
-            }
-            neue_zeile = pd.DataFrame([[esrs, nachhaltigkeitsaspekt, themen, unterpunkte]], columns=st.session_state['dataf'].columns)
+            # Füge den neuen Eintrag zum DataFrame hinzu
+            neue_zeile = pd.DataFrame([[esrs, nachhaltigkeitsaspekt, themen, unterthemen]], columns=["ESRS", "Nachhaltigkeitsaspekt", "Themen", "Unterthemen"])
             st.session_state['dataf'] = pd.concat([st.session_state['dataf'], neue_zeile], ignore_index=True)
 
-        # Trennlinie zwischen Datei-Uploader und Selectboxen
-        st.markdown("---")  # Markdown für eine horizontale Linie
-        
-        # Download-Button
-        csv = convert_df_to_csv(st.session_state['dataf'])
-        st.download_button(
-            label="Tabelle herunterladen",
-            data=csv,
-            file_name='dataframe.csv',
-            mime='text/csv',
-        )
+
+    with col1:
+        # DataFrame anzeigen
+        with col1:
+            # DataFrame anzeigen
+            st.dataframe(st.session_state['dataf'], height=800, width=700)
+
+    # Download-Button
+    csv = convert_df_to_csv(st.session_state['dataf'])
+    st.download_button("Tabelle herunterladen", csv, "dataframe.csv", "text/csv")
+
