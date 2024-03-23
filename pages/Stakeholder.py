@@ -42,7 +42,7 @@ def display_page():
     st.session_state.setdefault('expander_open', False)
     st.subheader("Stakeholder Indentifikation und Bewertung")
 
-    with st.expander("**1.** Stakeholdergruppen hinzufügen", expanded=not st.session_state['expander_open']):
+    with st.expander("**1.** Stakeholdergruppen hinzufügen", expanded=False):
         col1, col2, col3 = st.columns([3, 2, 2], gap="small")
         with col1:
             gruppe = st.text_input('Gib eine Gruppe ein:', key='unique_text_key')

@@ -9,15 +9,12 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="collapsed"
 )
-
+ 
 # Hauptüberschrift und Untertitel
 st.markdown("<h1 style='text-align: center; width: 100%; margin-left: -100; background-color: #08298A; color: #ece5f6'>ESG-Tool</h1>", unsafe_allow_html=True)
 
 # Entfernt den Abstand von Überschrift und Navbar
 st.markdown("""<style>.element-container { margin: -6px !important; padding: 0px !important;}</style>""", unsafe_allow_html=True)
-
-# Sidebar ausblenden
-#st.markdown("""<style>section[data-testid="stSidebar"][aria-expanded="true"]{display: none;}</style>""", unsafe_allow_html=True)
 
 # Definition der Navigationsleiste
 menu_data = [
@@ -48,7 +45,7 @@ def load_page(page_module):
 if selected_menu == 'Wesentlichkeitsanalyse':
     st.markdown("""<style>section[data-testid="stSidebar"][aria-expanded="true"]{display: block;}</style>""", unsafe_allow_html=True)
     st.sidebar.title("Ablauf Wesentlichkeitsanalyse")
-    
+
     # CSS, um die spezifische Klasse auszublenden
     hide_specific_class = """
         <style>
