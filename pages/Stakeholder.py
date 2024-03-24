@@ -1,6 +1,16 @@
 import streamlit as st
 import pandas as pd
 from pyvis.network import Network
+import time
+
+# Funktion, die etwas Zeit benötigt, um ihre Aufgaben zu erledigen
+def long_running_function():
+    time.sleep(1)  # Simuliert eine lange Aufgabe
+
+# Zeigt eine Nachricht an, während die Funktion ausgeführt wird
+with st.spinner('Bitte warten Sie, die Seite wird geladen...'):
+    long_running_function()  # Führe die lang dauernde Funktion aus
+
 
 def get_empfehlung(score):
     if score > 66:

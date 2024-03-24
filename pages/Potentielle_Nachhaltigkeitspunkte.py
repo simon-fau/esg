@@ -1,5 +1,14 @@
 import streamlit as st
 import pandas as pd
+import time
+
+# Funktion, die etwas Zeit benötigt, um ihre Aufgaben zu erledigen
+def long_running_function():
+    time.sleep(1)  # Simuliert eine lange Aufgabe
+
+# Zeigt eine Nachricht an, während die Funktion ausgeführt wird
+with st.spinner('Bitte warten Sie, die Seite wird geladen...'):
+    long_running_function()  # Führe die lang dauernde Funktion aus
 
 def convert_df_to_csv(df):
     # Konvertiere ein DataFrame in ein CSV-Objekt, bereit zum Herunterladen
@@ -16,29 +25,29 @@ def display_page():
         # Initialisiere das DataFrame mit den gegebenen Inhalten
         st.session_state['dataf'] = pd.DataFrame(
             [
-                ["E1", "Klimawandel", "Anpassung an den Klimawandel", ""],
-                ["E1", "Klimawandel", "Eindämmung des Klimawandels", ""],
-                ["E1", "Klimawandel", "Energie", ""],
-                ["E2", "Verschmutzung", "Luftverschmutzung", ""],
-                ["E2", "Verschmutzung", "Wasserverschmutzung", ""],
-                ["E2", "Verschmutzung", "Bodenverschmutzung", ""],
-                ["E2", "Verschmutzung", "Verschmutzung lebender Organismen und Nahrungsressourcen", ""],
-                ["E2", "Verschmutzung", "Verschmutzung: Bedenkliche Stoffe", ""],
-                ["E2", "Verschmutzung", "Verschmutzung: Sehr bedenkliche Stoffe", ""],
-                ["E3", "Wasser- und Meeresressourcen", "Wasserentnahmen", ""],
-                ["E3", "Wasser- und Meeresressourcen", "Wasserverbrauch", ""],
-                ["E3", "Wasser- und Meeresressourcen", "Wassernutzung", ""],
-                ["E3", "Wasser- und Meeresressourcen", "Wassereinleitungen in Gewässer und in die Ozeane", ""],
-                ["E3", "Wasser- und Meeresressourcen", "Verschlechterung der Wasser-/Meereshabitate und Intensität des Einflusses auf die Meeresressourcen", ""],
-                ["E4", "Biodiversität und Ökosysteme", "Verlust der biologischen Vielfalt", ""],
-                ["E4", "Biodiversität und Ökosysteme", "Auswirkungen auf den Zustand der Arten", ""],
-                ["E4", "Biodiversität und Ökosysteme", "Auswirkungen auf und Abhängigkeiten von Ökosystemleistungen", ""],
-                ["E5", "Kreislaufwirtschaft", "Ressourcenzuflüsse, einschließlich Ressourcennutzung", ""],
-                ["E5", "Kreislaufwirtschaft", "Ressourcenabflüsse in Bezug auf Produkte und Dienstleistungen", ""],
-                ["E5", "Kreislaufwirtschaft", "Abfall", ""],
+                ["E1", "Klimawandel", "Anpassung an den Klimawandel", "", "Standard"],
+                ["E1", "Klimawandel", "Eindämmung des Klimawandels", "", "Standard"],
+                ["E1", "Klimawandel", "Energie", "", "Standard"],
+                ["E2", "Verschmutzung", "Luftverschmutzung", "", "Standard"],
+                ["E2", "Verschmutzung", "Wasserverschmutzung", "", "Standard"],
+                ["E2", "Verschmutzung", "Bodenverschmutzung", "", "Standard"],
+                ["E2", "Verschmutzung", "Verschmutzung lebender Organismen und Nahrungsressourcen", "", "Standard"],
+                ["E2", "Verschmutzung", "Verschmutzung: Bedenkliche Stoffe", "", "Standard"],
+                ["E2", "Verschmutzung", "Verschmutzung: Sehr bedenkliche Stoffe", "", "Standard"],
+                ["E3", "Wasser- und Meeresressourcen", "Wasserentnahmen", "", "Standard"],
+                ["E3", "Wasser- und Meeresressourcen", "Wasserverbrauch", "", "Standard"],
+                ["E3", "Wasser- und Meeresressourcen", "Wassernutzung", "", "Standard"],
+                ["E3", "Wasser- und Meeresressourcen", "Wassereinleitungen in Gewässer und in die Ozeane", "", "Standard"],
+                ["E3", "Wasser- und Meeresressourcen", "Verschlechterung der Wasser-/Meereshabitate und Intensität des Einflusses auf die Meeresressourcen", "", "Standard"],
+                ["E4", "Biodiversität und Ökosysteme", "Verlust der biologischen Vielfalt", "", "Standard"],
+                ["E4", "Biodiversität und Ökosysteme", "Auswirkungen auf den Zustand der Arten", "", "Standard"],
+                ["E4", "Biodiversität und Ökosysteme", "Auswirkungen auf und Abhängigkeiten von Ökosystemleistungen", "", "Standard"],
+                ["E5", "Kreislaufwirtschaft", "Ressourcenzuflüsse, einschließlich Ressourcennutzung", "", "Standard"],
+                ["E5", "Kreislaufwirtschaft", "Ressourcenabflüsse in Bezug auf Produkte und Dienstleistungen", "", "Standard"],
+                ["E5", "Kreislaufwirtschaft", "Abfall", "", "Standard"],
 
             ],
-            columns=["ESRS", "Nachhaltigkeitsaspekt", "Themen", "Unterthemen"]
+            columns=["ESRS", "Nachhaltigkeitsaspekt", "Themen", "Unterthemen", "Datenherkunft"]
         )
 
     col1, col2 = st.columns([2, 1])
@@ -64,12 +73,14 @@ def display_page():
         themen = st.text_input("Thema")
         unterthemen = st.text_input("Unterthema")
 
-        # Button außerhalb eines Streamlit-Formulars
         if st.button("Hinzufügen"):
-            # Füge den neuen Eintrag zum DataFrame hinzu
-            neue_zeile = pd.DataFrame([[esrs, nachhaltigkeitsaspekt, themen, unterthemen]], columns=["ESRS", "Nachhaltigkeitsaspekt", "Themen", "Unterthemen"])
+        # Definiere die neue Zeile hier innerhalb dieses Blocks
+            neue_zeile = pd.DataFrame(
+                [[esrs, nachhaltigkeitsaspekt, themen, unterthemen, "Hinzugefügt"]],
+                columns=["ESRS", "Nachhaltigkeitsaspekt", "Themen", "Unterthemen", "Datenherkunft"]
+            )
             st.session_state['dataf'] = pd.concat([st.session_state['dataf'], neue_zeile], ignore_index=True)
-
+   
 
     with col1:
         # DataFrame anzeigen
@@ -77,7 +88,7 @@ def display_page():
             # Expander für die Tabelle
             with st.expander("Potentielle Nachhaltigkeitspunkte", expanded=False):
                 # DataFrame anzeigen
-                st.dataframe(st.session_state['dataf'], height=750, width=700)
+                st.dataframe(st.session_state['dataf'], height=750, width=900)
                 # Download-Button
                 csv = convert_df_to_csv(st.session_state['dataf'])
                 st.download_button("Tabelle herunterladen", csv, "dataframe.csv", "text/csv")

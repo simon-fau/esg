@@ -16,6 +16,7 @@ st.markdown("<h1 style='text-align: center; width: 100%; margin-left: -100; back
 # Entfernt den Abstand von Überschrift und Navbar
 st.markdown("""<style>.element-container { margin: -6px !important; padding: 0px !important;}</style>""", unsafe_allow_html=True)
 
+
 # Definition der Navigationsleiste
 menu_data = [
     {'id': 'how_to', 'label': "How To", 'icon': "fa fa-home"},
