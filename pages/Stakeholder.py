@@ -109,13 +109,13 @@ def display_page():
         with col_network:
             # Netzwerkdiagramm
             net = Network(height="500px", width="100%", bgcolor="white", font_color="black")
-            net.add_node(".", color="black", label="", title="")  # Leeres Label und Titel
+            net.add_node("Mein Unternehmen", color="black", label="", title="")  # Leeres Label und Titel
 
             for _, row in st.session_state['namen_tabelle'].iterrows():
                 size = row['Score'] / 100 * 10 + 15
                 color = get_node_color(row['Score'])
                 net.add_node(row['Gruppe'], color=color, label=row['Gruppe'], title=row['Gruppe'], size=size)
-                net.add_edge(".", row['Gruppe'])
+                net.add_edge("Mein Unternehmen", row['Gruppe'])
 
             net.save_graph("network.html")
             st.components.v1.html(open("network.html", "r").read(), height=600)

@@ -1,14 +1,5 @@
 import streamlit as st
 import pandas as pd
-import time
-
-# Funktion, die etwas Zeit benötigt, um ihre Aufgaben zu erledigen
-def long_running_function():
-    time.sleep(1)  # Simuliert eine lange Aufgabe
-
-# Zeigt eine Nachricht an, während die Funktion ausgeführt wird
-with st.spinner('Bitte warten Sie, die Seite wird geladen...'):
-    long_running_function()  # Führe die lang dauernde Funktion aus
 
 def convert_df_to_csv(df):
     # Konvertiere ein DataFrame in ein CSV-Objekt, bereit zum Herunterladen
@@ -50,48 +41,52 @@ def display_page():
             columns=["ESRS", "Nachhaltigkeitsaspekt", "Themen", "Unterthemen", "Datenherkunft"]
         )
 
-    col1, col2 = st.columns([2, 1])
-    with col2:
-        
-        uploaded_files = st.file_uploader("Wählen Sie ein Dokument aus", accept_multiple_files=True, key="file_uploader")
-        if st.button("Analysieren", key="analyze_button"):
+    
+
+    # Sidebar für Datei-Upload und Eingaben
+    with st.sidebar:
+
+        st.markdown("---")
+
+        uploaded_files = st.file_uploader("Wählen Sie ein Dokument aus", accept_multiple_files=True)
+        if uploaded_files is not None and len(uploaded_files) > 0:
             st.session_state['uploaded_files'] = uploaded_files
-
-        # Verwende die hochgeladenen Dateien aus dem Session State, wenn vorhanden
-        if st.session_state['uploaded_files'] is not None:
-            for uploaded_file in st.session_state['uploaded_files']:
-                bytes_data = uploaded_file.read()
-                st.write("Dateiname:", uploaded_file.name)
-                st.write(bytes_data)
-
-        # Trennlinie zwischen Datei-Uploader und Selectboxen
+        
+        # Eingabefelder in der Sidebar
         st.markdown("---")  # Markdown für eine horizontale Linie
-
-        # Eingaben direkt außerhalb eines Streamlit-Formulars
-        esrs = st.selectbox("ESRS", ["E1", "E2", "E3", "E4", "E5"])
-        nachhaltigkeitsaspekt = st.selectbox("Nachhaltigkeitsaspekt", ["Klimawandel", "Verschmutzung", "Wasser- und Meeresressourcen", "Biodiversität und Ökosysteme", "Kreislaufwirtschaft"])
-        themen = st.text_input("Thema")
-        unterthemen = st.text_input("Unterthema")
-
-        if st.button("Hinzufügen"):
-        # Definiere die neue Zeile hier innerhalb dieses Blocks
+        esrs = st.selectbox("ESRS", ["E1", "E2", "E3", "E4", "E5"], key="esrs_select")
+        nachhaltigkeitsaspekt = st.selectbox(
+            "Nachhaltigkeitsaspekt",
+            ["Klimawandel", "Verschmutzung", "Wasser- und Meeresressourcen", "Biodiversität und Ökosysteme", "Kreislaufwirtschaft"],
+            key="nachhaltigkeitsaspekt_select"
+        )
+        themen = st.text_input("Thema", key="themen_input")
+        unterthemen = st.text_input("Unterthema", key="unterthemen_input")
+        
+        if st.button("Hinzufügen", key="hinzufuegen_button"):
+            # Füge den neuen Eintrag zum DataFrame hinzu
             neue_zeile = pd.DataFrame(
                 [[esrs, nachhaltigkeitsaspekt, themen, unterthemen, "Hinzugefügt"]],
                 columns=["ESRS", "Nachhaltigkeitsaspekt", "Themen", "Unterthemen", "Datenherkunft"]
             )
             st.session_state['dataf'] = pd.concat([st.session_state['dataf'], neue_zeile], ignore_index=True)
-   
 
-    with col1:
-        # DataFrame anzeigen
-        with col1:
-            # Expander für die Tabelle
-            with st.expander("Potentielle Nachhaltigkeitspunkte", expanded=False):
-                # DataFrame anzeigen
-                st.dataframe(st.session_state['dataf'], height=750, width=900)
-                # Download-Button
-                csv = convert_df_to_csv(st.session_state['dataf'])
-                st.download_button("Tabelle herunterladen", csv, "dataframe.csv", "text/csv")
+            # Hauptbereich für die Anzeige des DataFrames
+    st.write("Übersicht der potentiellen Nachhaltigkeitspunkte")
+    with st.expander("Tabelle anzeigen/ausblenden", expanded=True):
+        st.dataframe(st.session_state['dataf'], height=750, width=1500)
+
+        # Download-Button für das gesamte DataFrame als CSV
+        csv = convert_df_to_csv(st.session_state['dataf'])
+        st.download_button("Tabelle herunterladen", csv, "dataframe.csv", "text/csv")
+
+    # Wenn Dateien hochgeladen wurden, zeige sie an und lies ihre Daten
+    if st.session_state['uploaded_files']:
+        for uploaded_file in st.session_state['uploaded_files']:
+            bytes_data = uploaded_file.read()
+            st.write("Dateiname:", uploaded_file.name)
 
     
+
+
 
