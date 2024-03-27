@@ -32,20 +32,9 @@ selected_menu = hc.nav_bar(
     override_theme={'menu_background': '#0431B4'}
 )
 
-#Importieren und Ausführen der entsprechenden Funktion aus der Subpage
-def load_page(page_module):
-    page_function = getattr(page_module, 'display_page', None)
-    if callable(page_function):
-        page_function()
-    else:
-        # Fehlermeldung, wenn die Seite keine Funktion namens 'display_page' hat
-        st.error(f"Fehler: Die Seite {page_module.__name__} hat keine Funktion namens 'display_page'.") 
-
-# Verwenden der Auswahl, um die Inhalte der Seite zu ändern
 if selected_menu == 'Wesentlichkeitsanalyse':
-    st.markdown("""<style>section[data-testid="stSidebar"][aria-expanded="true"]{display: block;}</style>""", unsafe_allow_html=True)
+    st.markdown("""<style>section[data-testid='stSidebar'][aria-expanded='true']{display: block;}</style>""", unsafe_allow_html=True)
     st.sidebar.title("Ablauf Wesentlichkeitsanalyse")
-    
     # CSS, um die spezifische Klasse auszublenden
     hide_specific_class = """
         <style>
@@ -54,24 +43,33 @@ if selected_menu == 'Wesentlichkeitsanalyse':
             }
         </style>
     """
-
-    # Fügen Sie die CSS-Regel in das Streamlit Dokument ein
     st.markdown(hide_specific_class, unsafe_allow_html=True)
-    wesentlichkeitsanalyse_options = st.sidebar.radio(
+
+    # Auswahl der Seite über eine SelectBox
+    page_option = st.sidebar.selectbox(
         "Wählen Sie eine Option:",
-        ('1.Stakeholder', '2.Potentielle Nachhaltigkeitspunkte', '3.Bewertung Nachhaltigkeitspunkte')
+        ['1. Stakeholder', '2. Potentielle Nachhaltigkeitspunkte', '3. Bewertung Nachhaltigkeitspunkte']
     )
 
-    # Die Optionen werden entsprechend der nummerierten Auswahl angepasst
-    if wesentlichkeitsanalyse_options == '1.Stakeholder':
+    # Importieren und Ausführen der entsprechenden Funktion aus der Subpage
+    def load_page(page_module):
+        page_function = getattr(page_module, 'display_page', None)
+        if callable(page_function):
+            page_function()
+        else:
+            st.error(f"Fehler: Die Seite {page_module.__name__} hat keine Funktion namens 'display_page'.") 
+
+    if page_option == '1. Stakeholder':
         import pages.Stakeholder as Stakeholder_page
         load_page(Stakeholder_page)
-    elif wesentlichkeitsanalyse_options == '2.Potentielle Nachhaltigkeitspunkte':
+    elif page_option == '2. Potentielle Nachhaltigkeitspunkte':
         import pages.Potentielle_Nachhaltigkeitspunkte as Potentielle_Nachhaltigkeitspunkte_page
         load_page(Potentielle_Nachhaltigkeitspunkte_page)
-    elif wesentlichkeitsanalyse_options == '3.Bewertung Nachhaltigkeitspunkte':
+    elif page_option == '3. Bewertung Nachhaltigkeitspunkte':
         import pages.Bewertung_Nachhaltigkeitspunkte as Bewertung_Nachhaltigkeitspunkte_page
         load_page(Bewertung_Nachhaltigkeitspunkte_page)
 else:
-    # Verstecke die Sidebar für alle anderen Seiten
-    st.markdown("""<style>section[data-testid="stSidebar"][aria-expanded="true"]{display: none;}</style>""", unsafe_allow_html=True)
+    st.markdown("""<style>section[data-testid='stSidebar'][aria-expanded='true']{display: none;}</style>""", unsafe_allow_html=True)
+
+
+   

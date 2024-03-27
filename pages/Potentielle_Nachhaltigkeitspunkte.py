@@ -73,7 +73,7 @@ def display_page():
 
             # Hauptbereich für die Anzeige des DataFrames
     st.write("Übersicht der potentiellen Nachhaltigkeitspunkte")
-    with st.expander("Tabelle anzeigen/ausblenden", expanded=True):
+    with st.expander("Tabelle anzeigen/ausblenden", expanded=False):
         st.dataframe(st.session_state['dataf'], height=750, width=1500)
 
         # Download-Button für das gesamte DataFrame als CSV
