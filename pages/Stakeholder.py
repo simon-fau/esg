@@ -1,14 +1,7 @@
 import streamlit as st
 from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode, DataReturnMode
 import pandas as pd
-import time
 from pyvis.network import Network
-
-def long_running_function():
-    time.sleep(3)  # Simulates a long task
-
-with st.spinner('Bitte warten Sie, die Seite wird geladen...'):
-    long_running_function()
 
 def get_node_color(score):
     if score <= 33:
@@ -119,16 +112,14 @@ def display_page():
     df_temp = pd.DataFrame(grid_response['data'])
     df_temp['Score'] = df_temp.apply(calculate_score, axis=1)
 
-
     # Validiere die Änderungen
     valid, message = validate_data(df_temp)
     if not valid:
         st.error(message)
     else:
         st.session_state['namen_tabelle'] = df_temp.sort_values(by='Score', ascending=False).reset_index(drop=True)
-        
         st.markdown("---")
-        col_score, col_network = st.columns([1, 1], gap="small")
+        col_score, col_network, col_empty = st.columns([1, 1, 1], gap="small")
         with col_score:
             # Erstelle eine neue DataFrame für die Score-Tabelle und füge die Ranking-Spalte hinzu
             score_table = st.session_state['namen_tabelle'][['Gruppe', 'Score']]
@@ -140,7 +131,7 @@ def display_page():
             
         with col_network:
             # Netzwerkdiagramm
-            net = Network(height="500px", width="100%", bgcolor="white", font_color="black")
+            net = Network(height="300px", width="100%", bgcolor="white", font_color="black")
             net.add_node("Mein Unternehmen", color="black", label="", title="")  # Leeres Label und Titel
 
             for _, row in st.session_state['namen_tabelle'].iterrows():
