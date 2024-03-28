@@ -2,12 +2,49 @@ import streamlit as st
 from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode, DataReturnMode
 import pandas as pd
 import time
+from pyvis.network import Network
 
 def long_running_function():
-    time.sleep(3)  # Simuliert eine lange Aufgabe
+    time.sleep(3)  # Simulates a long task
 
 with st.spinner('Bitte warten Sie, die Seite wird geladen...'):
     long_running_function()
+
+def get_node_color(score):
+    if score <= 33:
+        return "red"
+    elif score <= 66:
+        return "orange"
+    else:
+        return "green"
+
+def calculate_score(row):
+    engagement_mapping = {'Hoch': 3, 'Mittel': 1.5, 'Niedrig': 0}
+    kommunikation_mapping = {'Regelmäßig': 3, 'Gelegentlich': 1.5, 'Nie': 0}
+    zeithorizont_mapping = {'Langfristig': 3, 'Mittelfristig': 1.5, 'Kurzfristig': 0}
+    
+    score = (engagement_mapping.get(row['Level des Engagements'], 0) +
+             kommunikation_mapping.get(row['Kommunikation'], 0) +
+             zeithorizont_mapping.get(row['Zeithorizont'], 0)) / 9 * 100
+    
+    return round(score)
+
+def validate_data(df):
+    erlaubte_werte = {
+        'Bestehende Beziehung': ['', 'Ja', 'Nein'],
+        'Auswirkung auf Interessen': ['', 'Hoch', 'Mittel', 'Niedrig'],
+        'Level des Engagements': ['', 'Hoch', 'Mittel', 'Niedrig'],
+        'Stakeholdergruppe': ['', 'Intern', 'Extern'],
+        'Kommunikation': ['', 'Regelmäßig', 'Gelegentlich', 'Nie'],
+        'Art der Betroffenheit': ['', 'Direkt', 'Indirekt', 'Keine'],
+        'Zeithorizont': ['', 'Kurzfristig', 'Mittelfristig', 'Langfristig']
+    }
+
+    for spalte, erlaubte in erlaubte_werte.items():
+        if not set(df[spalte].dropna()).issubset(set(erlaubte)):
+            return False, f"Fehler: Ungültige Werte in Spalte '{spalte}'. Eintrag wurde nicht übernommen. Erlaubte Werte sind: {', '.join(erlaubte)}"
+    
+    return True, "Daten sind gültig."
 
 def add_entry_sidebar():
     with st.sidebar:
@@ -32,6 +69,7 @@ def add_entry_sidebar():
                 'Kommunikation': kommunikation,
                 'Art der Betroffenheit': art_der_betroffenheit,
                 'Zeithorizont': zeithorizont,
+                'Score': 0  # Initialscore, wird später aktualisiert
             }
 
             new_entry_df = pd.DataFrame([new_entry])
@@ -50,6 +88,7 @@ def display_page():
             'Kommunikation': ['Regelmäßig'],
             'Art der Betroffenheit': ['Direkt'],
             'Zeithorizont': ['Langfristig'],
+            'Score': [0]  # Initialscore für bestehende Einträge
         })
 
     st.subheader("Stakeholder Identifikation und Bewertung")
@@ -58,7 +97,7 @@ def display_page():
     gb = GridOptionsBuilder.from_dataframe(st.session_state['namen_tabelle'])
     gb.configure_default_column(editable=True, resizable=True)
     gb.configure_selection('multiple', use_checkbox=True)
-    gb.configure_grid_options(domLayout='normal')
+    gb.configure_grid_options(enableRangeSelection=True, domLayout='normal')
     gridOptions = gb.build()
 
     # Anzeige der Tabelle mit AgGrid
@@ -66,7 +105,7 @@ def display_page():
     grid_response = AgGrid(
         st.session_state['namen_tabelle'],
         gridOptions=gridOptions,
-        height=500,
+        height=300,
         width='100%',
         data_return_mode=DataReturnMode.AS_INPUT,
         update_mode=GridUpdateMode.VALUE_CHANGED,
@@ -75,9 +114,40 @@ def display_page():
         enable_enterprise_modules=True,
         key=grid_key 
     )
-    
-     # Speichere die Änderungen zurück in den session_state, um sie persistent zu machen
-    st.session_state['namen_tabelle'] = pd.DataFrame(grid_response['data'])
 
-    # Optional: Rücksetzen der ausgewählten Zeilen nach der Verarbeitung
-    st.session_state['selected_rows'] = []
+    # Berechne den Score für jede Zeile nach der Änderung
+    df_temp = pd.DataFrame(grid_response['data'])
+    df_temp['Score'] = df_temp.apply(calculate_score, axis=1)
+
+
+    # Validiere die Änderungen
+    valid, message = validate_data(df_temp)
+    if not valid:
+        st.error(message)
+    else:
+        st.session_state['namen_tabelle'] = df_temp.sort_values(by='Score', ascending=False).reset_index(drop=True)
+        
+        st.markdown("---")
+        col_score, col_network = st.columns([1, 1], gap="small")
+        with col_score:
+            # Erstelle eine neue DataFrame für die Score-Tabelle und füge die Ranking-Spalte hinzu
+            score_table = st.session_state['namen_tabelle'][['Gruppe', 'Score']]
+            score_table['Ranking'] = range(1, len(score_table) + 1)
+            st.write("Stakeholder-Ranking:")
+            st.dataframe(score_table[['Ranking', 'Gruppe', 'Score']], column_config={
+                "Score": st.column_config.ProgressColumn(min_value=0, max_value=100, format="%f")},
+                hide_index=True)
+            
+        with col_network:
+            # Netzwerkdiagramm
+            net = Network(height="500px", width="100%", bgcolor="white", font_color="black")
+            net.add_node("Mein Unternehmen", color="black", label="", title="")  # Leeres Label und Titel
+
+            for _, row in st.session_state['namen_tabelle'].iterrows():
+                size = row['Score'] / 100 * 10 + 15
+                color = get_node_color(row['Score'])
+                net.add_node(row['Gruppe'], color=color, label=row['Gruppe'], title=row['Gruppe'], size=size)
+                net.add_edge("Mein Unternehmen", row['Gruppe'])
+
+            net.save_graph("network.html")
+            st.components.v1.html(open("network.html", "r").read(), height=600)    
