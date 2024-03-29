@@ -71,5 +71,7 @@ if selected_menu == 'Wesentlichkeitsanalyse':
 else:
     st.markdown("""<style>section[data-testid='stSidebar'][aria-expanded='true']{display: none;}</style>""", unsafe_allow_html=True)
 
-
+if selected_menu == 'Übersicht':
+    import pages.Übersicht as Übersicht_page
+    Übersicht_page.display_page()
    

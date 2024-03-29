@@ -3,6 +3,20 @@ from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode, DataReturnMode
 import pandas as pd
 from pyvis.network import Network
 
+def generate_stakeholder_ranking():
+    # Überprüfe, ob 'namen_tabelle' initialisiert und nicht leer ist
+    if 'namen_tabelle' not in st.session_state or st.session_state['namen_tabelle'].empty:
+        st.write("Keine Daten vorhanden für das Stakeholder-Ranking.")
+        return pd.DataFrame()  # Frühes Beenden mit leerer DataFrame
+
+    score_table = st.session_state['namen_tabelle'][['Gruppe', 'Score']].copy()
+    if not score_table.empty:
+        score_table['Ranking'] = range(1, len(score_table) + 1)
+        score_table = score_table.sort_values(by='Score', ascending=False).reset_index(drop=True)
+        st.dataframe(score_table[['Ranking', 'Gruppe', 'Score']], column_config={"Score": st.column_config.ProgressColumn(min_value=0, max_value=100, format="%f")}, hide_index=True)
+    else:
+        st.write("Keine Stakeholder-Daten vorhanden.")
+
 def get_node_color(score):
     if score <= 33:
         return "red"
@@ -71,6 +85,7 @@ def add_entry_sidebar():
             st.session_state['grid_update_key'] = st.session_state.get('grid_update_key', 0) + 1
 
 def display_page():
+
     if 'namen_tabelle' not in st.session_state:
         st.session_state['namen_tabelle'] = pd.DataFrame({
             'Gruppe': ['Beispielgruppe'],
@@ -122,13 +137,10 @@ def display_page():
         col_score, col_network, col_empty = st.columns([1, 1, 1], gap="small")
         with col_score:
             # Erstelle eine neue DataFrame für die Score-Tabelle und füge die Ranking-Spalte hinzu
-            score_table = st.session_state['namen_tabelle'][['Gruppe', 'Score']]
-            score_table['Ranking'] = range(1, len(score_table) + 1)
-            st.write("Stakeholder-Ranking:")
-            st.dataframe(score_table[['Ranking', 'Gruppe', 'Score']], column_config={
-                "Score": st.column_config.ProgressColumn(min_value=0, max_value=100, format="%f")},
-                hide_index=True)
+            st.session_state['namen_tabelle'] = df_temp.sort_values(by='Score', ascending=False).reset_index(drop=True)
+            generate_stakeholder_ranking()
             
+      
         with col_network:
             # Netzwerkdiagramm
             net = Network(height="300px", width="100%", bgcolor="white", font_color="black")
