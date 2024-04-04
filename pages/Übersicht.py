@@ -3,7 +3,6 @@ import os
 import pandas as pd
 from pages.Stakeholder import generate_stakeholder_ranking
 
-
 def display_network_from_file(html_file_path):
     if os.path.exists(html_file_path):
         try:

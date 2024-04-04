@@ -48,7 +48,7 @@ if selected_menu == 'Wesentlichkeitsanalyse':
     # Auswahl der Seite über eine SelectBox
     page_option = st.sidebar.selectbox(
         "Wählen Sie eine Option:",
-        ['1. Stakeholder', '2. Potentielle Nachhaltigkeitspunkte', '3. Bewertung Nachhaltigkeitspunkte']
+        ['1. Stakeholder', '2. Top-Down','3. Bottom-Up', '4. Bewertung Nachhaltigkeitspunkte']
     )
 
     # Importieren und Ausführen der entsprechenden Funktion aus der Subpage
@@ -62,10 +62,13 @@ if selected_menu == 'Wesentlichkeitsanalyse':
     if page_option == '1. Stakeholder':
         import pages.Stakeholder as Stakeholder_page
         load_page(Stakeholder_page)
-    elif page_option == '2. Potentielle Nachhaltigkeitspunkte':
-        import pages.Potentielle_Nachhaltigkeitspunkte as Potentielle_Nachhaltigkeitspunkte_page
-        load_page(Potentielle_Nachhaltigkeitspunkte_page)
-    elif page_option == '3. Bewertung Nachhaltigkeitspunkte':
+    elif page_option == '2. Top-Down':
+        import pages.Top_down as Top_down_page
+        load_page(Top_down_page)
+    elif page_option == '3. Bottom-Up':
+        import pages.Bottom_up as Bottom_up_page
+        load_page(Bottom_up_page)
+    elif page_option == '4. Bewertung Nachhaltigkeitspunkte':
         import pages.Bewertung_Nachhaltigkeitspunkte as Bewertung_Nachhaltigkeitspunkte_page
         load_page(Bewertung_Nachhaltigkeitspunkte_page)
 else:

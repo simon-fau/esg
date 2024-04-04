@@ -84,6 +84,7 @@ def add_entry_sidebar():
             # Aktualisiere den Key für AgGrid, um eine Neurenderung zu erzwingen
             st.session_state['grid_update_key'] = st.session_state.get('grid_update_key', 0) + 1
 
+
 def display_page():
 
     if 'namen_tabelle' not in st.session_state:
@@ -99,7 +100,6 @@ def display_page():
             'Score': [0]  # Initialscore für bestehende Einträge
         })
 
-    st.subheader("Stakeholder Identifikation und Bewertung")
     add_entry_sidebar()
 
     gb = GridOptionsBuilder.from_dataframe(st.session_state['namen_tabelle'])
