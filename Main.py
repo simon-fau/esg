@@ -20,7 +20,8 @@ st.markdown("""<style>.element-container { margin: -6px !important; padding: 0px
 menu_data = [
     {'id': 'how_to', 'label': "How To", 'icon': "fa fa-home"},
     {'id': 'Wesentlichkeitsanalyse', 'label': "Wesentlichkeitsanalyse", 'icon': "fas fa-file-alt"},
-    {'id': 'Übersicht', 'label': "Übersicht", 'icon': "fas fa-info-circle"}
+    {'id': 'Übersicht', 'label': "Übersicht", 'icon': "fas fa-info-circle"},
+    {'id': 'Dokumentenanalyse', 'label': "Dokumentenanalyse", 'icon': "fas fa-info-circle"},
 ]
 
 # Erstellen der Navigationsleiste
@@ -77,4 +78,8 @@ else:
 if selected_menu == 'Übersicht':
     import pages.Übersicht as Übersicht_page
     Übersicht_page.display_page()
+elif selected_menu == 'Dokumentenanalyse':
+    import pages.Dokumentenanalyse as Dokumentenanalyse_page
+    Dokumentenanalyse_page.display_page()
+
    

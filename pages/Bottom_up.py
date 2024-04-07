@@ -1,71 +1,69 @@
 import streamlit as st
+from st_aggrid import AgGrid, GridOptionsBuilder
+import pandas as pd
 
-def create_table_with_rowspan():
-    # Beginn der Tabelle mit HTML
-    table_html = """
-    <style>
-        table {
-            border-collapse: collapse;
-        }
-        th, td {
-            border: 1px solid black;
-            padding: 5px;
-            text-align: left;
-        }
-        th {
-            background-color: #f0f0f0;
-        }
-    </style>
-    <table>
-        <tr>
-            <th rowspan="3">ESRS E1<br/>Klimawandel</th>
-            <td>Anpassung an den Klimawandel</td>
-        </tr>
-        <tr><td>Klimaschutz</td></tr>
-        <tr><td>Energie</td></tr>
-        <tr>
-            <th rowspan="7">ESRS E2<br/>Umweltverschmutzung</th>
-            <td>Luftverschmutzung</td>
-        </tr>
-        <tr><td>Wasserverschmutzung</td></tr>
-        <tr><td>Bodenverschmutzung</td></tr>
-        <tr><td>Verschmutzung von lebenden Organismen und Nahrungsressourcen</td></tr>
-        <tr><td>Besorgniserregende Stoffe</td></tr>
-        <tr><td>Besonders besorgniserregende Stoffe</td></tr>
-        <tr><td>Mikroplastik</td></tr>
-        <tr>
-            <th rowspan="5">ESRS E3<br/>Wasser- und Meeresressourcen</th>
-            <td>Wasser</td>
-            <td>Wasserverbrauch</td>
-        </tr>
-        <tr><td>Meeresressourcen</td><td>Wasserentnahme</td></tr>
-        <tr><td></td><td>Ableitung von Wasser</td></tr>
-        <tr><td></td><td>Ableitung von Wasser in die Ozeane</td></tr>
-        <tr><td></td><td>Gewinnung und Nutzung von Meeresressourcen</td></tr>
-        <!-- ESRS E4 -->
-        <tr>
-            <th rowspan="10">ESRS E4<br/>Biologische Vielfalt und Ökosysteme</th>
-            <td>Direkte Ursachen des Biodiversitätsverlusts</td>
-            <td>Klimawandel</td>
-        </tr>
-        <tr><td></td><td>Landnutzungsänderungen, Süßwasser- und Meeresnutzungsänderungen</td></tr>
-        <tr><td></td><td>Direkte Ausbeutung</td></tr>
-        <tr><td></td><td>Invasive gebietsfremde Arten</td></tr>
-        <tr><td></td><td>Umweltverschmutzung</td></tr>
-        <tr><td></td><td>Sonstige</td></tr>
-        <tr><td>Auswirkungen auf den Zustand der Arten</td><td>Populationsgröße von Arten</td></tr>
-        <tr><td></td><td>Globales Ausrottungsrisiko von Arten</td></tr>
-        <tr><td>Auswirkungen auf den Umfang und den Zustand von Ökosystemen</td><td>Landdegradation</td></tr>
-        <tr><td></td><td>Wüstenbildung</td></tr>
-    </table>
-    """
-    
-    # Die Tabelle wird im Streamlit-App angezeigt
-    st.markdown(table_html, unsafe_allow_html=True)
-
-# Hauptfunktion für die Streamlit-App
 def display_page():
-    st.title("Tabellenansicht")
-    create_table_with_rowspan()
+    # Initialisierung des Session State für das DataFrame
+    if 'df' not in st.session_state:
+        st.session_state.df = pd.DataFrame({
+            "Thema": [""] * 5,  # Beginnen mit 5 leeren Zeilen
+            "Unterthema": [""] * 5,
+            "Unter-Unterthema": [""] * 5
+        })
+
+    # Sidebar für die Eingabe neuer Zeilen
+    with st.sidebar:
+        st.markdown("---")
+        thema = st.selectbox('Thema auswählen', options=['Klimawandel'], index=0)
+        unterthema = st.selectbox('Unterthema auswählen', options=['Anpassung an den Klimawandel', 'Klimaschutz', 'Energie'], index=0)
+        unter_unterthema = st.text_input('Unter-Unterthema eingeben')
+        add_row = st.button('Hinzufügen')
+
+    # Hinzufügen der neuen Zeile, wenn der Button gedrückt wird
+    if add_row:
+        # Finde die erste komplett leere Zeile
+        empty_row_index = st.session_state.df[(st.session_state.df["Thema"] == "") & (st.session_state.df["Unterthema"] == "") & (st.session_state.df["Unter-Unterthema"] == "")].first_valid_index()
+        if empty_row_index is not None:
+            # Aktualisiere die erste leere Zeile mit den neuen Daten
+            st.session_state.df.at[empty_row_index, "Thema"] = thema
+            st.session_state.df.at[empty_row_index, "Unterthema"] = unterthema
+            st.session_state.df.at[empty_row_index, "Unter-Unterthema"] = unter_unterthema
+        else:
+            # Füge eine neue Zeile hinzu, falls keine leere Zeile gefunden wurde
+            new_row = {"Thema": thema, "Unterthema": unterthema, "Unter-Unterthema": unter_unterthema}
+            st.session_state.df = st.session_state.df._append(new_row, ignore_index=True)
+
+    # Ag-Grid Konfiguration
+    gb = GridOptionsBuilder.from_dataframe(st.session_state.df)
+    gb.configure_default_column(editable=True, resizable=True, sortable=True, filterable=True)
+    gb.configure_grid_options(domLayout='autoHeight')
+    grid_options = gb.build()
+
+    # Anzeige des Ag-Grids
+    grid_response = AgGrid(
+        st.session_state.df,
+        gridOptions=grid_options,
+        fit_columns_on_grid_load=True,
+        height=300,  # Einstellen der gewünschten Höhe
+        width='100%',
+        update_mode='MODEL_CHANGED',
+        allow_unsafe_jscode=True
+    )
+
+    # Aktualisieren des DataFrames im Session State
+    st.session_state.df = pd.DataFrame(grid_response['data'])
+
+
+
+
+
+    
+
+
+
+
+
+
+
 
 

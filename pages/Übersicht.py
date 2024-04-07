@@ -32,9 +32,9 @@ def display_page():
 
      # In den restlichen Spalten können weitere Dashboard-Elemente hinzugefügt werden.
     with col2:
-        st.markdown('#### Details')
+        st.markdown('#### Themenspezifische ESRS')
         # Hier können weitere Informationen oder Visualisierungen hinzugefügt werden.
 
     with col3:
-        st.markdown('#### Details')
+        st.markdown('#### BlaBla')
         # Details zu den Stakeholdern oder anderen relevanten Daten.

@@ -1,11 +1,37 @@
 import streamlit as st
 import matplotlib.pyplot as plt
+import altair as alt
+import pandas as pd
 
-def update_state_generic(key_prefix, gruppe, unterthema, auswahl, checkbox_value):
+def display_pie_charts():
+     # Daten für jedes Donut-Diagramm vorbereiten
+    categories = ['Umwelt', 'Sozial', 'Governance']
+    data = pd.DataFrame({
+        'Kategorie': categories,
+        'Wert': [1] * len(categories)  # Dummy-Werte, da die Diagramme leer sein sollen
+    })
+
+    # Streamlit Spalten zur Platzierung der Diagramme erstellen
+    cols = st.columns(3)
+
+    # Ein Donut-Diagramm für jede Kategorie erstellen und in einer separaten Spalte anzeigen
+    for i, kategorie in enumerate(categories):
+        chart = alt.Chart(data.query(f"Kategorie == '{kategorie}'")).mark_arc(innerRadius=60, outerRadius=80).encode(
+            theta=alt.Theta(field="Wert", type="quantitative"),  # Winkel des Bogens
+            color=alt.value('lightgray'),  # Festlegen der Farbe
+            tooltip=['Kategorie:N']  # Tooltip für zusätzliche Informationen
+        ).properties(
+            width=250,  # Breite des Diagramms anpassen
+            height=250,  # Höhe des Diagramms anpassen
+            title=kategorie  # Titel des Diagramms
+        )
+
+        # Diagramm in der entsprechenden Spalte anzeigen
+        cols[i].altair_chart(chart, use_container_width=True)
+
+def update_state_generic(key_prefix, gruppe, unterthema, auswahl):
     key = f"{key_prefix}_{gruppe}_{unterthema}"
-    # Update only if checkbox_value is True to avoid overwriting with False on page reruns
-    if checkbox_value:
-        st.session_state[key] = auswahl
+    st.session_state[key] = auswahl
 
 def define_themes():
     global unterthemen_esrse1, unterthemen_esrse2, unterthemen_esrse3, unterthemen_esrse4
@@ -37,7 +63,7 @@ def define_themes():
         "Soziale Inklusion von Verbrauchern und/oder Endnutzern": ["Nichtdiskriminierung", "Zugang zu Produkten und Dienstleistungen", "Verantwortliche Vermarkzungspraktiken"]
     }
     unterthemen_esrsg1 = ["Unternehmenskultur", "Schutz von Hinweisgebern", "Tierschutz", "Politisches Engagement und Lobbytätigkeiten", "Management der Beziehungen zu Lieferanten, einschließlich Zahlungspraktiken", "Korruption und Bestechung", "Vermeidung und Aufdeckung einschließlich Schulung", "Vorkommnisse"]
-    optionen = ["Trifft zu", "Trifft teilweise zu", "Trifft nicht zu"]
+    optionen = ["Vorhanden", "Teilweise Vorhanden", "Nicht Vorhanden"]
 
 def initialize_state():
     initial_state = {**{unterthema: None for unterthema in unterthemen_esrse1 + unterthemen_esrse2 + unterthemen_esrse3 + unterthemen_esrse5 + list(unterthemen_esrsg1)},
@@ -53,27 +79,45 @@ def initialize_state():
 def create_expander(thema, unterthemen, state_key):
     with st.expander(thema):
         col_text, col_rb1, col_rb2, col_rb3 = st.columns([6, 1, 1, 1])
-        col_text.write("**" + thema + "**")
-        col_rb1.write("Trifft zu")
-        col_rb2.write("Trifft teilweise zu")
-        col_rb3.write("Trifft nicht zu")
-        
+        if thema == unterthemen_esrse1:
+            col_text.write("**" + "Klimawandel" + "**")
+        elif thema == unterthemen_esrse2:
+            col_text.write("**" + "Umweltverschmutzung" + "**")
+        elif thema == unterthemen_esrse3:
+            col_text.write("**" + "Wasser- & Meeresressourcen" + "**")
+        elif thema == unterthemen_esrse5:
+            col_text.write("**" + "Kreislaufwirtschaft" + "**")
+        elif thema == unterthemen_esrsg1:
+            col_text.write("**" + "Unternehmenspolitik" + "**")
+
+        col_rb1.write("Vorhanden")
+        col_rb2.write("Teilweise Vorhanden")
+        col_rb3.write("Nicht Vorhanden")
         for unterthema in unterthemen:
             col_text, col_rb1, col_rb2, col_rb3 = st.columns([6, 1, 1, 1])
             with col_text:
-                st.markdown(f"• {unterthema}")
+                st.markdown(f"<p style='font-family:Source Sans Pro;'>• {unterthema}</p>", unsafe_allow_html=True)
             for i, option in enumerate(optionen):
                 col = [col_rb1, col_rb2, col_rb3][i]
-                checkbox_key = f"{state_key}_{unterthema.replace(' ', '_')}_{option.replace(' ', '_')}"
                 with col:
-                    # Check if the current option matches the stored state to check the checkbox
-                    is_checked = st.session_state.get(checkbox_key, '') == option
-                    if st.checkbox("", key=checkbox_key + "_checkbox", value=is_checked, label_visibility="collapsed"):
-                        # Only update state if checkbox is checked to avoid overwriting with False
-                        update_state_generic(state_key, unterthema.replace(' ', '_'), '', option, True)
+                    checkbox_key = f"{state_key}_{unterthema}_{option}"
+                    checkbox_value = st.session_state.get(checkbox_key, False)
+                    # Hier passen wir den Aufruf an die erwartete Signatur von update_state_generic an
+                    st.checkbox("Select", key=checkbox_key, value=checkbox_value, on_change=update_state_generic, args=(state_key, '', unterthema, option), label_visibility="collapsed")
 
 def create_expander_with_subgroups(thema, unterthemen_gruppen, state_key_prefix):
     with st.expander(thema):
+        # Nur in der ersten Zeile die Optionen anzeigen
+        col_text, col_rb1, col_rb2, col_rb3 = st.columns([6, 1, 1, 1])
+        with col_text:
+            st.write("")  # Leer, um die Spalte zu füllen
+        with col_rb1:
+            st.write("Vorhanden")
+        with col_rb2:
+            st.write("Teilweise Vorhanden")
+        with col_rb3:
+            st.write("Nicht Vorhanden")
+
         for gruppe, unterthemen in unterthemen_gruppen.items():
             st.markdown(f"**{gruppe}**")
             for unterthema in unterthemen:
@@ -82,11 +126,11 @@ def create_expander_with_subgroups(thema, unterthemen_gruppen, state_key_prefix)
                     st.markdown(f"• {unterthema}")
                 for i, option in enumerate(optionen):
                     col = [col_rb1, col_rb2, col_rb3][i]
-                    checkbox_key = f"{state_key_prefix}_{gruppe.replace(' ', '_')}_{unterthema.replace(' ', '_')}_{option.replace(' ', '_')}"
                     with col:
-                        is_checked = st.session_state.get(checkbox_key, '') == option
-                        if st.checkbox("", key=checkbox_key + "_checkbox", value=is_checked, label_visibility="collapsed"):
-                            update_state_generic(state_key_prefix, gruppe.replace(' ', '_'), unterthema.replace(' ', '_'), option, True)
+                        checkbox_key = f"{state_key_prefix}_{gruppe}_{unterthema}_{option}"
+                        checkbox_value = st.session_state.get(checkbox_key, False)
+                        # Die Label-Visibility "collapsed" entfernen, da wir jetzt die Optionen oben anzeigen
+                        st.checkbox("Select", key=checkbox_key, value=checkbox_value, on_change=update_state_generic, args=(state_key_prefix, gruppe, unterthema, option), label_visibility="collapsed")
 
 
 def display_expanders():
@@ -102,6 +146,7 @@ def display_expanders():
     create_expander("ESRS G1 Unternehmenspolitik", unterthemen_esrsg1, 'auswahl')
 
 def display_page():
+    display_pie_charts()
     define_themes()
     initialize_state()
     display_expanders()
@@ -116,4 +161,4 @@ def display_page():
         "ESRS S3": [f"auswahl_s3_{gruppe}_{unterthema}" for gruppe in unterthemen_esrss3 for unterthema in unterthemen_esrss3[gruppe]],
         "ESRS S4": [f"auswahl_s4_{gruppe}_{unterthema}" for gruppe in unterthemen_esrss4 for unterthema in unterthemen_esrss4[gruppe]],
         "ESRS G1": [f"auswahl_{unterthema}" for unterthema in unterthemen_esrsg1]
-    }
+    }   
