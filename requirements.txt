@@ -6,4 +6,4 @@ pandas
 sentence_transformers
 matplotlib
 altair
-aggrid
+st_aggrid
