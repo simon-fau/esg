@@ -5,5 +5,4 @@ pyvis
 pandas
 sentence_transformers
 matplotlib
-st_aggrid
 altair
