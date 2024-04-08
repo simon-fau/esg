@@ -4,6 +4,6 @@ hydralit_components
 pyvis
 pandas
 sentence_transformers
-matplotlib.pyplot
+matplotlib
 st_aggrid
 altair
