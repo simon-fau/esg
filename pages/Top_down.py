@@ -63,7 +63,7 @@ def define_themes():
         "Soziale Inklusion von Verbrauchern und/oder Endnutzern": ["Nichtdiskriminierung", "Zugang zu Produkten und Dienstleistungen", "Verantwortliche Vermarkzungspraktiken"]
     }
     unterthemen_esrsg1 = ["Unternehmenskultur", "Schutz von Hinweisgebern", "Tierschutz", "Politisches Engagement und Lobbytätigkeiten", "Management der Beziehungen zu Lieferanten, einschließlich Zahlungspraktiken", "Korruption und Bestechung", "Vermeidung und Aufdeckung einschließlich Schulung", "Vorkommnisse"]
-    optionen = ["Vorhanden", "Teilweise Vorhanden", "Nicht Vorhanden"]
+    optionen = ["Wesentlich", "Teilweise Wesentlich", "Nicht Wesentlich"]
 
 def initialize_state():
     initial_state = {**{unterthema: None for unterthema in unterthemen_esrse1 + unterthemen_esrse2 + unterthemen_esrse3 + unterthemen_esrse5 + list(unterthemen_esrsg1)},
@@ -90,9 +90,9 @@ def create_expander(thema, unterthemen, state_key):
         elif thema == unterthemen_esrsg1:
             col_text.write("**" + "Unternehmenspolitik" + "**")
 
-        col_rb1.write("Vorhanden")
-        col_rb2.write("Teilweise Vorhanden")
-        col_rb3.write("Nicht Vorhanden")
+        col_rb1.write("Wesenlich")
+        col_rb2.write("Teilweise Wesentlich")
+        col_rb3.write("Nicht Wesentlich")
         for unterthema in unterthemen:
             col_text, col_rb1, col_rb2, col_rb3 = st.columns([6, 1, 1, 1])
             with col_text:
@@ -112,11 +112,11 @@ def create_expander_with_subgroups(thema, unterthemen_gruppen, state_key_prefix)
         with col_text:
             st.write("")  # Leer, um die Spalte zu füllen
         with col_rb1:
-            st.write("Vorhanden")
+            st.write("Wesentlich")
         with col_rb2:
-            st.write("Teilweise Vorhanden")
+            st.write("Teilweise Wesentlich")
         with col_rb3:
-            st.write("Nicht Vorhanden")
+            st.write("Nicht Wesentlich")
 
         for gruppe, unterthemen in unterthemen_gruppen.items():
             st.markdown(f"**{gruppe}**")

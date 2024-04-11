@@ -84,7 +84,6 @@ def add_entry_sidebar():
             # Aktualisiere den Key für AgGrid, um eine Neurenderung zu erzwingen
             st.session_state['grid_update_key'] = st.session_state.get('grid_update_key', 0) + 1
 
-
 def display_page():
 
     if 'namen_tabelle' not in st.session_state:
@@ -101,27 +100,29 @@ def display_page():
         })
 
     add_entry_sidebar()
+    
+    # Erstelle eine Kopie des DataFrames ohne die 'Score'-Spalte für das AgGrid
+    df_for_aggrid = st.session_state['namen_tabelle'].drop(columns=['Score'])
 
-    gb = GridOptionsBuilder.from_dataframe(st.session_state['namen_tabelle'])
+    gb = GridOptionsBuilder.from_dataframe(df_for_aggrid)
     gb.configure_default_column(editable=True, resizable=True)
-    gb.configure_selection('multiple', use_checkbox=True)
+    gb.configure_selection(selection_mode='multiple', use_checkbox=True, rowMultiSelectWithClick=True, suppressRowDeselection=False)
     gb.configure_grid_options(enableRangeSelection=True, domLayout='normal')
     gridOptions = gb.build()
 
     # Anzeige der Tabelle mit AgGrid
     grid_key = f"grid_{st.session_state.get('grid_update_key', 0)}"
     grid_response = AgGrid(
-        st.session_state['namen_tabelle'],
+        df_for_aggrid,
         gridOptions=gridOptions,
-        height=300,
-        width='100%',
         data_return_mode=DataReturnMode.AS_INPUT,
-        update_mode=GridUpdateMode.VALUE_CHANGED,
+        update_mode=GridUpdateMode.MODEL_CHANGED,
         fit_columns_on_grid_load=False,
         theme='streamlit',
         enable_enterprise_modules=True,
         key=grid_key 
     )
+
 
     # Berechne den Score für jede Zeile nach der Änderung
     df_temp = pd.DataFrame(grid_response['data'])
@@ -139,8 +140,7 @@ def display_page():
             # Erstelle eine neue DataFrame für die Score-Tabelle und füge die Ranking-Spalte hinzu
             st.session_state['namen_tabelle'] = df_temp.sort_values(by='Score', ascending=False).reset_index(drop=True)
             generate_stakeholder_ranking()
-            
-      
+        
         with col_network:
             # Netzwerkdiagramm
             net = Network(height="300px", width="100%", bgcolor="white", font_color="black")

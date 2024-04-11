@@ -1,6 +1,7 @@
 import streamlit as st
-from st_aggrid import AgGrid, GridOptionsBuilder
 import pandas as pd
+from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode, DataReturnMode
+
 
 def display_page():
     # Initialisierung des Session State für das DataFrame
@@ -18,6 +19,7 @@ def display_page():
         unterthema = st.selectbox('Unterthema auswählen', options=['Anpassung an den Klimawandel', 'Klimaschutz', 'Energie'], index=0)
         unter_unterthema = st.text_input('Unter-Unterthema eingeben')
         add_row = st.button('Hinzufügen')
+        delete_rows = st.button('Ausgewählte Zeilen löschen')  # Button zum Löschen der ausgewählten Zeilen
 
     # Hinzufügen der neuen Zeile, wenn der Button gedrückt wird
     if add_row:
@@ -36,22 +38,57 @@ def display_page():
     # Ag-Grid Konfiguration
     gb = GridOptionsBuilder.from_dataframe(st.session_state.df)
     gb.configure_default_column(editable=True, resizable=True, sortable=True, filterable=True)
-    gb.configure_grid_options(domLayout='autoHeight')
+    gb.configure_grid_options(domLayout='autoHeight', enableRowId=True, rowId='index')  # Aktivieren der Zeilen-IDs und Festlegen der ID-Spalte auf 'index'
+    gb.configure_selection('multiple', use_checkbox=True)  # Konfigurieren der Zeilenauswahl mit Checkboxen
     grid_options = gb.build()
 
     # Anzeige des Ag-Grids
     grid_response = AgGrid(
-        st.session_state.df,
+        st.session_state.df.reset_index(),  # Zurücksetzen des Index, um eine Spalte 'index' zu erstellen
         gridOptions=grid_options,
         fit_columns_on_grid_load=True,
         height=300,  # Einstellen der gewünschten Höhe
         width='100%',
         update_mode='MODEL_CHANGED',
-        allow_unsafe_jscode=True
+        allow_unsafe_jscode=True,
+        return_mode=DataReturnMode.AS_INPUT,  # Rückgabe der ausgewählten Zeilen
+        selection_mode='multiple'  # Erlauben der Mehrfachauswahl
     )
 
-    # Aktualisieren des DataFrames im Session State
-    st.session_state.df = pd.DataFrame(grid_response['data'])
+    # Funktion zum Löschen der ausgewählten Zeilen
+    def delete_selected_rows(selected_rows):
+        selected_indices = [row['index'] for row in selected_rows]  # Extrahieren der Indizes der ausgewählten Zeilen
+        st.session_state.df = st.session_state.df.drop(selected_indices)
+        st.experimental_rerun()  # Neuladen der Seite
+
+    # Löschen der ausgewählten Zeilen, wenn der Button gedrückt wird
+    if delete_rows:
+        selected_rows = grid_response['selected_rows']
+        delete_selected_rows(selected_rows)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
