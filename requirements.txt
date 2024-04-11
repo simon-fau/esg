@@ -3,3 +3,7 @@ plotly
 hydralit_components
 pyvis
 pandas
+sentence_transformers
+matplotlib
+altair
+st_aggrid
