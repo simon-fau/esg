@@ -3,35 +3,10 @@ import matplotlib.pyplot as plt
 import altair as alt
 import pandas as pd
 
-def display_pie_charts():
-     # Daten für jedes Donut-Diagramm vorbereiten
-    categories = ['Umwelt', 'Sozial', 'Governance']
-    data = pd.DataFrame({
-        'Kategorie': categories,
-        'Wert': [1] * len(categories)  # Dummy-Werte, da die Diagramme leer sein sollen
-    })
-
-    # Streamlit Spalten zur Platzierung der Diagramme erstellen
-    cols = st.columns(3)
-
-    # Ein Donut-Diagramm für jede Kategorie erstellen und in einer separaten Spalte anzeigen
-    for i, kategorie in enumerate(categories):
-        chart = alt.Chart(data.query(f"Kategorie == '{kategorie}'")).mark_arc(innerRadius=60, outerRadius=80).encode(
-            theta=alt.Theta(field="Wert", type="quantitative"),  # Winkel des Bogens
-            color=alt.value('lightgray'),  # Festlegen der Farbe
-            tooltip=['Kategorie:N']  # Tooltip für zusätzliche Informationen
-        ).properties(
-            width=250,  # Breite des Diagramms anpassen
-            height=250,  # Höhe des Diagramms anpassen
-            title=kategorie  # Titel des Diagramms
-        )
-
-        # Diagramm in der entsprechenden Spalte anzeigen
-        cols[i].altair_chart(chart, use_container_width=True)
-
 def update_state_generic(key_prefix, gruppe, unterthema, auswahl):
     key = f"{key_prefix}_{gruppe}_{unterthema}"
     st.session_state[key] = auswahl
+
 
 def define_themes():
     global unterthemen_esrse1, unterthemen_esrse2, unterthemen_esrse3, unterthemen_esrse4
@@ -146,7 +121,6 @@ def display_expanders():
     create_expander("ESRS G1 Unternehmenspolitik", unterthemen_esrsg1, 'auswahl')
 
 def display_page():
-    display_pie_charts()
     define_themes()
     initialize_state()
     display_expanders()
