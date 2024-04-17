@@ -5,9 +5,9 @@ from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode, DataReturnMode
 def display_page():
     if 'df2' not in st.session_state:
         st.session_state.df2 = pd.DataFrame({
-            "Thema": [""] * 3,
-            "Unterthema": [""] * 3,
-            "Unter-Unterthema": [""] * 3
+            "Thema": [""] * 5,
+            "Unterthema": [""] * 5,
+            "Unter-Unterthema": [""] * 5
         })
 
     with st.sidebar:
@@ -16,8 +16,6 @@ def display_page():
         unterthema = st.selectbox('Unterthema auswählen', options=['Anpassung an den Klimawandel', 'Klimaschutz', 'Energie'], index=0, key='unterthema')
         unter_unterthema = st.text_input('Unter-Unterthema eingeben', key='unter_unterthema')
         add_row = st.button('Hinzufügen', key='add_row')
-        add_empty_row = st.button('Leere Zeile hinzufügen', key='add_empty_row')
-        delete_rows = st.button('Ausgewählte Zeilen löschen', key='delete_rows')
 
     if add_row:
         empty_row_index = st.session_state.df2[(st.session_state.df2["Thema"] == "") & (st.session_state.df2["Unterthema"] == "") & (st.session_state.df2["Unter-Unterthema"] == "")].first_valid_index()
@@ -28,10 +26,6 @@ def display_page():
         else:
             new_row = {"Thema": thema, "Unterthema": unterthema, "Unter-Unterthema": unter_unterthema}
             st.session_state.df2 = st.session_state.df2._append(new_row, ignore_index=True)
-
-    if add_empty_row:
-        empty_row = {"Thema": "", "Unterthema": "", "Unter-Unterthema": ""}
-        st.session_state.df2 = st.session_state.df2._append(empty_row, ignore_index=True)
 
     gb = GridOptionsBuilder.from_dataframe(st.session_state.df2)
     gb.configure_default_column(editable=True, resizable=True, sortable=True, filterable=True)
@@ -51,16 +45,22 @@ def display_page():
         selection_mode='multiple'
     )
 
-    save_changes = st.button('Änderungen speichern', key='save_changes')
+    add_empty_row = st.button('Leere Zeile hinzufügen', key='add_empty_row')
+    if add_empty_row:
+        empty_row = {"Thema": "", "Unterthema": "", "Unter-Unterthema": ""}
+        st.session_state.df2 = st.session_state.df2._append(empty_row, ignore_index=True)
+        st.experimental_rerun()
 
-    if save_changes:
-        st.session_state.df2 = grid_response['data'].set_index('index')
-
+    delete_rows = st.button('Ausgewählte Zeilen löschen', key='delete_rows')
     if delete_rows:
         selected_rows = grid_response['selected_rows']
         selected_indices = [row['index'] for row in selected_rows]
         st.session_state.df2 = st.session_state.df2.drop(selected_indices)
         st.experimental_rerun()
+
+    save_changes = st.button('Änderungen speichern', key='save_changes')
+    if save_changes:
+        st.session_state.df2 = grid_response['data'].set_index('index')
 
 
 
