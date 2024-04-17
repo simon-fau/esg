@@ -12,9 +12,9 @@ def display_page():
 
     with st.sidebar:
         st.markdown("---")
-        thema = st.selectbox('Thema auswählen', options=['Klimawandel'], index=0, key='thema1')
-        unterthema = st.selectbox('Unterthema auswählen', options=['Anpassung an den Klimawandel', 'Klimaschutz', 'Energie'], index=0, key='unterthema1')
-        unter_unterthema = st.text_input('Unter-Unterthema eingeben', key='unter_unterthema1')
+        thema = st.selectbox('Thema auswählen', options=['Klimawandel'], index=0, key='thema')
+        unterthema = st.selectbox('Unterthema auswählen', options=['Anpassung an den Klimawandel', 'Klimaschutz', 'Energie'], index=0, key='unterthema')
+        unter_unterthema = st.text_input('Unter-Unterthema eingeben', key='unter_unterthema')
         add_row = st.button('Hinzufügen', key='add_row')
         add_empty_row = st.button('Leere Zeile hinzufügen', key='add_empty_row')
         delete_rows = st.button('Ausgewählte Zeilen löschen', key='delete_rows')
@@ -51,14 +51,16 @@ def display_page():
         selection_mode='multiple'
     )
 
-    st.session_state.df2 = grid_response['data'].set_index('index')
+    save_changes = st.button('Änderungen speichern', key='save_changes')
+
+    if save_changes:
+        st.session_state.df2 = grid_response['data'].set_index('index')
 
     if delete_rows:
         selected_rows = grid_response['selected_rows']
         selected_indices = [row['index'] for row in selected_rows]
         st.session_state.df2 = st.session_state.df2.drop(selected_indices)
         st.experimental_rerun()
-
 
 
 
