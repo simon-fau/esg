@@ -525,4 +525,122 @@ def display_page():
         "ESRS S3": [f"auswahl_s3_{gruppe}_{unterthema}" for gruppe in unterthemen_esrss3 for unterthema in unterthemen_esrss3[gruppe]],
         "ESRS S4": [f"auswahl_s4_{gruppe}_{unterthema}" for gruppe in unterthemen_esrss4 for unterthema in unterthemen_esrss4[gruppe]],
         "ESRS G1": [f"auswahl_{unterthema}" for unterthema in unterthemen_esrsg1]
-    }   
+    } 
+
+import streamlit as st
+import pandas as pd
+import plotly.express as px
+
+def display_page():
+    
+    # Horizontale Linie Trennung Bewertung und Ablauf Wesentlichkeitsanalyse
+    st.sidebar.markdown("<hr/>", unsafe_allow_html=True)
+
+    with st.sidebar.expander("**Bewertung**", expanded=True):
+        # Auswahl der zu bewertenden Zeile
+        if 'dataf' in st.session_state and not st.session_state['dataf'].empty:
+            row_options = [f"Zeile {i}: {row['Themen']}" for i, row in st.session_state['dataf'].iterrows()]
+            row_options.insert(0, "")  # Füge die Option "Wähle eine Zeile" am Anfang der Liste hinzu
+            selected_option = st.selectbox("", row_options, key="row_select")
+            if selected_option != "":
+                selected_row_index = row_options.index(selected_option) - 1
+                st.session_state['selected_row'] = selected_row_index
+
+            # Ausblenden der Maximum und Minimum Werte des Sliders in der Sidebar und Ändern der Schriftart
+            st.markdown("""
+            <style>
+                .st-emotion-cache-1dx1gwv {
+                display: none !important;
+                }
+                .st-emotion-cache-10y5sf6 {
+                font-family: 'Source Sans Pro', monospace;
+                }        
+            </style>
+            """, unsafe_allow_html=True)
+
+            st.markdown("---")
+            st.write("**Auswirkungsbezogene Wesentlichkeit**")
+
+            #Slider für die Bewertungen der Auswirkungsbezogenen Wesentlichkeit & Finanziellen Wesentlichkeit
+            eintrittswahrscheinlichkeit = st.select_slider(
+                "Eintrittswahrscheinlichkeit:",
+                options=["Tritt nicht ein", "Unwahrscheinlich", "Eher unwahrscheinlich", "Eher wahrscheinlich", "Wahrscheinlich", "Sicher"],
+                key="eintrittswahrscheinlichkeit_auswirkung"
+            )
+        
+            ausmass = st.select_slider(
+                "Ausmaß:",
+                options=["Keine", "Minimal", "Niedrig", "Medium", "Hoch", "Sehr hoch"],
+                key="ausmass_auswirkung"
+            )
+
+            umfang = st.select_slider(
+                "Umfang:",
+                options=["Keine", "Lokal", "Regional", "National", "International", "Global"],
+                key="umfang_auswirkung"
+            )
+
+            behebbarkeit = st.select_slider(
+                "Behebbarkeit:",
+                options=["Kein Aufwand", "Leicht zu beheben", "Mit Aufwand", "Mit hohem Aufwand", "Mit sehr hohem Aufwand", "Nicht behebbar"],
+                key="behebbarkeit_auswirkung"
+            )
+
+            st.markdown("---")
+            st.write("**Finanzielle Wesentlichkeit**")
+
+            fin_eintrittswahrscheinlichkeit = st.select_slider(
+                "Eintrittswahrscheinlichkeit:",
+                options=["Tritt nicht ein", "Unwahrscheinlich", "Eher unwahrscheinlich", "Eher wahrscheinlich", "Wahrscheinlich", "Sicher"],
+                key="eintrittswahrscheinlichkeit_finanziell"
+            )
+
+            fin_ausmass = st.select_slider(
+                "Ausmaß (finanziell):",
+                options=["Keine", "Minimal", "Niedrig", "Medium", "Hoch", "Sehr hoch"],
+                key="ausmass_finanziell"
+            )
+
+            st.markdown("---")
+            st.write("**Stakeholder Relevanz**")
+
+            sta_relevanz = st.select_slider(
+                "Wichtigkeit:",
+                options=["Unwichtig", "Gering", "Mittel", "Hoch", "Sehr hoch"],
+                key="stakeholder_relevanz"
+            )
+
+        st.markdown("---")
+         # Button "Bewertung absenden"
+        if st.button("Bewertung absenden"):
+            # Hier können Sie den Code hinzufügen, der ausgeführt werden soll, wenn der Button gedrückt wird.
+            st.write("Bewertung wurde abgesendet!")
+
+
+    # Zugriff auf das DataFrame aus dem session_state und Anzeige als Tabelle
+    if 'dataf' in st.session_state:
+        dataf = st.session_state['dataf']
+
+        st.write("Übersicht der potentiellen Nachhaltigkeitspunkte")
+        with st.expander("Tabelle anzeigen/ausblenden", expanded=True):
+            st.table(dataf)
+    else:
+        st.error("Es wurden keine Daten aus 'Potentielle Nachhaltigkeitspunkte' gefunden.")
+    # Erstellung des Plots
+    fig = px.scatter(data, 
+                 x='Finanzielle Wesentlichkeit', 
+                 y='Auswirkung soziale Wesentlichkeit',
+                 size='Relevanz für Stakeholder', 
+                 color='Kategorie',
+                 hover_name='Thema', 
+                 size_max=60)
+
+    # Anpassungen am Layout
+    fig.update_layout(
+    xaxis_title="Finanzielle Wesentlichkeit",
+    yaxis_title="Auswirkungsbezogene Wesentlichkeit",
+    legend_title="Kategorie"
+    )
+
+    # Anzeige des Plots in Streamlit
+    st.plotly_chart(fig)  
