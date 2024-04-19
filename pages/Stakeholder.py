@@ -32,16 +32,9 @@ def calculate_score(row):
     return round(score)
 
 def display_page():
-    st.title("Stakeholder-Management")
+    st.header("Stakeholder-Management")
     st.markdown("""
-        ### Information:
-        Dieses Tool hilft Ihnen, Ihre Stakeholder effektiv zu verwalten und zu analysieren. Sie können relevante Informationen über verschiedene Stakeholdergruppen hinzufügen, bearbeiten und visualisieren. Die Daten helfen Ihnen, Strategien für den Umgang mit Ihren Stakeholdern zu entwickeln und zu priorisieren, basierend auf verschiedenen Kriterien wie Engagement-Level und Kommunikationshäufigkeit.
-
-        #### Anleitung:
-        - **Gruppe hinzufügen**: Fügen Sie über die Seitenleiste neue Stakeholder-Gruppen hinzu.
-        - **Daten bearbeiten**: Direkt in der Tabelle können Sie vorhandene Informationen ändern.
-        - **Zeilen löschen**: Wählen Sie eine oder mehrere Zeilen aus und verwenden Sie den 'Ausgewählte Zeilen löschen' Button, um diese zu entfernen.
-        - **Navigieren**: Die Tabelle unterstützt das Sortieren und Filtern, um die Ansicht Ihrer Daten zu optimieren.
+        Dieses Tool hilft Ihnen, Ihre Stakeholder effektiv zu verwalten und zu analysieren. Sie können relevante Informationen über verschiedene Stakeholdergruppen hinzufügen, bearbeiten und visualisieren. Die Daten helfen Ihnen, Strategien für den Umgang mit Ihren Stakeholdern zu entwickeln und zu priorisieren, basierend auf verschiedenen Kriterien wie Engagement-Level und Kommunikationshäufigkeit.          
     """)
             
     tab1, tab2 = st.tabs(["Stakeholder Tabelle", "Stakeholder Ranking & Netzwerkdiagramm"])
