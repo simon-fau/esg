@@ -37,52 +37,82 @@ def calculate_score(row):
     return round(score)
 
 def display_page():
-
-    st.markdown("""
-    ## Stakeholder-Analysetool
-    Dieses Tool hilft Ihnen, Ihre Stakeholder effektiv zu verwalten und zu analysieren. Sie können relevante Informationen über verschiedene Stakeholdergruppen hinzufügen, bearbeiten und visualisieren. Die Daten helfen Ihnen, Strategien für den Umgang mit Ihren Stakeholdern zu entwickeln und zu priorisieren, basierend auf verschiedenen Kriterien wie Engagement-Level und Kommunikationshäufigkeit.
+    st.title("Stakeholder-Analysetool")
+    with st.expander("Anleitung"):
+        st.markdown("""
+        ## Stakeholder-Analysetool
+        Dieses Tool hilft Ihnen, Ihre Stakeholder effektiv zu verwalten und zu analysieren. Sie können relevante Informationen über verschiedene Stakeholdergruppen hinzufügen, bearbeiten und visualisieren. Die Daten helfen Ihnen, Strategien für den Umgang mit Ihren Stakeholdern zu entwickeln und zu priorisieren, basierend auf verschiedenen Kriterien wie Engagement-Level und Kommunikationshäufigkeit.
         
-    ### Anleitung:
-    - **Gruppe hinzufügen**: Fügen Sie über die Seitenleiste neue Stakeholder-Gruppen hinzu.
-    - **Daten bearbeiten**: Direkt in der Tabelle können Sie vorhandene Informationen ändern.
-    - **Zeilen löschen**: Wählen Sie eine oder mehrere Zeilen aus und verwenden Sie den 'Ausgewählte Zeilen löschen' Button, um diese zu entfernen.
-    - **Navigieren**: Die Tabelle unterstützt das Sortieren und Filtern, um die Ansicht Ihrer Daten zu optimieren.
-    """)
+        ### Anleitung:
+        - **Gruppe hinzufügen**: Fügen Sie über die Seitenleiste neue Stakeholder-Gruppen hinzu.
+        - **Daten bearbeiten**: Direkt in der Tabelle können Sie vorhandene Informationen ändern.
+        - **Zeilen löschen**: Wählen Sie eine oder mehrere Zeilen aus und verwenden Sie den 'Ausgewählte Zeilen löschen' Button, um diese zu entfernen.
+        - **Navigieren**: Die Tabelle unterstützt das Sortieren und Filtern, um die Ansicht Ihrer Daten zu optimieren.
+        """)
 
     # Initialize the session state for the DataFrame
     if 'df' not in st.session_state:
-        st.session_state.df = pd.DataFrame(columns=[
-            "Gruppe",
-            "Bestehende Beziehung",
-            "Auswirkung auf Interessen",
-            "Level des Engagements",
-            "Stakeholdergruppe",
-            "Kommunikation",
-            "Art der Betroffenheit",
-            "Zeithorizont"
-        ])
+        st.session_state.df = pd.DataFrame({
+            "Gruppe": [""] * 5,
+            "Bestehende Beziehung": [""] * 5,
+            "Auswirkung auf Interessen": [""] * 5,
+            "Level des Engagements": [""] * 5,
+            "Stakeholdergruppe": [""] * 5,
+            "Kommunikation": [""] * 5,
+            "Art der Betroffenheit": [""] * 5,
+            "Zeithorizont": [""] * 5
+        })  
 
     with st.sidebar:
         st.markdown("---")
-        gruppe = st.text_input("Gruppe", '')
-        bestehende_beziehung = st.selectbox("Bestehende Beziehung", ['', 'Ja', 'Nein'])
-        auswirkung = st.selectbox("Auswirkung auf Interessen", ['', 'Hoch', 'Mittel', 'Niedrig'])
-        level_des_engagements = st.selectbox("Level des Engagements", ['', 'Hoch', 'Mittel', 'Niedrig'])
-        stakeholdergruppe = st.selectbox("Stakeholdergruppe", ['', 'Intern', 'Extern'])
-        kommunikation = st.selectbox("Kommunikation", ['', 'Regelmäßig', 'Gelegentlich', 'Nie'])
-        art_der_betroffenheit = st.selectbox("Art der Betroffenheit", ['', 'Direkt', 'Indirekt', 'Keine'])
-        zeithorizont = st.selectbox("Zeithorizont", ['', 'Kurzfristig', 'Mittelfristig', 'Langfristig'])
-        add_row = st.button('Hinzufügen')
-        add_empty_row = st.button('Leere Zeile hinzufügen')
-        delete_rows = st.button('Ausgewählte Zeilen löschen')
+        gruppe = st.text_input("Gruppe", '', key='gruppe1')
+        bestehende_beziehung = st.selectbox("Bestehende Beziehung", ['', 'Ja', 'Nein'], key='bestehende_beziehung')
+        auswirkung = st.selectbox("Auswirkung auf Interessen", ['', 'Hoch', 'Mittel', 'Niedrig'], key='auswirkung')
+        level_des_engagements = st.selectbox("Level des Engagements", ['', 'Hoch', 'Mittel', 'Niedrig'], key='level_des_engagements')
+        stakeholdergruppe = st.selectbox("Stakeholdergruppe", ['', 'Intern', 'Extern'], key='stakeholdergruppe')
+        kommunikation = st.selectbox("Kommunikation", ['', 'Regelmäßig', 'Gelegentlich', 'Nie'], key='kommunikation')
+        art_der_betroffenheit = st.selectbox("Art der Betroffenheit", ['', 'Direkt', 'Indirekt', 'Keine'], key='art_der_betroffenheit')
+        zeithorizont = st.selectbox("Zeithorizont", ['', 'Kurzfristig', 'Mittelfristig', 'Langfristig'], key='zeithorizont')
+        add_row = st.button('Hinzufügen', key='add_row')
 
-    st.markdown("---")
+    if add_row:
+        if add_row:
+            empty_row_index = st.session_state.df[
+                (st.session_state.df["Gruppe"] == "") &
+                (st.session_state.df["Bestehende Beziehung"] == "") &
+                (st.session_state.df["Auswirkung auf Interessen"] == "") &
+                (st.session_state.df["Level des Engagements"] == "") &
+                (st.session_state.df["Stakeholdergruppe"] == "") &
+                (st.session_state.df["Kommunikation"] == "") &
+                (st.session_state.df["Art der Betroffenheit"] == "") &
+                (st.session_state.df["Zeithorizont"] == "")
+            ].first_valid_index()
+        if empty_row_index is not None:
+            st.session_state.df.at[empty_row_index, "Gruppe"] = gruppe
+            st.session_state.df.at[empty_row_index, "Bestehende Beziehung"] = bestehende_beziehung
+            st.session_state.df.at[empty_row_index, "Auswirkung auf Interessen"] = auswirkung
+            st.session_state.df.at[empty_row_index, "Level des Engagements"] = level_des_engagements
+            st.session_state.df.at[empty_row_index, "Stakeholdergruppe"] = stakeholdergruppe
+            st.session_state.df.at[empty_row_index, "Kommunikation"] = kommunikation
+            st.session_state.df.at[empty_row_index, "Art der Betroffenheit"] = art_der_betroffenheit
+            st.session_state.df.at[empty_row_index, "Zeithorizont"] = zeithorizont
+        else:
+            new_row = {
+                "Gruppe": gruppe,
+                "Bestehende Beziehung": bestehende_beziehung,
+                "Auswirkung auf Interessen": auswirkung,
+                "Level des Engagements": level_des_engagements,
+                "Stakeholdergruppe": stakeholdergruppe,
+                "Kommunikation": kommunikation,
+                "Art der Betroffenheit": art_der_betroffenheit,
+                "Zeithorizont": zeithorizont
+            }
+            st.session_state.df = st.session_state.df._append(new_row, ignore_index=True)
 
     gb = GridOptionsBuilder.from_dataframe(st.session_state.df)
     gb.configure_default_column(editable=True, resizable=True, sortable=True, filterable=True)
     gb.configure_grid_options(domLayout='autoHeight', enableRowId=True, rowId='index')
     grid_options = gb.build()
-
     grid_options['columnDefs'] = [{'checkboxSelection': True, 'headerCheckboxSelection': True, 'width': 50}] + grid_options['columnDefs']
 
     grid_response = AgGrid(
@@ -93,51 +123,44 @@ def display_page():
         width='100%',
         update_mode=GridUpdateMode.MODEL_CHANGED,
         allow_unsafe_jscode=True,
-        return_mode=DataReturnMode.FILTERED_AND_SORTED,
-        selection_mode='multiple',
+        return_mode=DataReturnMode.__members__['AS_INPUT'],  # Adjust the DataReturnMode as per available options
+        selection_mode='multiple'
     )
 
+    add_empty_row = st.button('Leere Zeile hinzufügen', key='add_empty_row')
+    if add_empty_row:
+        empty_row = {
+
+            "Gruppe": "",
+            "Bestehende Beziehung": "",
+            "Auswirkung auf Interessen": "",
+            "Level des Engagements": "",
+            "Stakeholdergruppe": "",
+            "Kommunikation": "",
+            "Art der Betroffenheit": "",
+            "Zeithorizont": ""
+        }
+        st.session_state.df = st.session_state.df._append(empty_row, ignore_index=True)
+        st.experimental_rerun()
+
+    delete_rows = st.button('Ausgewählte Zeilen löschen', key='delete_rows')
     if delete_rows:
         selected_rows = grid_response['selected_rows']
         selected_indices = [row['index'] for row in selected_rows]
         st.session_state.df = st.session_state.df.drop(selected_indices)
         st.experimental_rerun()
 
-    new_row = {}
-
-    if add_row or add_empty_row:
-        new_row = pd.DataFrame({
-            "Gruppe": [gruppe],
-            "Bestehende Beziehung": [bestehende_beziehung],
-            "Auswirkung auf Interessen": [auswirkung],
-            "Level des Engagements": [level_des_engagements],
-            "Stakeholdergruppe": [stakeholdergruppe],
-            "Kommunikation": [kommunikation],
-            "Art der Betroffenheit": [art_der_betroffenheit],
-            "Zeithorizont": [zeithorizont]
-        })
-        
-    if add_row:
-        # Prepend the new row to the DataFrame
-        st.session_state.df = pd.concat([new_row, st.session_state.df]).reset_index(drop=True)
-        st.experimental_rerun()
-
-    if add_empty_row:
-        empty_row = pd.DataFrame({key: [""] for key in st.session_state.df.columns})
-        # Prepend the empty row to the DataFrame
-        st.session_state.df = pd.concat([empty_row, st.session_state.df]).reset_index(drop=True)
-        st.experimental_rerun()
-
+    save_changes = st.button('Änderungen speichern', key='save_changes')
+    if save_changes:
+        st.session_state.df = grid_response['data'].set_index('index')
+    
 
     # Berechne den Score für jede Zeile nach der Änderung
     df_temp = pd.DataFrame(grid_response['data'])
     df_temp['Score'] = df_temp.apply(calculate_score, axis=1)
 
     # Validiere die Änderungen
-    
-    
     st.session_state['namen_tabelle'] = df_temp.sort_values(by='Score', ascending=False).reset_index(drop=True)
-    st.markdown("---")
     col_score, col_network, col_empty = st.columns([1, 1, 1], gap="small")
     with col_score:
         # Erstelle eine neue DataFrame für die Score-Tabelle und füge die Ranking-Spalte hinzu
@@ -158,6 +181,4 @@ def display_page():
         net.save_graph("network.html")
         st.components.v1.html(open("network.html", "r").read(), height=600)  
     
-
-if __name__ == '__main__':
     display_page()
