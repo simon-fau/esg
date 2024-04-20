@@ -185,8 +185,7 @@ def display_page():
         selection.display_circular_economy()
     with tab6:
         selection.display_eigene_belegschaft()
-    with tab7:
-        selection.display_wertschöpfungskette_belegschaft()
+    
 
 
 
