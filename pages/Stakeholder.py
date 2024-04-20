@@ -132,4 +132,14 @@ def display_page():
             st.components.v1.html(open("network.html", "r").read(), height=600)
 
         with col3:
-            pass
+            # Pfad zur Excel-Datei
+            file_path = r"C:\Users\andre\OneDrive\Desktop\Masterarbeit_V1\Wesentlichkeitsanalyse_Stakeholder_Input.xlsx"
+
+            # Fügen Sie die Download-Schaltfläche in die Streamlit-App ein
+            with open(file_path, "rb") as file:
+                st.download_button(
+                    label="Download Excel-Datei",
+                    data=file.read(),
+                    file_name='Wesentlichkeitsanalyse_Stakeholder_Input.xlsx',
+                    mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                )
