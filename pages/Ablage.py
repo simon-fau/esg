@@ -164,6 +164,7 @@ class ProductSelection:
         submitted_eigene_belegschaft = button_row[1].button("Auswahl speichern", key='eigene_belegschaft_button_key')
         if submitted_eigene_belegschaft:
             st.success("Auswahl erfolgreich gespeichert!")
+    
 
 def display_page():
     st.title("Top-Down-Analyse")
@@ -187,14 +188,3 @@ def display_page():
     with tab6:
         selection.display_eigene_belegschaft()
     
-
-
-
-
-
-
-
-
-
-
-

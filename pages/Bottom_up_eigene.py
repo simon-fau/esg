@@ -18,7 +18,13 @@ def eigene_punkte():
             'Umweltverschmutzung', 
             'Wasser- und Meeresressourcen', 
             'Biologische Vielfalt und Ökosysteme', 
-            'Kreislaufwirtschaft'], 
+            'Kreislaufwirtschaft',
+            'Eigene Belegschaft',
+            'Arbeitskräfte in der Wertschöpfungskette',
+            'Betroffene Gemeinschaften',
+            'Verbraucher und End-nutzer',
+            'Unternehmenspolitik'
+            ], 
         index=0, 
         key='thema'
     )
@@ -49,7 +55,7 @@ def eigene_punkte():
                 'Ressourcenabflüsse im Zusammenhang mit Produkten und Dienstleistungen', 
                 'Abfälle'
             ]
-        elif thema == 'EIgene Belegschaft':
+        elif thema == 'Eigene Belegschaft':
             unterthema_options = [
                 'Arbeitsbedingungen',
                 'Gleichbehandlung und Chancengleichheit für alle',

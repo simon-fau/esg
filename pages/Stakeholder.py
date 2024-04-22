@@ -9,7 +9,10 @@ def generate_stakeholder_ranking():
     if not score_table.empty:
         score_table['Ranking'] = range(1, len(score_table) + 1)
         score_table = score_table.sort_values(by='Score', ascending=False).reset_index(drop=True)
-        st.dataframe(score_table[['Ranking', 'Gruppe', 'Score']], column_config={"Score": st.column_config.ProgressColumn(min_value=0, max_value=100, format="%f")}, hide_index=True)
+        st.dataframe(score_table[['Ranking', 'Gruppe', 'Score']], 
+                     column_config={"Score": st.column_config.ProgressColumn(min_value=0, max_value=100, format="%f")}, 
+                     hide_index=True, 
+                     width=800)
     else:
         st.write("Keine Stakeholder-Daten vorhanden.")
 
@@ -35,8 +38,7 @@ def display_page():
     st.header("Stakeholder-Management")
     st.markdown("""
         Dieses Tool hilft Ihnen, Ihre Stakeholder effektiv zu verwalten und zu analysieren. Sie können relevante Informationen über verschiedene Stakeholdergruppen hinzufügen, bearbeiten und visualisieren. Die Daten helfen Ihnen, Strategien für den Umgang mit Ihren Stakeholdern zu entwickeln und zu priorisieren, basierend auf verschiedenen Kriterien wie Engagement-Level und Kommunikationshäufigkeit.          
-    """)
-            
+    """)      
     tab1, tab2 = st.tabs(["Stakeholder Tabelle", "Stakeholder Ranking & Netzwerkdiagramm"])
 
     with tab1:
@@ -113,14 +115,27 @@ def display_page():
 
     with tab2:
 
-        col1, col2, col3 = st.columns([1.5, 1, 2])
+        col1, col2, col3 = st.columns([1.3, 1.5, 1.5])
         with col1:
+            st.subheader("Ranking")
             df_temp = pd.DataFrame(grid_response['data'])
             df_temp['Score'] = df_temp.apply(calculate_score, axis=1)
             st.session_state['namen_tabelle'] = df_temp.sort_values(by='Score', ascending=False).reset_index(drop=True)
             generate_stakeholder_ranking()
-
+        
         with col2:
+            # CSS to increase space between columns
+            spacing_css = """
+            <style>
+                .reportview-container .main .block-container {
+                    margin: 10px;  # Adjust this value to increase/decrease space
+                }
+            </style>
+            """
+            
+            # Apply the CSS
+            st.markdown(spacing_css, unsafe_allow_html=True)
+            st.subheader("Netzwerkdiagramm")
             net = Network(height="300px", width="100%", bgcolor="white", font_color="black")
             net.add_node("Mein Unternehmen", color="black", label="", title="")
             for _, row in st.session_state['namen_tabelle'].iterrows():
@@ -132,6 +147,8 @@ def display_page():
             st.components.v1.html(open("network.html", "r").read(), height=600)
 
         with col3:
+            st.subheader("Stakeholder Input Vorlage")
+            st.write("Um die wichtigsten Anliegen Ihrer Stakeholder leicht zu bewerten, steht Ihnen unsere Vorlage zum Download bereit.")
             # Pfad zur Excel-Datei
             file_path = r"C:\Users\andre\OneDrive\Desktop\Masterarbeit_V1\Wesentlichkeitsanalyse_Stakeholder_Input.xlsx"
 
