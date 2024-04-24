@@ -8,6 +8,7 @@ def stakeholder_punkte():
             "Thema": [""] * 5,
             "Unterthema": [""] * 5,
             "Unter-Unterthema": [""] * 5
+            "Platzierung": [""] * 5
         })
 
     with st.sidebar:
@@ -138,18 +139,9 @@ def stakeholder_punkte():
     save_changes = st.button('Änderungen speichern', key='save_changes')
     if save_changes:
         st.session_state.df3 = grid_response['data'].set_index('index')
-        
-def excel_upload():   
-    
-    # Funktion, um die Hierarchie zu füllen, falls höhere Ebenen leer sind
-    def fill_hierarchy(row):
-        if pd.isna(row['Unter-Unterthema']):
-            if pd.isna(row['Unterthema']):
-                return row['Thema']
-            else:
-                return row['Unterthema']
-        return row['Unter-Unterthema']
 
+def excel_upload():
+    
     def get_numerical_rating(value):
         ratings = {
             'Wesentlich': 3,
@@ -159,40 +151,53 @@ def excel_upload():
         }
         return ratings.get(value, 0)
 
-    def aggregate_rankings(aggregate_df4):
-        aggregate_df4['Hierarchie'] = aggregate_df4.apply(fill_hierarchy, axis=1)
-        aggregate_df4['NumericalRating'] = aggregate_df4['Bewertung'].apply(get_numerical_rating)
-        ranking = aggregate_df4.groupby(['Hierarchie'], as_index=False)['NumericalRating'].sum()
+    def aggregate_rankings(df):
+        if 'Bewertung' in df.columns:
+            df['NumericalRating'] = df['Bewertung'].apply(get_numerical_rating)
+        else:
+            df['NumericalRating'] = 0
+        
+        df['Thema'] = df['Thema'].fillna(method='ffill')
+        df['Unterthema'] = df['Unterthema'].fillna(method='ffill')
+        df['Unter-Unterthema'] = df['Unter-Unterthema'].fillna('-')
+
+        ranking = df.groupby(['Thema', 'Unterthema', 'Unter-Unterthema'], as_index=False)['NumericalRating'].sum()
         return ranking.sort_values(by='NumericalRating', ascending=False)
 
-    # Funktion, um neue Bewertungen zu den bestehenden hinzuzufügen
-    def update_rankings(new_df4):
-        if 'ranking_df4' not in st.session_state or st.session_state.ranking_df4.empty:
-            st.session_state.ranking_df4 = new_df4.copy()
+    def update_rankings(new_df):
+        new_ranking = aggregate_rankings(new_df)
+        if 'ranking_df' not in st.session_state or st.session_state.ranking_df.empty:
+            st.session_state.ranking_df = new_ranking
         else:
-            st.session_state.ranking_df4 = pd.concat([st.session_state.ranking_df4, new_df4])
-            st.session_state.ranking_df4 = aggregate_rankings(st.session_state.ranking_df4)
+            combined_df = pd.concat([st.session_state.ranking_df.drop(columns=['NumericalRating']), new_df])
+            combined_df['Bewertung'] = combined_df['Bewertung'].fillna('Nicht Wesentlich')
+            st.session_state.ranking_df = aggregate_rankings(combined_df)
 
     uploaded_files = st.file_uploader("Excel-Dateien hochladen", accept_multiple_files=True, type=['xlsx'])
-    df4_list = []
+    df_list = []
 
     for uploaded_file in uploaded_files:
         if uploaded_file:
-            df4 = pd.read_excel(uploaded_file, engine='openpyxl')
-            df4_list.append(df4)
+            df = pd.read_excel(uploaded_file, engine='openpyxl')
+            df_list.append(df)
 
     if st.button('Ranking erstellen'):
-        if df4_list:
-            combined_df4 = pd.concat(df4_list)
-            update_rankings(combined_df4)
+        if df_list:
+            combined_df = pd.concat(df_list)
+            update_rankings(combined_df)
             st.write("Aktuelles Ranking basierend auf hochgeladenen Dateien:")
-            st.dataframe(st.session_state.ranking_df4)
+            # Anpassung der AgGrid-Anzeige
+            gb = GridOptionsBuilder.from_dataframe(st.session_state.ranking_df)
+            gb.configure_pagination(paginationAutoPageSize=False, paginationPageSize=15)  # Setzen der Seitenanzahl auf 15
+            gb.configure_side_bar()
+            gb.configure_selection('multiple', use_checkbox=True, groupSelectsChildren="Group checkbox select children")
+            grid_options = gb.build()
+            AgGrid(st.session_state.ranking_df, gridOptions=grid_options, enable_enterprise_modules=True)
         else:
-            st.error("Bittee laden Sie mindestens eine Excel-Datei hoch.")
+            st.error("Bitte laden Sie mindestens eine Excel-Datei hoch.")      
 
-def display_page():
-    col1, col2 = st.columns([2 , 1])
-    with col1:
-        stakeholder_punkte()
-    with col2:
-        excel_upload()
+tab1, tab2 = st.tabs(["Stakeholder Nachhaltigkeitspunkte", "Excel-Upload"])
+with tab1:
+    stakeholder_punkte()
+with tab2:
+    excel_upload()

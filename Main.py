@@ -70,7 +70,7 @@ if selected_menu == 'Wesentlichkeitsanalyse':
         import pages.Bottom_up_eigene as Bottom_up_eigene_page
         load_page(Bottom_up_eigene_page)
     elif page_option == '4. Stakeholder Nachhaltigkeitspunkte hinzufügen':
-        import pages.Bottom_up_stakeholder as Bottom_up_stakeholder_page
+        import Bottom_up_stakeholder as Bottom_up_stakeholder_page
         load_page(Bottom_up_stakeholder_page)
     elif page_option == '5. Bewertung Nachhaltigkeitspunkte':
         import pages.Bewertung_Nachhaltigkeitspunkte as Bewertung_Nachhaltigkeitspunkte_page
