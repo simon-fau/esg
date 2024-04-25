@@ -3,15 +3,18 @@ import pandas as pd
 from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
 
 def stakeholder_punkte():
-    """ Diese Funktion zeigt die ausgewählten Daten in einem AgGrid an. """
+    """ Diese Funktion zeigt die ausgewählten Daten im Stakeholder AgGrid an. """
     if 'stakeholder_punkte_df' in st.session_state:
         gb = GridOptionsBuilder.from_dataframe(st.session_state.stakeholder_punkte_df)
         gb.configure_pagination(paginationAutoPageSize=True, paginationPageSize=10)
+        gb.configure_selection('multiple', use_checkbox=True, groupSelectsChildren="Group checkbox select children", rowMultiSelectWithClick=True)
         gb.configure_side_bar()
         grid_options = gb.build()
         AgGrid(st.session_state.stakeholder_punkte_df, gridOptions=grid_options, enable_enterprise_modules=True, update_mode=GridUpdateMode.MODEL_CHANGED)
     else:
-        st.write("Keine Daten ausgewählt oder Button 'Hallo' wurde noch nicht gedrückt.")
+        st.write("Es wurden noch keine Inhalte im Excel-Upload hochgeladen. Bitte laden Sie eine Excel-Datei hoch.")
+
+
 
 def excel_upload():
     """ Diese Funktion lädt Excel-Dateien hoch und erstellt Rankings basierend auf den Bewertungen. """
@@ -44,20 +47,22 @@ def excel_upload():
         gb.configure_side_bar()
         gb.configure_selection('multiple', use_checkbox=True, groupSelectsChildren="Group checkbox select children", rowMultiSelectWithClick=True)
         grid_options = gb.build()
+        grid_options['defaultColDef'] = {'flex': 1}
         response = AgGrid(st.session_state.ranking_df, gridOptions=grid_options, enable_enterprise_modules=True, update_mode=GridUpdateMode.MODEL_CHANGED)
         st.session_state.grid_response = response
 
-    if st.button('Hallo'):
+    if st.button('Stakeholder Punkte übernehmen'):
         if 'grid_response' in st.session_state and 'selected_rows' in st.session_state.grid_response:
             selected_rows = st.session_state.grid_response['selected_rows']
-            if selected_rows:  # Sicherstellen, dass Zeilen ausgewählt wurden
-                selected_df = pd.DataFrame(selected_rows)
-                st.session_state.stakeholder_punkte_df = selected_df
-            else:
-                st.error("Bitte wählen Sie mindestens eine Zeile aus.")
-     
-tab1, tab2 = st.tabs(["Stakeholder Nachhaltigkeitspunkte", "Excel-Upload"])
-with tab1:
-    stakeholder_punkte()
-with tab2:
-    excel_upload()
+            # Filtern Sie die Daten, um nur relevante Spalten zu behalten
+            relevant_columns = ['Platzierung', 'Thema', 'Unterthema', 'Unter-Unterthema', 'NumericalRating']
+            selected_rows_cleaned = [{k: row[k] for k in relevant_columns if k in row} for row in selected_rows]
+            st.session_state.stakeholder_punkte_df = pd.DataFrame(selected_rows_cleaned)
+            st.experimental_rerun()
+
+def display_page():     
+    tab1, tab2 = st.tabs(["Stakeholder Nachhaltigkeitspunkte", "Excel-Upload"])
+    with tab1:
+        excel_upload()
+    with tab2:
+        stakeholder_punkte

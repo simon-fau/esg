@@ -1,83 +1,6 @@
 import streamlit as st
 import pandas as pd
-
-def sidebar_bewertung_Nachhaltigkeitspunkte():
-    
-# Horizontale Linie Trennung Bewertung und Ablauf Wesentlichkeitsanalyse
-    st.sidebar.markdown("<hr/>", unsafe_allow_html=True)
-
-    with st.sidebar.expander("**Bewertung**", expanded=True):
-    
-
-    # Ausblenden der Maximum und Minimum Werte des Sliders in der Sidebar und Ändern der Schriftart
-        st.markdown("""
-            <style>
-                .st-emotion-cache-1dx1gwv {
-                display: none !important;
-                }
-                .st-emotion-cache-10y5sf6 {
-                font-family: 'Source Sans Pro', monospace;
-                }        
-            </style>
-            """, unsafe_allow_html=True)
-
-        st.markdown("---")
-        st.write("**Auswirkungsbezogene Wesentlichkeit**")
-
-            #Slider für die Bewertungen der Auswirkungsbezogenen Wesentlichkeit & Finanziellen Wesentlichkeit
-        eintrittswahrscheinlichkeit = st.select_slider(
-                "Eintrittswahrscheinlichkeit:",
-                options=["Tritt nicht ein", "Unwahrscheinlich", "Eher unwahrscheinlich", "Eher wahrscheinlich", "Wahrscheinlich", "Sicher"],
-                key="eintrittswahrscheinlichkeit_auswirkung"
-            )
-
-        ausmass = st.select_slider(
-                "Ausmaß:",
-                options=["Keine", "Minimal", "Niedrig", "Medium", "Hoch", "Sehr hoch"],
-                key="ausmass_auswirkung"
-            )
-
-        umfang = st.select_slider(
-                "Umfang:",
-                options=["Keine", "Lokal", "Regional", "National", "International", "Global"],
-                key="umfang_auswirkung"
-            )
-
-        behebbarkeit = st.select_slider(
-                "Behebbarkeit:",
-                options=["Kein Aufwand", "Leicht zu beheben", "Mit Aufwand", "Mit hohem Aufwand", "Mit sehr hohem Aufwand", "Nicht behebbar"],
-                key="behebbarkeit_auswirkung"
-            )
-
-        st.markdown("---")
-        st.write("**Finanzielle Wesentlichkeit**")
-
-        fin_eintrittswahrscheinlichkeit = st.select_slider(
-                "Eintrittswahrscheinlichkeit:",
-                options=["Tritt nicht ein", "Unwahrscheinlich", "Eher unwahrscheinlich", "Eher wahrscheinlich", "Wahrscheinlich", "Sicher"],
-                key="eintrittswahrscheinlichkeit_finanziell"
-            )
-
-        fin_ausmass = st.select_slider(
-                "Ausmaß (finanziell):",
-                options=["Keine", "Minimal", "Niedrig", "Medium", "Hoch", "Sehr hoch"],
-                key="ausmass_finanziell"
-            )
-
-        st.markdown("---")
-        st.write("**Stakeholder Relevanz**")
-
-        sta_relevanz = st.select_slider(
-                "Wichtigkeit:",
-                options=["Unwichtig", "Gering", "Mittel", "Hoch", "Sehr hoch"],
-                key="stakeholder_relevanz"
-            )
-
-        st.markdown("---")
-         # Button "Bewertung absenden"
-        if st.button("Bewertung absenden"):
-            # Hier können Sie den Code hinzufügen, der ausgeführt werden soll, wenn der Button gedrückt wird.
-            st.write("Bewertung wurde abgesendet!")
+from pages.Bottom_up_stakeholder import stakeholder_punkte
 
 def eigene_Nachhaltigkeitspunkte():
     # Zugriff auf den DataFrame aus Eigene.py über session_state
@@ -94,21 +17,6 @@ def eigene_Nachhaltigkeitspunkte():
     st.write("Liste aller eigens hinzugefügten Themen:")
     st.dataframe(df2)
 
-def stakeholder_Nachhaltigkeitspunkte():
-    # Zugriff auf den DataFrame aus Eigene.py über session_state
-    if 'df3' in st.session_state:
-        df3 = st.session_state.df3
-    else:
-        df3 = pd.DataFrame({
-            "Thema": [],
-            "Unterthema": [],
-            "Unter-Unterthema": []
-        })
-
-    # Zeige alle Themen unabhängig von ihrer Bewertung
-    st.write("Liste aller Themen stakeholder:")
-    st.dataframe(df3)
-
 def Top_down_Nachhaltigkeitspunkte():
     # Initialize a list to store topic details
     essential_topics_data = []
@@ -121,6 +29,23 @@ def Top_down_Nachhaltigkeitspunkte():
                 topic_details = topic.split(' - ')
                 while len(topic_details) < 3:
                     topic_details.append('')
+                # Check if the topic is one of the specified ones and change the theme and subtheme accordingly
+                if topic_details[0] in ['Anpassung an den Klimawandel', 'Energie', 'Klimaschutz']:
+                    topic_details = ['Klimawandel', topic_details[0], topic_details[1]]
+                elif topic_details[0] in ['Luftverschmutzung', 'Wasserverschmutzung', 'Bodenverschmutzung', 'Verschmutzung von lebenden Organismen und Nahrungsressourcen', 'Besorgniserregende Stoffe', 'Besonders besorgniserregende Stoffe', 'Mikroplastik']:
+                    topic_details = ['Umweltverschmutzung', topic_details[0], topic_details[1]]
+                elif topic_details[0] in ['Wasserverbrauch', 'Wasserentnahme', 'Ableitung von Wasser', 'Ableitung von Wasser in die Ozeane', 'Gewinnung und Nutzung von Meeresressourcen']:
+                    topic_details = ['Wassernutzung', topic_details[0], topic_details[1]]
+                elif topic_details[0] in ['Ressourcenzuflüsse einschließlich Ressourcennutzung', 'Ressourcenabflüsse im Zusammenhang mit Produkten und Dienstleistungen', 'Abfälle']:
+                    topic_details = ['Kreislaufwirtschaft', topic_details[0], topic_details[1]]
+                elif topic_details[0] in ['Klimawandel', 'Landnutzungsänderungen', 'Süßwasser- und Meeresnutzungsänderungen', 'Direkte Ausbeutung', 'Invasive gebietsfremde Arten', 'Umweltverschmutzung', 'Sonstige']:
+                    topic_details = ['Biodiversität', 'Direkte Ursachen des Biodiversitätsverlusts', topic_details[0]]
+                elif topic_details[0] in ['Populationsgröße von Arten', 'Globales Ausrottungsrisiko von Arten']:
+                    topic_details = ['Biodiversität', 'Auswirkungen auf den Zustand der Arten', topic_details[0]]
+                elif topic_details[0] in ['Landdegradation', 'Wüstenbildung', 'Bodenversiegelung']:
+                    topic_details = ['Biodiversität', 'Auswirkungen auf den Umfang und den Zustand von Ökosystemen', topic_details[0]]   
+                
+                
                 # Append to the list with importance level
                 essential_topics_data.append(topic_details + ['Wesentlich' if values.get('Wesentlich', False) else 'Eher Wesentlich'])
 
@@ -133,15 +58,9 @@ def Top_down_Nachhaltigkeitspunkte():
     st.dataframe(df_essential)
 
 def display_page():
-    sidebar_bewertung_Nachhaltigkeitspunkte()
-    tab1, tab2, tab3 = st.tabs(["Bewertung eigender Nachhaltigkeitspunkte", "Stakeholder Nachhaltigkeitspunkte", "Endergebnis"])
-    with tab1:
-        eigene_Nachhaltigkeitspunkte()
-        Top_down_Nachhaltigkeitspunkte()
-    with tab2:
-        stakeholder_Nachhaltigkeitspunkte()
-    with tab3:
-        st.title("Endergebnis")
+    eigene_Nachhaltigkeitspunkte()
+    Top_down_Nachhaltigkeitspunkte()
+
 
         
 

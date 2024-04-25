@@ -19,8 +19,9 @@ class ProductSelection:
                                'Globales Ausrottungsrisiko von Arten', 'Landdegradation', 'Wüstenbildung', 'Bodenversiegelung', 'Auswirkungen und Abhängigkeiten von Ökosystemdienstleistungen']
         kreislaufwirtschaft = ['Ressourcenzuflüsse einschließlich Ressourcennutzung', 'Ressourcenabflüsse im Zusammenhang mit Produkten und Dienstleistungen', 'Abfälle']
         eigene_belegschaft = ['Sichere Beschäftigung', 'Arbeitszeit', 'Angemessene Entlohnung', 'Sozialer Dialog', 'Vereinigungsfreiheit, Existenz von Betriebsräten und Rechte der Arbeitnehmer auf Information, Anhörung und Mitbestimmung', 'Tarifverhandlungen, einschließlich der Quote der durch Tarifverträge abgedeckten Arbeitskräften', 'Vereinbarkeit von Berufs- und Privatleben', 'Gesundheitsschutz und Sicherheit', 'Gleichstellung der Geschlechter und gleicher Lohn für gleiche Arbeit', 'Schulungen und Kompetenzentwicklung', 'Beschäftigung und Inklusion von Menschen mit Behinderungen','Maßnahmen gegen Gewalt und Belästigung am Arbeitsplatz','Vielfalt', 'Kinderarbeit', 'Zwangsarbeit', 'Angemessene Unterbringung','Datenschutz']
+        wertschöpfungskette_belegschaft = ['Sichere Beschäftigung', 'Arbeitszeit', 'Angemessene Entlohnung', 'Sozialer Dialog', 'Vereinigungsfreiheit, Existenz von Betriebsräten und Rechte der Arbeitnehmer auf Information, Anhörung und Mitbestimmung', 'Tarifverhandlungen, einschließlich der Quote der durch Tarifverträge abgedeckten Arbeitskräften', 'Vereinbarkeit von Berufs- und Privatleben', 'Gesundheitsschutz und Sicherheit', 'Gleichstellung der Geschlechter und gleicher Lohn für gleiche Arbeit', 'Schulungen und Kompetenzentwicklung', 'Beschäftigung und Inklusion von Menschen mit Behinderungen','Maßnahmen gegen Gewalt und Belästigung am Arbeitsplatz','Vielfalt', 'Kinderarbeit', 'Zwangsarbeit', 'Angemessene Unterbringung','Datenschutz']
         options = {'Wesentlich': False, 'Eher Wesentlich': False,'Eher nicht Wesentlich': False, 'Nicht Wesentlich': False}
-        for product in climate_change + pollution_topics + water_usage_topics + biodiversity_topics + kreislaufwirtschaft + eigene_belegschaft:
+        for product in climate_change + pollution_topics + water_usage_topics + biodiversity_topics + kreislaufwirtschaft + eigene_belegschaft + wertschöpfungskette_belegschaft:
             if product not in st.session_state:
                 st.session_state[product] = options.copy()
 
@@ -29,8 +30,9 @@ class ProductSelection:
             row = st.columns([2, 0.3, 0.3, 0.4, 0.3])
             row[0].write(f"{topic}:")
             for i, option in enumerate(options):
-                current_value = st.session_state[topic][option]
+                current_value = st.session_state[topic][option] 
                 st.session_state[topic][option] = row[i+1].checkbox(" ", value=current_value, key=f"{topic}_{option}")
+
 
     def display_climate_change(self):
         options = ['Wesentlich', 'Eher Wesentlich', 'Eher nicht Wesentlich', 'Nicht Wesentlich']     
@@ -165,6 +167,35 @@ class ProductSelection:
         if submitted_eigene_belegschaft:
             st.success("Auswahl erfolgreich gespeichert!")
 
+    def display_wertschöpfungskette_belegschaft(self):
+        options = ['Wesentlich', 'Eher Wesentlich', 'Eher nicht Wesentlich', 'Nicht Wesentlich']
+        wertschöpfungskette_belegschaft_data = {
+            "Arbeitsbedingungen":['Sichere Beschäftigung', 'Arbeitszeit', 'Angemessene Entlohnung', 'Sozialer Dialog', 'Vereinigungsfreiheit, Existenz von Betriebsräten und Rechte der Arbeitnehmer auf Information, Anhörung und Mitbestimmung', 'Tarifverhandlungen, einschließlich der Quote der durch Tarifverträge abgedeckten Arbeitskräften', 'Vereinbarkeit von Berufs- und Privatleben', 'Gesundheitsschutz und Sicherheit'],
+            "Gleichbehandlung und Chanchengleichheit":['Gleichstellung der Geschlechter und gleicher Lohn für gleiche Arbeit', 'Schulungen und Kompetenzentwicklung', 'Beschäftigung und Inklusion von Menschen mit Behinderungen','Maßnahmen gegen Gewalt und Belästigung am Arbeitsplatz','Vielfalt'],
+            "Sonstige arbeitsbezogene Rechte":['Kinderarbeit', 'Zwangsarbeit', 'Angemessene Unterbringung','Datenschutz']
+        }
+        st.header('Wertschöpfungskette Belegschaft')
+        # Create a row for the headers
+        header_row = st.columns([2, 0.3, 0.3, 0.4, 0.33])
+        header_row[1].write("Wesentlich")
+        header_row[2].write("Eher Wesentlich")
+        header_row[3].write("Eher nicht Wesentlich")
+        header_row[4].write("Nicht Wesentlich")
+        for category, topics in wertschöpfungskette_belegschaft_data.items():
+            st.markdown(f"<h6 style='font-weight: bold;'>{category}</h6>", unsafe_allow_html=True)
+            if topics:
+                self.create_options_row(options, topics)
+            else:
+                st.write("Keine spezifischen Themen verfügbar.")
+        
+        # Create some empty space
+        st.markdown("<br>"*2, unsafe_allow_html=True)
+        # Create a row for the button
+        button_row = st.columns([4, 1])
+        submitted_wertschöpfungskette_belegschaft = button_row[1].button("Auswahl speichern", key='wertschöpfungskette_belegschaft_button_key')
+        if submitted_wertschöpfungskette_belegschaft:
+            st.success("Auswahl erfolgreich gespeichert!")
+
 def display_page():
     st.title("Top-Down-Analyse")
     st.markdown("""
@@ -186,6 +217,8 @@ def display_page():
         selection.display_circular_economy()
     with tab6:
         selection.display_eigene_belegschaft()
+    with tab7:
+        selection.display_wertschöpfungskette_belegschaft()
     
 
 

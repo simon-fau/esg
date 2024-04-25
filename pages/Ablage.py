@@ -333,3 +333,81 @@ def stakeholder_punkte():
     save_changes = st.button('Änderungen speichern', key='save_changes')
     if save_changes:
         st.session_state.df3 = grid_response['data'].set_index('index')
+
+
+
+        def sidebar_bewertung_Nachhaltigkeitspunkte():
+
+    # Horizontale Linie Trennung Bewertung und Ablauf Wesentlichkeitsanalyse
+    st.sidebar.markdown("<hr/>", unsafe_allow_html=True)
+    with st.sidebar.expander("**Bewertung**", expanded=True):
+
+    # Ausblenden der Maximum und Minimum Werte des Sliders in der Sidebar und Ändern der Schriftart
+        st.markdown("""
+            <style>
+                .st-emotion-cache-1dx1gwv {
+                display: none !important;
+                }
+                .st-emotion-cache-10y5sf6 {
+                font-family: 'Source Sans Pro', monospace;
+                }        
+            </style>
+            """, unsafe_allow_html=True)
+
+        st.markdown("---")
+        st.write("**Auswirkungsbezogene Wesentlichkeit**")
+
+            #Slider für die Bewertungen der Auswirkungsbezogenen Wesentlichkeit & Finanziellen Wesentlichkeit
+        eintrittswahrscheinlichkeit = st.select_slider(
+                "Eintrittswahrscheinlichkeit:",
+                options=["Tritt nicht ein", "Unwahrscheinlich", "Eher unwahrscheinlich", "Eher wahrscheinlich", "Wahrscheinlich", "Sicher"],
+                key="eintrittswahrscheinlichkeit_auswirkung"
+            )
+
+        ausmass = st.select_slider(
+                "Ausmaß:",
+                options=["Keine", "Minimal", "Niedrig", "Medium", "Hoch", "Sehr hoch"],
+                key="ausmass_auswirkung"
+            )
+
+        umfang = st.select_slider(
+                "Umfang:",
+                options=["Keine", "Lokal", "Regional", "National", "International", "Global"],
+                key="umfang_auswirkung"
+            )
+
+        behebbarkeit = st.select_slider(
+                "Behebbarkeit:",
+                options=["Kein Aufwand", "Leicht zu beheben", "Mit Aufwand", "Mit hohem Aufwand", "Mit sehr hohem Aufwand", "Nicht behebbar"],
+                key="behebbarkeit_auswirkung"
+            )
+
+        st.markdown("---")
+        st.write("**Finanzielle Wesentlichkeit**")
+
+        fin_eintrittswahrscheinlichkeit = st.select_slider(
+                "Eintrittswahrscheinlichkeit:",
+                options=["Tritt nicht ein", "Unwahrscheinlich", "Eher unwahrscheinlich", "Eher wahrscheinlich", "Wahrscheinlich", "Sicher"],
+                key="eintrittswahrscheinlichkeit_finanziell"
+            )
+
+        fin_ausmass = st.select_slider(
+                "Ausmaß (finanziell):",
+                options=["Keine", "Minimal", "Niedrig", "Medium", "Hoch", "Sehr hoch"],
+                key="ausmass_finanziell"
+            )
+
+        st.markdown("---")
+        st.write("**Stakeholder Relevanz**")
+
+        sta_relevanz = st.select_slider(
+                "Wichtigkeit:",
+                options=["Unwichtig", "Gering", "Mittel", "Hoch", "Sehr hoch"],
+                key="stakeholder_relevanz"
+            )
+
+        st.markdown("---")
+        # Button "Bewertung absenden"
+        if st.button("Bewertung absenden"):
+            # Hier können Sie den Code hinzufügen, der ausgeführt werden soll, wenn der Button gedrückt wird.
+            st.write("Bewertung wurde abgesendet!")
