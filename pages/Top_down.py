@@ -246,7 +246,7 @@ class ProductSelection:
             "Gleichbehandlung und Chanchengleichheit":['Gleichstellung der Geschlechter und gleicher Lohn für gleiche Arbeit', 'Schulungen und Kompetenzentwicklung', 'Beschäftigung und Inklusion von Menschen mit Behinderungen','Maßnahmen gegen Gewalt und Belästigung am Arbeitsplatz','Vielfalt'],
             "Sonstige arbeitsbezogene Rechte":['Kinderarbeit', 'Zwangsarbeit', 'Angemessene Unterbringung','Datenschutz']
         }
-        st.header('Wertschöpfungskette Belegschaft')
+        st.header('Lieferkette Belegschaft')
         # Create a row for the headers
         header_row = st.columns([2, 0.3, 0.3, 0.4, 0.33])
         header_row[1].write("Wesentlich")
@@ -328,7 +328,7 @@ class ProductSelection:
     def display_unternehmenspolitik(self):
         options = ['Wesentlich', 'Eher Wesentlich', 'Eher nicht Wesentlich', 'Nicht Wesentlich']
         unternehmenspolitik_data = {
-            "Unternehmenspolitik": ['Unternehmenskultur', 'Schutz von Hinweisgebern (Whistleblowers)', 'Tierschutz', 'Politisches Engagement und Lobbytätigkeiten', 'Management der Beziehungen zu Lieferanten, einschließlich Zahlungspraktiken']
+            "Unternehmenspolitik": ['Unternehmenskultur', 'Schutz von Hinweisgebern (Whistleblowers)', 'Tierschutz', 'Politisches Engagement und Lobbytätigkeiten', 'Management der Beziehungen zu Lieferanten, einschließlich Zahlungspraktiken', 'Vermeidung und Aufdeckung von Korruption und Bestechung einschließlich Schulung', 'Vorkomnisse von Korruption und Bestechung']
         }
         st.header('Unternehmenspolitik')
         # Create a row for the headers
@@ -350,7 +350,6 @@ class ProductSelection:
         submitted_unternehmenspolitik = button_row[1].button("Auswahl speichern", key='unternehmenspolitik_button_key')
         if submitted_unternehmenspolitik:
             st.success("Auswahl erfolgreich gespeichert!")
-
 
 def display_page():
     st.title("Top-Down-Analyse")

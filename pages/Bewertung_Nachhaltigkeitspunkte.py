@@ -20,8 +20,7 @@ def eigene_Nachhaltigkeitspunkte():
 def Top_down_Nachhaltigkeitspunkte():
     # Initialize a list to store topic details
     essential_topics_data = []
-
-    # Iterate over items in session_state to collect essential and more essential topics
+    # Anpassung der Inahlte für die Tabelle aus der Top_down.py, für Inhalte nur mit Thema und Unterthema
     for topic, values in st.session_state.items():
         if isinstance(values, dict):
             if values.get('Wesentlich', False) or values.get('Eher Wesentlich', False):
@@ -29,25 +28,36 @@ def Top_down_Nachhaltigkeitspunkte():
                 topic_details = topic.split(' - ')
                 while len(topic_details) < 3:
                     topic_details.append('')
-                # Check if the topic is one of the specified ones and change the theme and subtheme accordingly
-                if topic_details[0] in ['Anpassung an den Klimawandel', 'Energie', 'Klimaschutz']:
-                    topic_details = ['Klimawandel', topic_details[0], topic_details[1]]
-                elif topic_details[0] in ['Luftverschmutzung', 'Wasserverschmutzung', 'Bodenverschmutzung', 'Verschmutzung von lebenden Organismen und Nahrungsressourcen', 'Besorgniserregende Stoffe', 'Besonders besorgniserregende Stoffe', 'Mikroplastik']:
-                    topic_details = ['Umweltverschmutzung', topic_details[0], topic_details[1]]
-                elif topic_details[0] in ['Wasserverbrauch', 'Wasserentnahme', 'Ableitung von Wasser', 'Ableitung von Wasser in die Ozeane', 'Gewinnung und Nutzung von Meeresressourcen']:
-                    topic_details = ['Wassernutzung', topic_details[0], topic_details[1]]
-                elif topic_details[0] in ['Ressourcenzuflüsse einschließlich Ressourcennutzung', 'Ressourcenabflüsse im Zusammenhang mit Produkten und Dienstleistungen', 'Abfälle']:
-                    topic_details = ['Kreislaufwirtschaft', topic_details[0], topic_details[1]]
-                elif topic_details[0] in ['Klimawandel', 'Landnutzungsänderungen', 'Süßwasser- und Meeresnutzungsänderungen', 'Direkte Ausbeutung', 'Invasive gebietsfremde Arten', 'Umweltverschmutzung', 'Sonstige']:
-                    topic_details = ['Biodiversität', 'Direkte Ursachen des Biodiversitätsverlusts', topic_details[0]]
-                elif topic_details[0] in ['Populationsgröße von Arten', 'Globales Ausrottungsrisiko von Arten']:
-                    topic_details = ['Biodiversität', 'Auswirkungen auf den Zustand der Arten', topic_details[0]]
-                elif topic_details[0] in ['Landdegradation', 'Wüstenbildung', 'Bodenversiegelung']:
-                    topic_details = ['Biodiversität', 'Auswirkungen auf den Umfang und den Zustand von Ökosystemen', topic_details[0]]   
-                
-                
+                # Check if the topic starts with "climate_change", "pollution_" or "water_usage_" and change the theme and subtheme accordingly
+                if topic_details[0].startswith('climate_change'):
+                    topic_details = ['Klimawandel', topic_details[0].replace('climate_change', '').strip().replace('_', ' '), topic_details[1]]
+                elif topic_details[0].startswith('pollution_'):
+                    topic_details = ['Umweltverschmutzung', topic_details[0].replace('pollution_', '').strip().replace('_', ' '), topic_details[1]]
+                elif topic_details[0].startswith('water_usage_'):
+                    topic_details = ['Wasser- & Meeresressourcen', topic_details[0].replace('water_usage_', '').strip().replace('_', ' '), topic_details[1]]
+                elif topic_details[0].startswith('kreislaufwirtschaft'):
+                    topic_details = ['Kreislaufwirtschaft', topic_details[0].replace('kreislaufwirtschaft', '').strip().replace('_', ' '), topic_details[1]]
+                elif topic_details[0].startswith('unternehmenspolitik'):
+                    topic_details = ['Unternehmenspolitik', topic_details[0].replace('unternehmenspolitik', '').strip().replace('_', ' '), topic_details[1]]
+                elif topic_details[0].startswith('biodiversity_'):
+                    if topic_details[0] in ['biodiversity_Populationsgröße von Arten', 'biodiversity_Globales Ausrottungsrisiko von Arten']:
+                        topic_details = ['Biodiversität', 'Auswirkungen auf den Zustand der Arten', topic_details[0].replace('biodiversity_', '').strip().replace('_', ' ')]
+                    elif topic_details[0] in ['biodiversity_Landdegradation', 'biodiversity_Wüstenbildung', 'biodiversity_Bodenversiegelung']:
+                        topic_details = ['Biodiversität', 'Auswirkungen auf den Umfang und den Zustand von Ökosystemen', topic_details[0].replace('biodiversity_', '').strip().replace('_', ' ')]
+                    elif topic_details[0] in ['biodiversity_Auswirkungen und Abhängigkeiten von Ökosystemdienstleistungen']:
+                        topic_details = ['Biodiversität','Auswirkungen und Abhängigkeiten von Ökosystemdienstleistungen', topic_details[0].replace('biodiversity_', '').strip().replace('_', ' ')]
+                    else:
+                        topic_details = ['Biodiversität', 'Direkte Ursachen des Biodiversitätsverlusts', topic_details[0].replace('biodiversity_', '').strip().replace('_', ' ')]
+                elif topic_details[0].startswith('eigene_belegschaft_'):
+                    if topic_details[0] in ['eigene_belegschaft_Sichere Beschäftigung', 'eigene_belegschaft_Arbeitszeit', 'eigene_belegschaft_Angemessene Entlohnung', 'eigene_belegschaft_Sozialer Dialog', 'eigene_belegschaft_Vereinigungsfreiheit, Existenz von Betriebsräten und Rechte der Arbeitnehmer auf Information, Anhörung und Mitbestimmung', 'eigene_belegschaft_Tarifverhandlungen, einschließlich der Quote der durch Tarifverträge abgedeckten Arbeitskräften', 'eigene_belegschaft_Vereinbarkeit von Berufs- und Privatleben', 'eigene_belegschaft_Gesundheitsschutz und Sicherheit']:
+                        topic_details = ['Eigene Belegschaft','Arbeitsbedingungen', topic_details[0].replace('eigene_belegschaft_', '').strip().replace('_', ' ')]
+                    elif topic_details[0] in ['eigene_belegschaft_Gleichstellung der Geschlechter und gleicher Lohn für gleiche Arbeit', 'eigene_belegschaft_Schulungen und Kompetenzentwicklung', 'eigene_belegschaft_Beschäftigung und Inklusion von Menschen mit Behinderungen', 'eigene_belegschaft_Maßnahmen gegen Gewalt und Belästigung am Arbeitsplatz','eingene_belegschaft_Vielfalt']:
+                        topic_details = ['Eigene Belegschaft','Gleichbehandlung und Chancengleichheit', topic_details[0].replace('eigene_belegschaft_', '').strip().replace('_', ' ')]
+                    elif topic_details[0] in ['eigene_belegschaft_Kinderarbeit', 'eigene_belegschaft_Zwangsarbeit', 'eigene_belegschaft_Angemessene Unterbringung', 'eigene_belegschaft_Datenschutz']:
+                        topic_details = ['Eigene Belegschaft','Sonstige arbeitsbezogene Rechte', topic_details[0].replace('eigene_belegschaft_', '').strip().replace('_', ' ')]
                 # Append to the list with importance level
                 essential_topics_data.append(topic_details + ['Wesentlich' if values.get('Wesentlich', False) else 'Eher Wesentlich'])
+
 
     # Create a DataFrame from the collected data
     df_essential = pd.DataFrame(essential_topics_data, columns=['Thema', 'Unterthema', 'Unter-Unterthema', 'Wichtigkeit'])
