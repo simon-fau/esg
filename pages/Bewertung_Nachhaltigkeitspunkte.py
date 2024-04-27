@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 from pages.Bottom_up_stakeholder import stakeholder_punkte
+from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode, DataReturnMode
 
 def eigene_Nachhaltigkeitspunkte():
     # Zugriff auf den DataFrame aus Eigene.py über session_state
@@ -13,9 +14,7 @@ def eigene_Nachhaltigkeitspunkte():
             "Unter-Unterthema": []
         })
 
-    # Zeige alle Themen unabhängig von ihrer Bewertung
-    st.write("Liste aller eigens hinzugefügten Themen:")
-    st.dataframe(df2)
+    return df2
 
 def Top_down_Nachhaltigkeitspunkte():
     # Initialize a list to store topic details
@@ -84,14 +83,35 @@ def Top_down_Nachhaltigkeitspunkte():
     # Create a DataFrame from the collected data
     df_essential = pd.DataFrame(essential_topics_data, columns=['Thema', 'Unterthema', 'Unter-Unterthema', 'Wichtigkeit'])
     df_essential = df_essential.sort_values(by=['Wichtigkeit', 'Thema'], ascending=[False, True])
+    # Remove the 'Wichtigkeit' column
+    df_essential = df_essential.drop(columns=['Wichtigkeit'])
 
-    # Display the DataFrame
-    st.write("Liste der als 'Wesentlich' oder 'Eher Wesentlich' markierten Themen aus Top_down:")
-    st.dataframe(df_essential)
+    return df_essential
+
+def merge_dataframes():
+    df1 = eigene_Nachhaltigkeitspunkte()
+    df2 = Top_down_Nachhaltigkeitspunkte()
+
+    # Entfernen von Zeilen mit fehlenden Werten in df1
+    df1 = df1.dropna(how='any')
+
+    combined_df = pd.concat([df1, df2], ignore_index=True)
+
+    combined_df['Thema'] = combined_df['Thema'].str.strip()
+    combined_df['Unterthema'] = combined_df['Unterthema'].str.strip()
+    combined_df['Unter-Unterthema'] = combined_df['Unter-Unterthema'].str.strip()
+
+    combined_df = combined_df.drop_duplicates(subset=['Thema', 'Unterthema', 'Unter-Unterthema']).sort_values(by=['Thema', 'Unterthema', 'Unter-Unterthema'])
+
+    # Entfernen von Zeilen mit fehlenden Werten
+    combined_df = combined_df.dropna(how='any')
+
+    st.write("Kombinierte Liste aller Themen:")
+    st.dataframe(combined_df)
 
 def display_page():
-    eigene_Nachhaltigkeitspunkte()
-    Top_down_Nachhaltigkeitspunkte()
+    
+    merge_dataframes()
 
 
         
