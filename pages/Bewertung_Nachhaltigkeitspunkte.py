@@ -5,15 +5,10 @@ from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode, DataReturnMode
 
 def eigene_Nachhaltigkeitspunkte():
     # Zugriff auf den DataFrame aus Eigene.py über session_state
-    if 'df2' in st.session_state:
-        df2 = st.session_state.df2
-    else:
-        df2 = pd.DataFrame({
-            "Thema": [],
-            "Unterthema": [],
-            "Unter-Unterthema": []
-        })
-
+    if 'df2' not in st.session_state:
+        st.session_state.df2 = pd.DataFrame(columns=["Thema", "Unterthema", "Unter-Unterthema"])
+    
+    df2 = st.session_state.df2
     return df2
 
 def Top_down_Nachhaltigkeitspunkte():
@@ -92,10 +87,8 @@ def merge_dataframes():
     df1 = eigene_Nachhaltigkeitspunkte()
     df2 = Top_down_Nachhaltigkeitspunkte()
 
-    # Entfernen von Zeilen mit fehlenden Werten in df1
-    df1 = df1.dropna(how='any')
-
     combined_df = pd.concat([df1, df2], ignore_index=True)
+    combined_df = combined_df.dropna(how='all')  # Entfernen von Zeilen, die in allen Spalten NaNs enthalten
 
     combined_df['Thema'] = combined_df['Thema'].str.strip()
     combined_df['Unterthema'] = combined_df['Unterthema'].str.strip()
@@ -103,15 +96,12 @@ def merge_dataframes():
 
     combined_df = combined_df.drop_duplicates(subset=['Thema', 'Unterthema', 'Unter-Unterthema']).sort_values(by=['Thema', 'Unterthema', 'Unter-Unterthema'])
 
-    # Entfernen von Zeilen mit fehlenden Werten
-    combined_df = combined_df.dropna(how='any')
-
     st.write("Kombinierte Liste aller Themen:")
     st.dataframe(combined_df)
 
 def display_page():
-    
     merge_dataframes()
+    
 
 
         

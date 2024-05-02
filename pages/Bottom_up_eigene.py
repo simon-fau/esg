@@ -4,12 +4,6 @@ from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode, DataReturnMode
 
 
 def eigene_punkte():
-    if 'df2' not in st.session_state:
-        st.session_state.df2 = pd.DataFrame({
-            "Thema": [""] * 5,
-            "Unterthema": [""] * 5,
-            "Unter-Unterthema": [""] * 5
-        })
 
     with st.sidebar:
         st.markdown("---")
@@ -122,7 +116,6 @@ def eigene_punkte():
         return_mode=DataReturnMode.__members__['AS_INPUT'],  # Adjust the DataReturnMode as per available options
         selection_mode='multiple'
     )
-
     add_empty_row = st.button('Leere Zeile hinzufügen', key='add_empty_row')
     if add_empty_row:
         empty_row = {"Thema": "", "Unterthema": "", "Unter-Unterthema": ""}
