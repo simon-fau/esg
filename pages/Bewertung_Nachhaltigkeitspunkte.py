@@ -12,6 +12,7 @@ def stakeholder_Nachhaltigkeitspunkte():
     stakeholder_punkte_df = st.session_state.stakeholder_punkte_df
     st.dataframe(stakeholder_punkte_df)
 
+
 def eigene_Nachhaltigkeitspunkte():
     # Zugriff auf den DataFrame aus Eigene.py über session_state
     if 'df2' not in st.session_state:
@@ -95,7 +96,6 @@ def Top_down_Nachhaltigkeitspunkte():
 def merge_dataframes():
     df1 = eigene_Nachhaltigkeitspunkte()
     df2 = Top_down_Nachhaltigkeitspunkte()
-    
 
     combined_df = pd.concat([df1, df2], ignore_index=True)
     combined_df = combined_df.dropna(how='all')  # Entfernen von Zeilen, die in allen Spalten NaNs enthalten
@@ -106,8 +106,14 @@ def merge_dataframes():
 
     combined_df = combined_df.drop_duplicates(subset=['Thema', 'Unterthema', 'Unter-Unterthema']).sort_values(by=['Thema', 'Unterthema', 'Unter-Unterthema'])
 
-    st.write("Kombinierte Liste aller Themen:")
-    st.dataframe(combined_df)
+    # Initialisieren Sie combined_df im st.session_state
+    st.session_state.combined_df = combined_df
+
+    # Erstellen Sie die Grid-Optionen
+    gb = GridOptionsBuilder.from_dataframe(combined_df)
+    gb.configure_selection('multiple', use_checkbox=True, groupSelectsChildren="Group checkbox select children", rowMultiSelectWithClick=True)
+    gridOptions = gb.build()
+    AgGrid(combined_df, gridOptions=gridOptions, enable_enterprise_modules=True, update_mode=GridUpdateMode.MODEL_CHANGED)
 
 def display_page():
     tab1, tab2, tab3 = st.tabs(["Eigene Nachhaltigkeitspunkte", "Stakeholder", "Gesamtübersicht"])
