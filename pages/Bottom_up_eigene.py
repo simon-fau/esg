@@ -4,6 +4,12 @@ from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode, DataReturnMode
 
 
 def eigene_punkte():
+    if 'df2' not in st.session_state:
+        st.session_state.df2 = pd.DataFrame({
+            "Thema": [""],
+            "Unterthema": [""],
+            "Unter-Unterthema":[""]
+        })
 
     with st.sidebar:
         st.markdown("---")

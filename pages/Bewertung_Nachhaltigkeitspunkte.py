@@ -1,7 +1,16 @@
 import streamlit as st
 import pandas as pd
-from pages.Bottom_up_stakeholder import stakeholder_punkte
 from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode, DataReturnMode
+
+def stakeholder_Nachhaltigkeitspunkte():
+    if 'stakeholder_punkte_df' not in st.session_state:
+        st.session_state.stakeholder_punkte_df = pd.DataFrame({
+            "Thema": [""],
+            "Unterthema": [""],
+            "Unter-Unterthema":[""]
+        })
+    stakeholder_punkte_df = st.session_state.stakeholder_punkte_df
+    st.dataframe(stakeholder_punkte_df)
 
 def eigene_Nachhaltigkeitspunkte():
     # Zugriff auf den DataFrame aus Eigene.py über session_state
@@ -45,17 +54,17 @@ def Top_down_Nachhaltigkeitspunkte():
                 elif topic_details[0].startswith('eigene_belegschaft_'):
                     if topic_details[0] in ['eigene_belegschaft_Sichere Beschäftigung', 'eigene_belegschaft_Arbeitszeit', 'eigene_belegschaft_Angemessene Entlohnung', 'eigene_belegschaft_Sozialer Dialog', 'eigene_belegschaft_Vereinigungsfreiheit, Existenz von Betriebsräten und Rechte der Arbeitnehmer auf Information, Anhörung und Mitbestimmung', 'eigene_belegschaft_Tarifverhandlungen, einschließlich der Quote der durch Tarifverträge abgedeckten Arbeitskräften', 'eigene_belegschaft_Vereinbarkeit von Berufs- und Privatleben', 'eigene_belegschaft_Gesundheitsschutz und Sicherheit']:
                         topic_details = ['Eigene Belegschaft','Arbeitsbedingungen', topic_details[0].replace('eigene_belegschaft_', '').strip().replace('_', ' ')]
-                    elif topic_details[0] in ['eigene_belegschaft_Gleichstellung der Geschlechter und gleicher Lohn für gleiche Arbeit', 'eigene_belegschaft_Schulungen und Kompetenzentwicklung', 'eigene_belegschaft_Beschäftigung und Inklusion von Menschen mit Behinderungen', 'eigene_belegschaft_Maßnahmen gegen Gewalt und Belästigung am Arbeitsplatz','eingene_belegschaft_Vielfalt']:
+                    elif topic_details[0] in ['eigene_belegschaft_Gleichstellung der Geschlechter und gleicher Lohn für gleiche Arbeit', 'eigene_belegschaft_Schulungen und Kompetenzentwicklung', 'eigene_belegschaft_Beschäftigung und Inklusion von Menschen mit Behinderungen', 'eigene_belegschaft_Maßnahmen gegen Gewalt und Belästigung am Arbeitsplatz','eigene_belegschaft_Vielfalt']:
                         topic_details = ['Eigene Belegschaft','Gleichbehandlung und Chancengleichheit', topic_details[0].replace('eigene_belegschaft_', '').strip().replace('_', ' ')]
                     elif topic_details[0] in ['eigene_belegschaft_Kinderarbeit', 'eigene_belegschaft_Zwangsarbeit', 'eigene_belegschaft_Angemessene Unterbringung', 'eigene_belegschaft_Datenschutz']:
                         topic_details = ['Eigene Belegschaft','Sonstige arbeitsbezogene Rechte', topic_details[0].replace('eigene_belegschaft_', '').strip().replace('_', ' ')]
                 elif topic_details[0].startswith('wertschöpfungskette_belegschaft_'):
-                    if topic_details[0] in ['wertschöpfungskette_belegschaft_Sichere Beschäftigung', 'wertschöpfungskette_belegschaft_Arbeitszeit', 'wertschöpfungskette_belegschaft_Angemessene Entlohnung', 'wertschöpfungskette_belegschaft__Sozialer Dialog', 'wertschöpfungskette_belegschaft_Vereinigungsfreiheit, Existenz von Betriebsräten und Rechte der Arbeitnehmer auf Information, Anhörung und Mitbestimmung', 'wertschöpfungskette_belegschaft_Tarifverhandlungen, einschließlich der Quote der durch Tarifverträge abgedeckten Arbeitskräften', 'wertschöpfungskette_belegschaft_Vereinbarkeit von Berufs- und Privatleben', 'wertschöpfungskette_belegschaft_Gesundheitsschutz und Sicherheit']:
-                        topic_details = ['Lieferkette Belegschaft','Arbeitsbedingungen', topic_details[0].replace('wertschöpfungskette_belegschaft_', '').strip().replace('_', ' ')]
+                    if topic_details[0] in ['wertschöpfungskette_belegschaft_Sichere Beschäftigung', 'wertschöpfungskette_belegschaft_Arbeitszeit', 'wertschöpfungskette_belegschaft_Angemessene Entlohnung', 'wertschöpfungskette_belegschaft_Sozialer Dialog', 'wertschöpfungskette_belegschaft_Vereinigungsfreiheit, Existenz von Betriebsräten und Rechte der Arbeitnehmer auf Information, Anhörung und Mitbestimmung', 'wertschöpfungskette_belegschaft_Tarifverhandlungen, einschließlich der Quote der durch Tarifverträge abgedeckten Arbeitskräften', 'wertschöpfungskette_belegschaft_Vereinbarkeit von Berufs- und Privatleben', 'wertschöpfungskette_belegschaft_Gesundheitsschutz und Sicherheit']:
+                        topic_details = ['Arbeitskräfte in der Wertschöpfungskette','Arbeitsbedingungen', topic_details[0].replace('wertschöpfungskette_belegschaft_', '').strip().replace('_', ' ')]
                     elif topic_details[0] in ['wertschöpfungskette_belegschaft_Gleichstellung der Geschlechter und gleicher Lohn für gleiche Arbeit', 'wertschöpfungskette_belegschaft_Schulungen und Kompetenzentwicklung', 'wertschöpfungskette_belegschaft_Beschäftigung und Inklusion von Menschen mit Behinderungen', 'wertschöpfungskette_belegschaft_Maßnahmen gegen Gewalt und Belästigung am Arbeitsplatz','wertschöpfungskette_belegschaft_Vielfalt']:
-                        topic_details = ['Lieferkette Belegschaft','Gleichbehandlung und Chancengleichheit', topic_details[0].replace('wertschöpfungskette_belegschaft_', '').strip().replace('_', ' ')]
+                        topic_details = ['Arbeitskräfte in der Wertschöpfungskette','Gleichbehandlung und Chancengleichheit', topic_details[0].replace('wertschöpfungskette_belegschaft_', '').strip().replace('_', ' ')]
                     elif topic_details[0] in ['wertschöpfungskette_belegschaft_Kinderarbeit', 'wertschöpfungskette_belegschaft_Zwangsarbeit', 'wertschöpfungskette_belegschaft_Angemessene Unterbringung', 'wertschöpfungskette_belegschaft_Datenschutz']:
-                        topic_details = ['Lieferkette Belegschaft','Sonstige arbeitsbezogene Rechte', topic_details[0].replace('wertschöpfungskette_belegschaft_', '').strip().replace('_', ' ')] 
+                        topic_details = ['Arbeitskräfte in der Wertschöpfungskette','Sonstige arbeitsbezogene Rechte', topic_details[0].replace('wertschöpfungskette_belegschaft_', '').strip().replace('_', ' ')] 
                 elif topic_details[0].startswith('betroffene_gemeinschaft_'):
                     if topic_details[0] in ['betroffene_gemeinschaft_Angemessene Unterbringung', 'betroffene_gemeinschaft_Angemessene Ernährung', 'betroffene_gemeinschaft_Wasser- und Sanitäreinrichtungen', 'betroffene_gemeinschaft_Bodenbezogene Auswirkungen', 'betroffene_gemeinschaft_Sicherheitsbezogene Auswirkungen']:
                         topic_details = ['Betroffene Gemeinschaft','Wirtschaftliche, soziale und kulturelle Rechte von Gemeinschaften', topic_details[0].replace('betroffene_gemeinschaft_', '').strip().replace('_', ' ')]
@@ -86,6 +95,7 @@ def Top_down_Nachhaltigkeitspunkte():
 def merge_dataframes():
     df1 = eigene_Nachhaltigkeitspunkte()
     df2 = Top_down_Nachhaltigkeitspunkte()
+    
 
     combined_df = pd.concat([df1, df2], ignore_index=True)
     combined_df = combined_df.dropna(how='all')  # Entfernen von Zeilen, die in allen Spalten NaNs enthalten
@@ -100,8 +110,14 @@ def merge_dataframes():
     st.dataframe(combined_df)
 
 def display_page():
-    merge_dataframes()
-    
+    tab1, tab2, tab3 = st.tabs(["Eigene Nachhaltigkeitspunkte", "Stakeholder", "Gesamtübersicht"])
+    with tab1: 
+        merge_dataframes()
+    with tab2:
+        stakeholder_Nachhaltigkeitspunkte()
+    with tab3:
+        st.write("Gesamtübersicht")
+        
 
 
         
