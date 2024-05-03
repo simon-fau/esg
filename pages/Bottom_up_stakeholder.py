@@ -28,7 +28,7 @@ def excel_upload():
     def aggregate_rankings(df):
         """ Erzeugt eine aggregierte Rangliste basierend auf den Bewertungen. """
         df['NumericalRating'] = df['Bewertung'].apply(get_numerical_rating)
-        df.fillna({'Thema': 'Unbekannt', 'Unterthema': 'Unbekannt', 'Unter-Unterthema': '-'}, inplace=True)
+        df.fillna({'Thema': 'Unbekannt', 'Unterthema': 'Unbekannt', 'Unter-Unterthema': ''}, inplace=True)
         ranking = df.groupby(['Thema', 'Unterthema', 'Unter-Unterthema']).agg({'NumericalRating': 'sum'}).reset_index()
         ranking.sort_values(by='NumericalRating', ascending=False, inplace=True)
         ranking['Platzierung'] = ranking['NumericalRating'].rank(method='min', ascending=False).astype(int)

@@ -4,22 +4,19 @@ from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode, DataReturnMode
 
 def stakeholder_Nachhaltigkeitspunkte():
     if 'stakeholder_punkte_df' not in st.session_state:
-        st.session_state.stakeholder_punkte_df = pd.DataFrame({
-            "Thema": [""],
-            "Unterthema": [""],
-            "Unter-Unterthema":[""]
-        })
-    stakeholder_punkte_df = st.session_state.stakeholder_punkte_df
-    st.dataframe(stakeholder_punkte_df)
-
+        st.session_state.stakeholder_punkte_df = pd.DataFrame(columns=["Thema", "Unterthema", "Unter-Unterthema"])
+    df3 = st.session_state.stakeholder_punkte_df
+    
+    df3['Quelle'] = 'Stakeholder'
+    return df3
 
 def eigene_Nachhaltigkeitspunkte():
     # Zugriff auf den DataFrame aus Eigene.py über session_state
     if 'df2' not in st.session_state:
         st.session_state.df2 = pd.DataFrame(columns=["Thema", "Unterthema", "Unter-Unterthema"])
-    
-    df2 = st.session_state.df2
-    return df2
+    df4 = st.session_state.df2
+    df4['Quelle'] = 'Eigene'
+    return df4
 
 def Top_down_Nachhaltigkeitspunkte():
     # Initialize a list to store topic details
@@ -87,18 +84,28 @@ def Top_down_Nachhaltigkeitspunkte():
 
     # Create a DataFrame from the collected data
     df_essential = pd.DataFrame(essential_topics_data, columns=['Thema', 'Unterthema', 'Unter-Unterthema', 'Wichtigkeit'])
-    df_essential = df_essential.sort_values(by=['Wichtigkeit', 'Thema'], ascending=[False, True])
-    # Remove the 'Wichtigkeit' column
-    df_essential = df_essential.drop(columns=['Wichtigkeit'])
-
+    df_essential['Quelle'] = 'Top-down'
     return df_essential
 
 def merge_dataframes():
-    df1 = eigene_Nachhaltigkeitspunkte()
-    df2 = Top_down_Nachhaltigkeitspunkte()
-
-    combined_df = pd.concat([df1, df2], ignore_index=True)
+    df4 = eigene_Nachhaltigkeitspunkte()
+    df_essential = Top_down_Nachhaltigkeitspunkte()
+    df3 = stakeholder_Nachhaltigkeitspunkte()
+    
+    combined_df = pd.concat([df_essential, df4, df3], ignore_index=True)
     combined_df = combined_df.dropna(how='all')  # Entfernen von Zeilen, die in allen Spalten NaNs enthalten
+
+    # Clean data
+    combined_df['Thema'] = combined_df['Thema'].str.strip()
+    combined_df['Unterthema'] = combined_df['Unterthema'].str.strip()
+    combined_df['Unter-Unterthema'] = combined_df['Unter-Unterthema'].str.strip()
+    
+    # Group by columns and merge sources intelligently to reflect all combinations
+    combined_df = combined_df.groupby(['Thema', 'Unterthema', 'Unter-Unterthema']).agg({
+        'Quelle': lambda x: ' & '.join(sorted(set(x)))  # Merge and sort unique sources
+    }).reset_index()
+
+    
 
     combined_df['Thema'] = combined_df['Thema'].str.strip()
     combined_df['Unterthema'] = combined_df['Unterthema'].str.strip()
