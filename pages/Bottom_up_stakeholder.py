@@ -3,8 +3,11 @@ import pandas as pd
 from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
 
 def stakeholder_punkte():
-    
     if 'stakeholder_punkte_df' in st.session_state:
+        # Sortieren Sie den DataFrame nach 'NumericalRating' in absteigender Reihenfolge
+        st.session_state.stakeholder_punkte_df.sort_values('NumericalRating', ascending=False, inplace=True)
+        # Fügen Sie eine neue Spalte 'Platzierung' hinzu, die die Platzierung basierend auf 'NumericalRating' angibt
+        st.session_state.stakeholder_punkte_df['Platzierung'] = range(1, len(st.session_state.stakeholder_punkte_df) + 1)
         gb = GridOptionsBuilder.from_dataframe(st.session_state.stakeholder_punkte_df)
         gb.configure_pagination(paginationAutoPageSize=True, paginationPageSize=10)
         gb.configure_selection('multiple', use_checkbox=True, groupSelectsChildren="Group checkbox select children", rowMultiSelectWithClick=True)
@@ -13,6 +16,17 @@ def stakeholder_punkte():
         AgGrid(st.session_state.stakeholder_punkte_df, gridOptions=grid_options, enable_enterprise_modules=True, update_mode=GridUpdateMode.MODEL_CHANGED)
     else:
         st.write("Es wurden noch keine Inhalte im Excel-Upload hochgeladen. Bitte laden Sie eine Excel-Datei hoch.")
+
+# Fügen Sie einen Schieberegler in der Seitenleiste hinzu
+    percentage = st.sidebar.slider('Auswahl in Prozent', 0, 100, 0)
+    if st.sidebar.button('In Bewertung übernehmen'):
+        # Berechnen Sie die Anzahl der ausgewählten Zeilen basierend auf dem Prozentsatz
+        num_rows = int(len(st.session_state.stakeholder_punkte_df) * (percentage / 100))
+        # Wählen Sie die entsprechende Anzahl von Zeilen mit dem höchsten 'NumericalRating' aus
+        selected_rows = st.session_state.stakeholder_punkte_df.nlargest(num_rows, 'NumericalRating')
+        # Speichern Sie die ausgewählten Zeilen im session_state
+        st.session_state.selected_rows = selected_rows
+        st.experimental_rerun()
 
 def excel_upload():
     """ Diese Funktion lädt Excel-Dateien hoch und erstellt Rankings basierend auf den Bewertungen. """
@@ -43,37 +57,31 @@ def excel_upload():
         gb = GridOptionsBuilder.from_dataframe(st.session_state.ranking_df)
         gb.configure_pagination(paginationAutoPageSize=False, paginationPageSize=15)
         gb.configure_side_bar()
-        gb.configure_selection('multiple', use_checkbox=True, groupSelectsChildren="Group checkbox select children", rowMultiSelectWithClick=True)
         grid_options = gb.build()
         grid_options['defaultColDef'] = {'flex': 1}
         response = AgGrid(st.session_state.ranking_df, gridOptions=grid_options, enable_enterprise_modules=True, update_mode=GridUpdateMode.MODEL_CHANGED)
         st.session_state.grid_response = response
-
+    
         if st.button('Stakeholder Punkte übernehmen'):
-            if 'grid_response' in st.session_state and 'selected_rows' in st.session_state.grid_response:
-                selected_rows = st.session_state.grid_response['selected_rows']
-                # Überprüfen Sie, ob die Spalte 'Platzierung' in den ausgewählten Zeilen vorhanden ist
-                if all('Platzierung' in row for row in selected_rows):
-                    # Filtern Sie die Daten, um nur relevante Spalten zu behalten
-                    relevant_columns = ['Platzierung', 'Thema', 'Unterthema', 'Unter-Unterthema', 'NumericalRating']
-                    selected_rows_cleaned = [{k: row[k] for k in relevant_columns if k in row} for row in selected_rows]
-                    new_df = pd.DataFrame(selected_rows_cleaned)
-                    st.session_state.uploaded_files_names = [file.name for file in uploaded_files]
-                else:
-                    st.error("Die Spalte 'Platzierung' ist in den ausgewählten Zeilen nicht vorhanden.")
-                if 'stakeholder_punkte_df' in st.session_state:
-                    # Merge the new dataframe with the existing one, adding the NumericalRating of identical entries
-                    st.session_state.stakeholder_punkte_df = pd.merge(st.session_state.stakeholder_punkte_df, new_df, on=['Platzierung', 'Thema', 'Unterthema', 'Unter-Unterthema'], how='outer')
-                    st.session_state.stakeholder_punkte_df['NumericalRating'] = st.session_state.stakeholder_punkte_df['NumericalRating_x'].add(st.session_state.stakeholder_punkte_df['NumericalRating_y'], fill_value=0)
-                    st.session_state.stakeholder_punkte_df.drop(columns=['NumericalRating_x', 'NumericalRating_y'], inplace=True)
-                else:
-                    st.session_state.stakeholder_punkte_df = new_df
-
-                st.experimental_rerun()
+            # Filtern Sie die Daten, um nur relevante Spalten zu behalten
+            relevant_columns = ['Platzierung', 'Thema', 'Unterthema', 'Unter-Unterthema', 'NumericalRating']
+            new_df = st.session_state.ranking_df[relevant_columns]
+            # Filtern Sie die Zeilen, um nur diejenigen zu behalten, deren 'NumericalRating' größer oder gleich 1 ist
+            new_df = new_df[new_df['NumericalRating'] >= 1]
+            st.session_state.uploaded_files_names = [file.name for file in uploaded_files]
+            if 'stakeholder_punkte_df' in st.session_state:
+                # Merge the new dataframe with the existing one, adding the NumericalRating of identical entries
+                st.session_state.stakeholder_punkte_df = pd.merge(st.session_state.stakeholder_punkte_df, new_df, on=['Platzierung', 'Thema', 'Unterthema', 'Unter-Unterthema'], how='outer')
+                st.session_state.stakeholder_punkte_df['NumericalRating'] = st.session_state.stakeholder_punkte_df['NumericalRating_x'].add(st.session_state.stakeholder_punkte_df['NumericalRating_y'], fill_value=0)
+                st.session_state.stakeholder_punkte_df.drop(columns=['NumericalRating_x', 'NumericalRating_y'], inplace=True)
+            else:
+                st.session_state.stakeholder_punkte_df = new_df
+    
+            st.experimental_rerun()
 
         
 def display_page():          
-    tab1, tab2 = st.tabs(["Stakeholder Nachhaltigkeitspunkte", "Excel-Upload"])
+    tab1, tab2 = st.tabs(["Auswahl", "Stakeholder Nachhaltigkeitspunkte"])
     with tab1:
         excel_upload()
     with tab2:

@@ -411,3 +411,15 @@ def stakeholder_punkte():
         if st.button("Bewertung absenden"):
             # Hier können Sie den Code hinzufügen, der ausgeführt werden soll, wenn der Button gedrückt wird.
             st.write("Bewertung wurde abgesendet!")
+
+
+    # Fügen Sie einen Schieberegler in der Seitenleiste hinzu
+        percentage = st.sidebar.slider('Auswahl in Prozent', 0, 100, 0)
+        if st.sidebar.button('In Bewertung übernehmen'):
+            # Berechnen Sie die Anzahl der ausgewählten Zeilen basierend auf dem Prozentsatz
+            num_rows = int(len(st.session_state.stakeholder_punkte_df) * (percentage / 100))
+            # Wählen Sie die entsprechende Anzahl von Zeilen mit dem höchsten 'NumericalRating' aus
+            selected_rows = st.session_state.stakeholder_punkte_df.nlargest(num_rows, 'NumericalRating')
+            # Speichern Sie die ausgewählten Zeilen im session_state
+            st.session_state.selected_rows = selected_rows
+            st.experimental_rerun()

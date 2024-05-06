@@ -1,12 +1,12 @@
 import streamlit as st
 import pandas as pd
 from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode, DataReturnMode
+from pages.Bottom_up_stakeholder import stakeholder_punkte
 
 def stakeholder_Nachhaltigkeitspunkte():
-    if 'stakeholder_punkte_df' not in st.session_state:
-        st.session_state.stakeholder_punkte_df = pd.DataFrame(columns=["Thema", "Unterthema", "Unter-Unterthema"])
-    df3 = st.session_state.stakeholder_punkte_df
-    
+    if 'selected_rows' not in st.session_state:
+        st.session_state.selected_rows = pd.DataFrame(columns=["Platzierung", "Thema", "Unterthema", "Unter-Unterthema", "NumericalRating"])
+    df3 = st.session_state.selected_rows.copy()
     df3['Quelle'] = 'Stakeholder'
     return df3
 
@@ -14,7 +14,8 @@ def eigene_Nachhaltigkeitspunkte():
     # Zugriff auf den DataFrame aus Eigene.py über session_state
     if 'df2' not in st.session_state:
         st.session_state.df2 = pd.DataFrame(columns=["Thema", "Unterthema", "Unter-Unterthema"])
-    df4 = st.session_state.df2
+    # Erstellen Sie eine Kopie von df2
+    df4 = st.session_state.df2.copy()
     df4['Quelle'] = 'Eigene'
     return df4
 
@@ -63,13 +64,13 @@ def Top_down_Nachhaltigkeitspunkte():
                         topic_details = ['Arbeitskräfte in der Wertschöpfungskette','Gleichbehandlung und Chancengleichheit', topic_details[0].replace('wertschöpfungskette_belegschaft_', '').strip().replace('_', ' ')]
                     elif topic_details[0] in ['wertschöpfungskette_belegschaft_Kinderarbeit', 'wertschöpfungskette_belegschaft_Zwangsarbeit', 'wertschöpfungskette_belegschaft_Angemessene Unterbringung', 'wertschöpfungskette_belegschaft_Datenschutz']:
                         topic_details = ['Arbeitskräfte in der Wertschöpfungskette','Sonstige arbeitsbezogene Rechte', topic_details[0].replace('wertschöpfungskette_belegschaft_', '').strip().replace('_', ' ')] 
-                elif topic_details[0].startswith('betroffene_gemeinschaft_'):
-                    if topic_details[0] in ['betroffene_gemeinschaft_Angemessene Unterbringung', 'betroffene_gemeinschaft_Angemessene Ernährung', 'betroffene_gemeinschaft_Wasser- und Sanitäreinrichtungen', 'betroffene_gemeinschaft_Bodenbezogene Auswirkungen', 'betroffene_gemeinschaft_Sicherheitsbezogene Auswirkungen']:
-                        topic_details = ['Betroffene Gemeinschaft','Wirtschaftliche, soziale und kulturelle Rechte von Gemeinschaften', topic_details[0].replace('betroffene_gemeinschaft_', '').strip().replace('_', ' ')]
-                    elif topic_details[0] in ['betroffene_gemeinschaft_Meinungsfreiheit', 'betroffene_gemeinschaft_Versammlungsfreiheit', 'betroffene_gemeinschaft_Auswirkungen auf Menschenrechtsverteidiger']:
-                        topic_details = ['Betroffene Gemeinschaft','Bürgerrechte und politische Rechte von Gemeinschaften', topic_details[0].replace('betroffene_gemeinschaft_', '').strip().replace('_', ' ')]
-                    elif topic_details[0] in ['betroffene_gemeinschaft_Freiwillige und in Kenntnis der Sachlage erteilte vorherige Zustimmung', 'betroffene_gemeinschaft_Selbstbestimmung', 'betroffene_gemeinschaft_Kulturelle Rechte' ]:
-                        topic_details = ['Betroffene Gemeinschaft','Rechte indigener Völker', topic_details[0].replace('betroffene_gemeinschaft_', '').strip().replace('_', ' ')] 
+                elif topic_details[0].startswith('betroffene_gemeinschaften_'):
+                    if topic_details[0] in ['betroffene_gemeinschaften_Angemessene Unterbringung', 'betroffene_gemeinschaften_Angemessene Ernährung', 'betroffene_gemeinschaften_Wasser- und Sanitäreinrichtungen', 'betroffene_gemeinschaften_Bodenbezogene Auswirkungen', 'betroffene_gemeinschaften_Sicherheitsbezogene Auswirkungen']:
+                        topic_details = ['Betroffene Gemeinschaften','Wirtschaftliche, soziale und kulturelle Rechte von Gemeinschaften', topic_details[0].replace('betroffene_gemeinschaften_', '').strip().replace('_', ' ')]
+                    elif topic_details[0] in ['betroffene_gemeinschaften_Meinungsfreiheit', 'betroffene_gemeinschaften_Versammlungsfreiheit', 'betroffene_gemeinschaften_Auswirkungen auf Menschenrechtsverteidiger']:
+                        topic_details = ['Betroffene Gemeinschaften','Bürgerrechte und politische Rechte von Gemeinschaften', topic_details[0].replace('betroffene_gemeinschaften_', '').strip().replace('_', ' ')]
+                    elif topic_details[0] in ['betroffene_gemeinschaften_Freiwillige und in Kenntnis der Sachlage erteilte vorherige Zustimmung', 'betroffene_gemeinschaften_Selbstbestimmung', 'betroffene_gemeinschaften_Kulturelle Rechte' ]:
+                        topic_details = ['Betroffene Gemeinschaften','Rechte indigener Völker', topic_details[0].replace('betroffene_gemeinschaften_', '').strip().replace('_', ' ')] 
                 elif topic_details[0].startswith('verbraucher_endnutzer_'):
                     if topic_details[0] in ['verbraucher_endnutzer_Datenschutz', 'verbraucher_endnutzer_Meinungsfreiheit', 'verbraucher_endnutzer_Faire Geschäftspraktiken', 'verbraucher_endnutzer_Zugang zu (hochwertigen) Informationen']:
                         topic_details = ['Verbraucher und Endnutzer','Informationsbezogene Auswirkungen für Verbraucher und/oder Endnutzer', topic_details[0].replace('verbraucher_endnutzer_', '').strip().replace('_', ' ')]
@@ -99,17 +100,14 @@ def merge_dataframes():
     combined_df['Thema'] = combined_df['Thema'].str.strip()
     combined_df['Unterthema'] = combined_df['Unterthema'].str.strip()
     combined_df['Unter-Unterthema'] = combined_df['Unter-Unterthema'].str.strip()
+
+    # Entfernen von Zeilen, in denen 'Thema' leer ist
+    combined_df = combined_df.dropna(subset=['Thema'])
     
     # Group by columns and merge sources intelligently to reflect all combinations
     combined_df = combined_df.groupby(['Thema', 'Unterthema', 'Unter-Unterthema']).agg({
         'Quelle': lambda x: ' & '.join(sorted(set(x)))  # Merge and sort unique sources
     }).reset_index()
-
-    
-
-    combined_df['Thema'] = combined_df['Thema'].str.strip()
-    combined_df['Unterthema'] = combined_df['Unterthema'].str.strip()
-    combined_df['Unter-Unterthema'] = combined_df['Unter-Unterthema'].str.strip()
 
     combined_df = combined_df.drop_duplicates(subset=['Thema', 'Unterthema', 'Unter-Unterthema']).sort_values(by=['Thema', 'Unterthema', 'Unter-Unterthema'])
 
@@ -127,7 +125,7 @@ def display_page():
     with tab1: 
         merge_dataframes()
     with tab2:
-        stakeholder_Nachhaltigkeitspunkte()
+        stakeholder_punkte()
     with tab3:
         st.write("Gesamtübersicht")
         

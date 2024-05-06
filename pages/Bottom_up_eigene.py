@@ -111,6 +111,9 @@ def eigene_punkte():
     grid_options = gb.build()
     grid_options['columnDefs'] = [{'checkboxSelection': True, 'headerCheckboxSelection': True, 'width': 50}] + grid_options['columnDefs']
 
+    if st.session_state.df2.empty:
+        st.write("Keine Daten vorhanden.")
+
     grid_response = AgGrid(
         st.session_state.df2.reset_index(),
         gridOptions=grid_options,
