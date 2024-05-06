@@ -4,11 +4,33 @@ from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode, DataReturnMode
 from pages.Bottom_up_stakeholder import stakeholder_punkte
 
 def stakeholder_Nachhaltigkeitspunkte():
-    if 'selected_rows' not in st.session_state:
-        st.session_state.selected_rows = pd.DataFrame(columns=["Platzierung", "Thema", "Unterthema", "Unter-Unterthema", "NumericalRating"])
-    df3 = st.session_state.selected_rows.copy()
+    # Zugriff auf den DataFrame aus Bottom_up_stakeholder.py über session_state
+    if 'stakeholder_punkte_df' not in st.session_state:
+        st.session_state.stakeholder_punkte_df = pd.DataFrame(columns=["Platzierung", "Thema", "Unterthema", "Unter-Unterthema", "NumericalRating"])
+    df3 = st.session_state.stakeholder_punkte_df.copy()
     df3['Quelle'] = 'Stakeholder'
-    return df3
+
+    # Berechnen Sie die Größe der Klassen
+    class_size = (df3['NumericalRating'].max() - df3['NumericalRating'].min()) / 4
+
+    # Fügen Sie einen Schieberegler in der Seitenleiste hinzu
+    options = ['Nicht Wesentlich', 'Eher nicht wesentlich', 'Eher Wesentlich', 'Wesentlich']
+    selection = st.sidebar.select_slider('Auswahl', options=options)
+
+    # Berechnen Sie die Anzahl der ausgewählten Zeilen basierend auf der Auswahl
+    if selection == 'Wesentlich':
+        selected_rows = df3[df3['NumericalRating'] > 3 * class_size]
+    elif selection == 'Eher Wesentlich':
+        selected_rows = df3[df3['NumericalRating'] > 2 * class_size]
+    elif selection == 'Eher nicht wesentlich':
+        selected_rows = df3[df3['NumericalRating'] > class_size]
+    else:  # Nicht Wesentlich
+        selected_rows = df3[df3['NumericalRating'] <= class_size]
+
+    # Speichern Sie die ausgewählten Zeilen im session_state
+    st.session_state.selected_rows = selected_rows
+
+    return selected_rows
 
 def eigene_Nachhaltigkeitspunkte():
     # Zugriff auf den DataFrame aus Eigene.py über session_state
@@ -91,9 +113,9 @@ def Top_down_Nachhaltigkeitspunkte():
 def merge_dataframes():
     df4 = eigene_Nachhaltigkeitspunkte()
     df_essential = Top_down_Nachhaltigkeitspunkte()
-    df3 = stakeholder_Nachhaltigkeitspunkte()
+    selected_rows = stakeholder_Nachhaltigkeitspunkte()
     
-    combined_df = pd.concat([df_essential, df4, df3], ignore_index=True)
+    combined_df = pd.concat([df_essential, df4, selected_rows], ignore_index=True)
     combined_df = combined_df.dropna(how='all')  # Entfernen von Zeilen, die in allen Spalten NaNs enthalten
 
     # Clean data

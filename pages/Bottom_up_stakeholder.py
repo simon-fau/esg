@@ -3,11 +3,8 @@ import pandas as pd
 from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
 
 def stakeholder_punkte():
+    
     if 'stakeholder_punkte_df' in st.session_state:
-        # Sortieren Sie den DataFrame nach 'NumericalRating' in absteigender Reihenfolge
-        st.session_state.stakeholder_punkte_df.sort_values('NumericalRating', ascending=False, inplace=True)
-        # Fügen Sie eine neue Spalte 'Platzierung' hinzu, die die Platzierung basierend auf 'NumericalRating' angibt
-        st.session_state.stakeholder_punkte_df['Platzierung'] = range(1, len(st.session_state.stakeholder_punkte_df) + 1)
         gb = GridOptionsBuilder.from_dataframe(st.session_state.stakeholder_punkte_df)
         gb.configure_pagination(paginationAutoPageSize=True, paginationPageSize=10)
         gb.configure_selection('multiple', use_checkbox=True, groupSelectsChildren="Group checkbox select children", rowMultiSelectWithClick=True)
@@ -16,17 +13,6 @@ def stakeholder_punkte():
         AgGrid(st.session_state.stakeholder_punkte_df, gridOptions=grid_options, enable_enterprise_modules=True, update_mode=GridUpdateMode.MODEL_CHANGED)
     else:
         st.write("Es wurden noch keine Inhalte im Excel-Upload hochgeladen. Bitte laden Sie eine Excel-Datei hoch.")
-
-# Fügen Sie einen Schieberegler in der Seitenleiste hinzu
-    percentage = st.sidebar.slider('Auswahl in Prozent', 0, 100, 0)
-    if st.sidebar.button('In Bewertung übernehmen'):
-        # Berechnen Sie die Anzahl der ausgewählten Zeilen basierend auf dem Prozentsatz
-        num_rows = int(len(st.session_state.stakeholder_punkte_df) * (percentage / 100))
-        # Wählen Sie die entsprechende Anzahl von Zeilen mit dem höchsten 'NumericalRating' aus
-        selected_rows = st.session_state.stakeholder_punkte_df.nlargest(num_rows, 'NumericalRating')
-        # Speichern Sie die ausgewählten Zeilen im session_state
-        st.session_state.selected_rows = selected_rows
-        st.experimental_rerun()
 
 def excel_upload():
     """ Diese Funktion lädt Excel-Dateien hoch und erstellt Rankings basierend auf den Bewertungen. """
@@ -68,7 +54,7 @@ def excel_upload():
             new_df = st.session_state.ranking_df[relevant_columns]
             # Filtern Sie die Zeilen, um nur diejenigen zu behalten, deren 'NumericalRating' größer oder gleich 1 ist
             new_df = new_df[new_df['NumericalRating'] >= 1]
-            st.session_state.uploaded_files_names = [file.name for file in uploaded_files]
+
             if 'stakeholder_punkte_df' in st.session_state:
                 # Merge the new dataframe with the existing one, adding the NumericalRating of identical entries
                 st.session_state.stakeholder_punkte_df = pd.merge(st.session_state.stakeholder_punkte_df, new_df, on=['Platzierung', 'Thema', 'Unterthema', 'Unter-Unterthema'], how='outer')
@@ -76,7 +62,7 @@ def excel_upload():
                 st.session_state.stakeholder_punkte_df.drop(columns=['NumericalRating_x', 'NumericalRating_y'], inplace=True)
             else:
                 st.session_state.stakeholder_punkte_df = new_df
-    
+
             st.experimental_rerun()
 
         
