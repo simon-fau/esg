@@ -15,17 +15,28 @@ def stakeholder_Nachhaltigkeitspunkte():
 
     # Fügen Sie einen Schieberegler in der Seitenleiste hinzu
     options = ['Nicht Wesentlich', 'Eher nicht wesentlich', 'Eher Wesentlich', 'Wesentlich']
-    selection = st.sidebar.select_slider('Auswahl', options=options)
-
+    st.sidebar.markdown("---")
+    st.sidebar.text("Grenzwert für die Auswahl der Stakeholderpunkte:")
+    selection = st.sidebar.select_slider('', options=options)
+    
+    st.markdown("""
+        <style>
+        .st-emotion-cache-183lzff,
+        .st-emotion-cache-1inwz65 {
+            font-family: "Source Sans Pro", sans-serif;
+        }
+        </style>
+        """, unsafe_allow_html=True)
+    
     # Berechnen Sie die Anzahl der ausgewählten Zeilen basierend auf der Auswahl
     if selection == 'Wesentlich':
-        selected_rows = df3[df3['NumericalRating'] > 3 * class_size]
+        selected_rows = df3[df3['NumericalRating'] > 3 * class_size + df3['NumericalRating'].min()]
     elif selection == 'Eher Wesentlich':
-        selected_rows = df3[df3['NumericalRating'] > 2 * class_size]
+        selected_rows = df3[df3['NumericalRating'] > 2 * class_size + df3['NumericalRating'].min()]
     elif selection == 'Eher nicht wesentlich':
-        selected_rows = df3[df3['NumericalRating'] > class_size]
+        selected_rows = df3[df3['NumericalRating'] > class_size + df3['NumericalRating'].min()]
     else:  # Nicht Wesentlich
-        selected_rows = df3[df3['NumericalRating'] <= class_size]
+        selected_rows = df3[df3['NumericalRating'] > 0]
 
     # Speichern Sie die ausgewählten Zeilen im session_state
     st.session_state.selected_rows = selected_rows
@@ -140,7 +151,7 @@ def merge_dataframes():
     gb = GridOptionsBuilder.from_dataframe(combined_df)
     gb.configure_selection('multiple', use_checkbox=True, groupSelectsChildren="Group checkbox select children", rowMultiSelectWithClick=True)
     gridOptions = gb.build()
-    AgGrid(combined_df, gridOptions=gridOptions, enable_enterprise_modules=True, update_mode=GridUpdateMode.MODEL_CHANGED)
+    AgGrid(combined_df, gridOptions=gridOptions, enable_enterprise_modules=True, update_mode=GridUpdateMode.MODEL_CHANGED, fill_screen=True)
 
 def display_page():
     tab1, tab2, tab3 = st.tabs(["Eigene Nachhaltigkeitspunkte", "Stakeholder", "Gesamtübersicht"])

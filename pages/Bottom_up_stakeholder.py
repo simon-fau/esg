@@ -3,8 +3,10 @@ import pandas as pd
 from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
 
 def stakeholder_punkte():
-    
     if 'stakeholder_punkte_df' in st.session_state:
+        # Change the order of columns
+        st.session_state.stakeholder_punkte_df = st.session_state.stakeholder_punkte_df[['Platzierung', 'Thema', 'Unterthema', 'Unter-Unterthema', 'NumericalRating']]
+
         gb = GridOptionsBuilder.from_dataframe(st.session_state.stakeholder_punkte_df)
         gb.configure_pagination(paginationAutoPageSize=True, paginationPageSize=10)
         gb.configure_selection('multiple', use_checkbox=True, groupSelectsChildren="Group checkbox select children", rowMultiSelectWithClick=True)
@@ -49,20 +51,24 @@ def excel_upload():
         st.session_state.grid_response = response
     
         if st.button('Stakeholder Punkte übernehmen'):
-            # Filtern Sie die Daten, um nur relevante Spalten zu behalten
-            relevant_columns = ['Platzierung', 'Thema', 'Unterthema', 'Unter-Unterthema', 'NumericalRating']
+            # Filter the data to keep only relevant columns
+            relevant_columns = ['Thema', 'Unterthema', 'Unter-Unterthema', 'NumericalRating']
             new_df = st.session_state.ranking_df[relevant_columns]
-            # Filtern Sie die Zeilen, um nur diejenigen zu behalten, deren 'NumericalRating' größer oder gleich 1 ist
+            # Filter the rows to keep only those where 'NumericalRating' is greater than or equal to 1
             new_df = new_df[new_df['NumericalRating'] >= 1]
-
+        
             if 'stakeholder_punkte_df' in st.session_state:
                 # Merge the new dataframe with the existing one, adding the NumericalRating of identical entries
-                st.session_state.stakeholder_punkte_df = pd.merge(st.session_state.stakeholder_punkte_df, new_df, on=['Platzierung', 'Thema', 'Unterthema', 'Unter-Unterthema'], how='outer')
+                st.session_state.stakeholder_punkte_df = pd.merge(st.session_state.stakeholder_punkte_df, new_df, on=['Thema', 'Unterthema', 'Unter-Unterthema'], how='outer')
                 st.session_state.stakeholder_punkte_df['NumericalRating'] = st.session_state.stakeholder_punkte_df['NumericalRating_x'].add(st.session_state.stakeholder_punkte_df['NumericalRating_y'], fill_value=0)
                 st.session_state.stakeholder_punkte_df.drop(columns=['NumericalRating_x', 'NumericalRating_y'], inplace=True)
             else:
                 st.session_state.stakeholder_punkte_df = new_df
-
+        
+            # Create a new ranking based on NumericalRating
+            st.session_state.stakeholder_punkte_df.sort_values(by='NumericalRating', ascending=False, inplace=True)
+            st.session_state.stakeholder_punkte_df['Platzierung'] = st.session_state.stakeholder_punkte_df['NumericalRating'].rank(method='min', ascending=False).astype(int)
+        
             st.experimental_rerun()
 
         
