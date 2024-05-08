@@ -153,133 +153,119 @@ def merge_dataframes():
     gridOptions = gb.build()
     AgGrid(combined_df, gridOptions=gridOptions, enable_enterprise_modules=True, update_mode=GridUpdateMode.MODEL_CHANGED, fill_screen=True)
 
-def Bewertungseinheit():
-
-    # Add a selectbox to the main area
-    option = st.selectbox(
-        'Bitte wählen Sie aus:',
-        ('Wesentlichkeit der Auswirkung', 'Finanzielle Wesentlichkeit', 'Beide Dimensionen', ''),
-        index=3
-    )
-
+    # Add a selectbox to the sidebar
+    option = st.sidebar.selectbox(
+    'Bitte wählen Sie aus:',
+    ('Wesentlichkeit der Auswirkung', 'Finanzielle Wesentlichkeit', 'Beide Dimensionen'),
+    
+)
     # If 'Wesentlichkeit der Auswirkung' is selected, show another selectbox
     if option == 'Wesentlichkeit der Auswirkung':
-        auswirkung_option = st.selectbox(
+        auswirkung_option = st.sidebar.selectbox(
             'Bitte wählen Sie die Eigenschaft der Auswirkung:',
             ('Positive Auswirkung', 'Negative Auswirkung', ''),
             index=2
         )
-
+    
         # If 'Negative Auswirkung' is selected, show another selectbox
         if auswirkung_option == 'Negative Auswirkung':
-            auswirkung_art_option = st.selectbox(
+            auswirkung_art_option = st.sidebar.selectbox(
                 'Bitte wählen Sie die Art der Auswirkung:',
                 ('Tatsächliche Auswirkung', 'Potenzielle Auswirkung', ''),
                 index=2
-            )
-
-            # If 'Tatsächliche Auswirkung' is selected, show sliders in the main area
+        )
+    
+            # If 'Tatsächliche Auswirkung' is selected, show sliders in the sidebar
             if auswirkung_art_option == 'Tatsächliche Auswirkung':
-                ausmass_neg_tat = st.select_slider(
+                ausmass_neg_tat = st.sidebar.select_slider(
                     "Ausmaß:",
                     options=["Keines", "Minimal", "Niedrig", "Medium", "Hoch", "Sehr hoch"],
                     key="ausmass_negativ_tat_auswirkung"
                 )
-
-                umfang_neg_tat = st.select_slider(
+    
+                umfang_neg_tat = st.sidebar.select_slider(
                     "Umfang:",
                     options=["Keine", "Lokal", "Regional", "National", "International", "Global"],
                     key="umfang_negativ_tat_auswirkung"
                 )
-
-                behebbarkeit_neg_tat = st.select_slider(
+    
+                behebbarkeit_neg_tat = st.sidebar.select_slider(
                     "Behebbarkeit:",
                     options=["Kein Aufwand", "Leicht zu beheben", "Mit Aufwand", "Mit hohem Aufwand", "Mit sehr hohem Aufwand", "Nicht behebbar"],
                     key="behebbarkeit_negativ_tat_auswirkung"
                 )
-
-            # If 'Potenzielle Auswirkung' is selected, show sliders in the main area
+    
+            # If 'Potenzielle Auswirkung' is selected, show sliders in the sidebar
             elif auswirkung_art_option == 'Potenzielle Auswirkung':
-                ausmass_neg_pot = st.select_slider(
+                ausmass_neg_pot = st.sidebar.select_slider(
                     "Ausmaß:",
                     options=["Keines", "Minimal", "Niedrig", "Medium", "Hoch", "Sehr hoch"],
                     key="ausmass_negativ_pot_auswirkung"
                 )
-
-                umfang_neg_pot = st.select_slider(
+    
+                umfang_neg_pot = st.sidebar.select_slider(
                     "Umfang:",
                     options=["Keine", "Lokal", "Regional", "National", "International", "Global"],
                     key="umfang_negativ_pot_auswirkung"
                 )
-
-                behebbarkeit_neg_pot = st.select_slider(
+    
+                behebbarkeit_neg_pot = st.sidebar.select_slider(
                     "Behebbarkeit:",
                     options=["Kein Aufwand", "Leicht zu beheben", "Mit Aufwand", "Mit hohem Aufwand", "Mit sehr hohem Aufwand", "Nicht behebbar"],
                     key="behebbarkeit_negativ_pot_auswirkung"
                 )
-
-                wahrscheinlichkeit_neg_pot = st.select_slider(
+    
+                wahrscheinlichkeit_neg_pot = st.sidebar.select_slider(
                     "Wahrscheinlich:",
                     options=["Tritt nicht ein", "Unwahrscheinlich", "Eher unwahrscheinlich", "Eher wahrscheinlich", "Wahrscheinlich", "Sicher"],
                     key="wahrscheinlichkeit_negativ_pot_auswirkung"
                 )
-
+    
         if auswirkung_option == 'Positive Auswirkung':
-            auswirkung_positiv_art_option = st.selectbox(
+            auswirkung_positiv_art_option = st.sidebar.selectbox(
                 'Bitte wählen Sie die Art der Auswirkung:',
                 ('Tatsächliche Auswirkung', 'Potenzielle Auswirkung', ''),
                 index=2
             )
-
-            # If 'Tatsächliche Auswirkung' is selected, show sliders in the main area
+    
+            # If 'Tatsächliche Auswirkung' is selected, show sliders in the sidebar
             if auswirkung_positiv_art_option == 'Tatsächliche Auswirkung':
-                ausmass_pos_tat = st.select_slider(
+                ausmass_pos_tat = st.sidebar.select_slider(
                     "Ausmaß:",
                     options=["Keines", "Minimal", "Niedrig", "Medium", "Hoch", "Sehr hoch"],
                     key="ausmass_positiv_tat_auswirkung"
                 )
-
-                umfang_pos_tat = st.select_slider(
+    
+                umfang_pos_tat = st.sidebar.select_slider(
                     "Umfang:",
                     options=["Keine", "Lokal", "Regional", "National", "International", "Global"],
                     key="umfang_positiv_tat_auswirkung"
                 )
-
-            # If 'Potenzielle Auswirkung' is selected, show sliders in the main area
+    
+            # If 'Potenzielle Auswirkung' is selected, show sliders in the sidebar
             elif auswirkung_positiv_art_option == 'Potenzielle Auswirkung':
-                ausmass_pos_pot = st.select_slider(
+                ausmass_pos_pot = st.sidebar.select_slider(
                     "Ausmaß:",
                     options=["Keines", "Minimal", "Niedrig", "Medium", "Hoch", "Sehr hoch"],
                     key="ausmass_positiv_pot_auswirkung"
                 )
-
-                umfang_pos_pot = st.select_slider(
+    
+                umfang_pos_pot = st.sidebar.select_slider(
                     "Umfang:",
                     options=["Keine", "Lokal", "Regional", "National", "International", "Global"],
                     key="umfang_positiv_pot_auswirkung"
                 )
-
-                behebbarkeit_pos_pot = st.select_slider(
+    
+                behebbarkeit_pos_pot = st.sidebar.select_slider(
                     "Behebbarkeit:",
                     options=["Kein Aufwand", "Leicht zu beheben", "Mit Aufwand", "Mit hohem Aufwand", "Mit sehr hohem Aufwand", "Nicht behebbar"],
                     key="behebbarkeit_positiv_pot_auswirkung"
                 )
 
-def display_page():
-    tab1, tab2, tab3 = st.tabs(["Eigene Nachhaltigkeitspunkte", "Stakeholder", "Gesamtübersicht"])
-    with tab1: 
-        col1, col2 = st.columns([2, 1])
-        with col1:
-            merge_dataframes()
-        with col2:
-            Bewertungseinheit()
-    with tab2:
-        stakeholder_punkte()
-    with tab3:
-        st.write("Gesamtübersicht")
-
-
-        
-
-
-
+tab1, tab2, tab3 = st.tabs(["Eigene Nachhaltigkeitspunkte", "Stakeholder", "Gesamtübersicht"])
+with tab1: 
+    merge_dataframes()
+with tab2:
+    stakeholder_punkte()
+with tab3:
+    st.write("Gesamtübersicht")
