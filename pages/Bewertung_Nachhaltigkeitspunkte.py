@@ -28,7 +28,7 @@ def stakeholder_Nachhaltigkeitspunkte():
     # Aktualisieren Sie 'slider_value' im session_state, wenn der Benutzer den Schieberegler bewegt
     st.session_state.slider_value = st.sidebar.select_slider('', options=options, value=st.session_state.slider_value)
     
-    # Wenn der Wert des Schiebereglers geändert wurde, führen Sie st.experimental_rerun() aus, um die Seite neu zu laden
+    # Wenn der Wert des Schiebereglers geändert wurde, führen Sie st.experimental_rerun() aus, um die Seite neu zu laden 
     if st.session_state.slider_value != current_slider_value:
         st.experimental_rerun()
     
@@ -141,17 +141,24 @@ def initialize_bewertet_column(longlist):
         longlist['Bewertet'] = 'Nein'
     return longlist
 
-def submit_bewertung(longlist, bewertung):
-    if st.button("Bewertung absenden") and bewertung:
+def submit_bewertung(longlist, ausgewaehlte_werte):
+    if st.button("Bewertung absenden") and any(ausgewaehlte_werte.values()):
         if 'selected_rows' in st.session_state:
             new_data = pd.DataFrame(st.session_state['selected_rows'])
             if '_selectedRowNodeInfo' in new_data.columns:
                 new_data.drop('_selectedRowNodeInfo', axis=1, inplace=True)
-            new_data['Bewertung'] = bewertung
+            
+            # Kombinieren der Bewertungen zu einer String-Beschreibung
+            bewertungs_string = ' / '.join(filter(None, [ausgewaehlte_werte.get(key, '') for key in ['option', 'auswirkung_option', 'auswirkung_art_option', 'ausmass_neg_tat', 'umfang_neg_tat', 'behebbarkeit_neg_tat']]))
+            new_data['Bewertung'] = bewertungs_string
+            
+            # Aktualisieren oder Erstellen des `selected_data` DataFrames im Session State
             if 'selected_data' in st.session_state:
                 st.session_state.selected_data = pd.concat([st.session_state.selected_data, new_data], ignore_index=True)
             else:
                 st.session_state.selected_data = new_data
+            
+            # Update der 'Bewertet' Spalte basierend auf dem aktualisierten `selected_data`
             longlist['Bewertet'] = longlist['ID'].isin(st.session_state.selected_data['ID']).replace({True: 'Ja', False: 'Nein'})
         else:
             st.error("Bitte wählen Sie mindestens eine Zeile aus, bevor Sie eine Bewertung absenden.")
@@ -206,16 +213,32 @@ def merge_dataframes():
     # Initialisieren der 'Bewertet'-Spalte in 'longlist'
     longlist = initialize_bewertet_column(longlist)
 
-    # Erstellen einer Auswahlbox für die Bewertung
-    bewertung = st.selectbox("Bewertung auswählen:", ["", "Gut", "Mittel", "Schlecht"])
+    # Initialisierung aller erforderlichen Variablen
+    option = st.selectbox('Bitte wählen Sie aus:', ('Wesentlichkeit der Auswirkung', 'Finanzielle Wesentlichkeit', 'Beide Dimensionen', ''), index=3)
+    auswirkung_option = auswirkung_art_option = ausmass_neg_tat = umfang_neg_tat = behebbarkeit_neg_tat = ''
 
-    # Einreichen der Bewertung und Aktualisieren der 'longlist'
-    longlist = submit_bewertung(longlist, bewertung)
+    if option == 'Wesentlichkeit der Auswirkung':
+        auswirkung_option = st.selectbox('Bitte wählen Sie die Eigenschaft der Auswirkung:', ('Positive Auswirkung', 'Negative Auswirkung', ''), index=2)
 
-    # Anzeigen der ausgewählten Daten
+        if auswirkung_option == 'Negative Auswirkung':
+            auswirkung_art_option = st.selectbox('Bitte wählen Sie die Art der Auswirkung:', ('Tatsächliche Auswirkung', 'Potenzielle Auswirkung', ''), index=2)
+
+            if auswirkung_art_option == 'Tatsächliche Auswirkung':
+                ausmass_neg_tat = st.select_slider("Ausmaß:", options=["Keines", "Minimal", "Niedrig", "Medium", "Hoch", "Sehr hoch"], key="ausmass_negativ_tat_auswirkung")
+                umfang_neg_tat = st.select_slider("Umfang:", options=["Keine", "Lokal", "Regional", "National", "International", "Global"], key="umfang_negativ_tat_auswirkung")
+                behebbarkeit_neg_tat = st.select_slider("Behebbarkeit:", options=["Kein Aufwand", "Leicht zu beheben", "Mit Aufwand", "Mit hohem Aufwand", "Mit sehr hohem Aufwand", "Nicht behebbar"], key="behebbarkeit_negativ_tat_auswirkung")
+
+    ausgewaehlte_werte = {
+        "option": option,
+        "auswirkung_option": auswirkung_option,
+        "auswirkung_art_option": auswirkung_art_option,
+        "ausmass_neg_tat": ausmass_neg_tat,
+        "umfang_neg_tat": umfang_neg_tat,
+        "behebbarkeit_neg_tat": behebbarkeit_neg_tat
+    }
+
+    longlist = submit_bewertung(longlist, ausgewaehlte_werte)
     display_selected_data()
-
-    # Anzeigen der 'longlist' in einem Grid
     display_grid(longlist)
 
 def display_page():
@@ -226,6 +249,3 @@ def display_page():
         stakeholder_punkte()
     with tab3:
         st.write("Gesamtübersicht")
-
-
-
