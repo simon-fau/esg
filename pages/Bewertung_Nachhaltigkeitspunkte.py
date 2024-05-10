@@ -17,7 +17,20 @@ def stakeholder_Nachhaltigkeitspunkte():
     options = ['Nicht Wesentlich', 'Eher nicht wesentlich', 'Eher Wesentlich', 'Wesentlich']
     st.sidebar.markdown("---")
     st.sidebar.text("Grenzwert für die Auswahl der Stakeholderpunkte:")
-    selection = st.sidebar.select_slider('', options=options)
+    
+    # Überprüfen, ob 'slider_value' bereits im session_state gespeichert ist, wenn nicht, initialisieren Sie es mit einem Standardwert
+    if 'slider_value' not in st.session_state:
+        st.session_state.slider_value = options[0]
+    
+    # Speichern Sie den aktuellen Zustand des Schiebereglers
+    current_slider_value = st.session_state.slider_value
+    
+    # Aktualisieren Sie 'slider_value' im session_state, wenn der Benutzer den Schieberegler bewegt
+    st.session_state.slider_value = st.sidebar.select_slider('', options=options, value=st.session_state.slider_value)
+    
+    # Wenn der Wert des Schiebereglers geändert wurde, führen Sie st.experimental_rerun() aus, um die Seite neu zu laden
+    if st.session_state.slider_value != current_slider_value:
+        st.experimental_rerun()
     
     st.markdown("""
         <style>
@@ -28,19 +41,20 @@ def stakeholder_Nachhaltigkeitspunkte():
         </style>
         """, unsafe_allow_html=True)
     
+    
     # Berechnen Sie die Anzahl der ausgewählten Zeilen basierend auf der Auswahl
-    if selection == 'Wesentlich':
+    if st.session_state.slider_value == 'Wesentlich':
         selected_rows_st = df3[df3['NumericalRating'] > 3 * class_size + df3['NumericalRating'].min()]
-    elif selection == 'Eher Wesentlich':
+    elif st.session_state.slider_value == 'Eher Wesentlich':
         selected_rows_st = df3[df3['NumericalRating'] > 2 * class_size + df3['NumericalRating'].min()]
-    elif selection == 'Eher nicht wesentlich':
+    elif st.session_state.slider_value == 'Eher nicht wesentlich':
         selected_rows_st = df3[df3['NumericalRating'] > class_size + df3['NumericalRating'].min()]
     else:  # Nicht Wesentlich
         selected_rows_st = df3[df3['NumericalRating'] > 0]
-
+    
     # Speichern Sie die ausgewählten Zeilen im session_state
     st.session_state.selected_rows_st = selected_rows_st
-
+    
     return selected_rows_st
 
 def eigene_Nachhaltigkeitspunkte():
@@ -114,7 +128,6 @@ def Top_down_Nachhaltigkeitspunkte():
                 
                 # Append to the list with importance level
                 essential_topics_data.append(topic_details + ['Wesentlich' if values.get('Wesentlich', False) else 'Eher Wesentlich'])
-
 
     # Create a DataFrame from the collected data
     df_essential = pd.DataFrame(essential_topics_data, columns=['Thema', 'Unterthema', 'Unter-Unterthema', 'Wichtigkeit'])
