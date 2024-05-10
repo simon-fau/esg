@@ -121,77 +121,89 @@ def Top_down_Nachhaltigkeitspunkte():
     df_essential['Quelle'] = 'Top-down'
     return df_essential
 
-def merge_dataframes():
-    df4 = eigene_Nachhaltigkeitspunkte()
-    df_essential = Top_down_Nachhaltigkeitspunkte()
-    selected_rows_st = stakeholder_Nachhaltigkeitspunkte()
-    
-    combined_df = pd.concat([df_essential, df4, selected_rows_st], ignore_index=True)
-    combined_df = combined_df.dropna(how='all')  # Entfernen von Zeilen, die in allen Spalten NaNs enthalten
-    combined_df['Thema'] = combined_df['Thema'].str.strip()
-    combined_df['Unterthema'] = combined_df['Unterthema'].str.strip()
-    combined_df['Unter-Unterthema'] = combined_df['Unter-Unterthema'].str.strip()
-    combined_df = combined_df.dropna(subset=['Thema'])
-    
-    # Group by columns and merge sources intelligently to reflect all combinations
-    combined_df = combined_df.groupby(['Thema', 'Unterthema', 'Unter-Unterthema']).agg({
-        'Quelle': lambda x: ' & '.join(sorted(set(x)))  # Merge and sort unique sources
-    }).reset_index()
-
-    combined_df = combined_df.drop_duplicates(subset=['Thema', 'Unterthema', 'Unter-Unterthema']).sort_values(by=['Thema', 'Unterthema', 'Unter-Unterthema'])
-    combined_df.insert(0, 'ID', range(1, 1 + len(combined_df)))
-   
-    longlist = pd.DataFrame(combined_df)
-    
-    # Initialisieren der Spalte 'Bewertet' mit 'Nein' für alle Zeilen
+def initialize_bewertet_column(longlist):
     if 'selected_data' in st.session_state:
-        # Update 'Bewertet' basierend auf vorhandenen Bewertungen
         longlist['Bewertet'] = longlist['ID'].apply(lambda x: 'Ja' if x in st.session_state.selected_data['ID'].values else 'Nein')
     else:
         longlist['Bewertet'] = 'Nein'
+    return longlist
 
-    # Erstellen der Bewertungsauswahl
-    bewertung = st.selectbox("Bewertung auswählen:", ["", "Gut", "Mittel", "Schlecht"])
-
-    # Button zum Absenden der Bewertung
+def submit_bewertung(longlist, bewertung):
     if st.button("Bewertung absenden") and bewertung:
         if 'selected_rows' in st.session_state:
             new_data = pd.DataFrame(st.session_state['selected_rows'])
-            # Entfernen der Spalte _selectedRowNodeInfo
             if '_selectedRowNodeInfo' in new_data.columns:
                 new_data.drop('_selectedRowNodeInfo', axis=1, inplace=True)
-            new_data['Bewertung'] = bewertung  # Hinzufügen der Bewertung zu den ausgewählten Zeilen
-            
-            # Prüfen, ob bereits Daten im Session State gespeichert sind
+            new_data['Bewertung'] = bewertung
             if 'selected_data' in st.session_state:
-                # Anhängen der neuen Daten an das bestehende DataFrame
                 st.session_state.selected_data = pd.concat([st.session_state.selected_data, new_data], ignore_index=True)
             else:
-                # Speichern des neuen DataFrame im Session State
                 st.session_state.selected_data = new_data
-            
-            # Aktualisieren der 'Bewertet' Spalte im Haupt-DataFrame
             longlist['Bewertet'] = longlist['ID'].isin(st.session_state.selected_data['ID']).replace({True: 'Ja', False: 'Nein'})
         else:
             st.error("Bitte wählen Sie mindestens eine Zeile aus, bevor Sie eine Bewertung absenden.")
-        
-    # Anzeigen des DataFrame, wenn es im Session State gespeichert ist und Inhalt hat
+    return longlist
+
+def display_selected_data():
     if 'selected_data' in st.session_state and not st.session_state.selected_data.empty:
         st.write("Bewertetes DataFrame:")
         st.dataframe(st.session_state.selected_data)
 
-    # Erstellen der Grid-Optionen
+def display_grid(longlist):
     gb = GridOptionsBuilder.from_dataframe(longlist)
     gb.configure_pagination()
     gb.configure_side_bar()
     gb.configure_selection('multiple', use_checkbox=True, groupSelectsChildren="Group checkbox select children", rowMultiSelectWithClick=False)
     grid_options = gb.build()
-
-    # Anzeigen des AgGrid
     grid_response = AgGrid(longlist, gridOptions=grid_options, enable_enterprise_modules=True, update_mode=GridUpdateMode.MODEL_CHANGED, fit_columns_on_grid_load=True)
-
-    # Speichern der ausgewählten Zeilen im Session State
     st.session_state['selected_rows'] = grid_response['selected_rows']
+
+def merge_dataframes():
+    # Abrufen der Daten von verschiedenen Quellen
+    df4 = eigene_Nachhaltigkeitspunkte()
+    df_essential = Top_down_Nachhaltigkeitspunkte()
+    selected_rows_st = stakeholder_Nachhaltigkeitspunkte()
+
+    # Kombinieren der Daten in einem DataFrame
+    combined_df = pd.concat([df_essential, df4, selected_rows_st], ignore_index=True)
+
+    # Entfernen von Zeilen, die nur NaN-Werte enthalten
+    combined_df = combined_df.dropna(how='all')
+
+    # Entfernen von führenden und nachfolgenden Leerzeichen in den Spalten 'Thema', 'Unterthema' und 'Unter-Unterthema'
+    combined_df['Thema'] = combined_df['Thema'].str.strip()
+    combined_df['Unterthema'] = combined_df['Unterthema'].str.strip()
+    combined_df['Unter-Unterthema'] = combined_df['Unter-Unterthema'].str.strip()
+
+    # Entfernen von Zeilen, in denen das 'Thema' NaN ist
+    combined_df = combined_df.dropna(subset=['Thema'])
+
+    # Gruppieren der Daten nach 'Thema', 'Unterthema' und 'Unter-Unterthema' und Zusammenführen der 'Quelle'-Werte
+    combined_df = combined_df.groupby(['Thema', 'Unterthema', 'Unter-Unterthema']).agg({'Quelle': lambda x: ' & '.join(sorted(set(x)))}).reset_index()
+
+    # Entfernen von Duplikaten und Sortieren der Daten
+    combined_df = combined_df.drop_duplicates(subset=['Thema', 'Unterthema', 'Unter-Unterthema']).sort_values(by=['Thema', 'Unterthema', 'Unter-Unterthema'])
+
+    # Hinzufügen einer 'ID'-Spalte
+    combined_df.insert(0, 'ID', range(1, 1 + len(combined_df)))
+
+    # Erstellen eines neuen DataFrame 'longlist', um Probleme mit der Zuordnung von 'selected_rows' zu vermeiden
+    longlist = pd.DataFrame(combined_df)
+
+    # Initialisieren der 'Bewertet'-Spalte in 'longlist'
+    longlist = initialize_bewertet_column(longlist)
+
+    # Erstellen einer Auswahlbox für die Bewertung
+    bewertung = st.selectbox("Bewertung auswählen:", ["", "Gut", "Mittel", "Schlecht"])
+
+    # Einreichen der Bewertung und Aktualisieren der 'longlist'
+    longlist = submit_bewertung(longlist, bewertung)
+
+    # Anzeigen der ausgewählten Daten
+    display_selected_data()
+
+    # Anzeigen der 'longlist' in einem Grid
+    display_grid(longlist)
 
 def display_page():
     tab1, tab2, tab3 = st.tabs(["Eigene Nachhaltigkeitspunkte", "Stakeholder", "Gesamtübersicht"])
