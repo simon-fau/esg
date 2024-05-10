@@ -30,18 +30,18 @@ def stakeholder_Nachhaltigkeitspunkte():
     
     # Berechnen Sie die Anzahl der ausgewählten Zeilen basierend auf der Auswahl
     if selection == 'Wesentlich':
-        selected_rows = df3[df3['NumericalRating'] > 3 * class_size + df3['NumericalRating'].min()]
+        selected_rows_st = df3[df3['NumericalRating'] > 3 * class_size + df3['NumericalRating'].min()]
     elif selection == 'Eher Wesentlich':
-        selected_rows = df3[df3['NumericalRating'] > 2 * class_size + df3['NumericalRating'].min()]
+        selected_rows_st = df3[df3['NumericalRating'] > 2 * class_size + df3['NumericalRating'].min()]
     elif selection == 'Eher nicht wesentlich':
-        selected_rows = df3[df3['NumericalRating'] > class_size + df3['NumericalRating'].min()]
+        selected_rows_st = df3[df3['NumericalRating'] > class_size + df3['NumericalRating'].min()]
     else:  # Nicht Wesentlich
-        selected_rows = df3[df3['NumericalRating'] > 0]
+        selected_rows_st = df3[df3['NumericalRating'] > 0]
 
     # Speichern Sie die ausgewählten Zeilen im session_state
-    st.session_state.selected_rows = selected_rows
+    st.session_state.selected_rows_st = selected_rows_st
 
-    return selected_rows
+    return selected_rows_st
 
 def eigene_Nachhaltigkeitspunkte():
     # Zugriff auf den DataFrame aus Eigene.py über session_state
@@ -124,17 +124,13 @@ def Top_down_Nachhaltigkeitspunkte():
 def merge_dataframes():
     df4 = eigene_Nachhaltigkeitspunkte()
     df_essential = Top_down_Nachhaltigkeitspunkte()
-    selected_rows = stakeholder_Nachhaltigkeitspunkte()
+    selected_rows_st = stakeholder_Nachhaltigkeitspunkte()
     
-    combined_df = pd.concat([df_essential, df4, selected_rows], ignore_index=True)
+    combined_df = pd.concat([df_essential, df4, selected_rows_st], ignore_index=True)
     combined_df = combined_df.dropna(how='all')  # Entfernen von Zeilen, die in allen Spalten NaNs enthalten
-
-    # Clean data
     combined_df['Thema'] = combined_df['Thema'].str.strip()
     combined_df['Unterthema'] = combined_df['Unterthema'].str.strip()
     combined_df['Unter-Unterthema'] = combined_df['Unter-Unterthema'].str.strip()
-
-    # Entfernen von Zeilen, in denen 'Thema' leer ist
     combined_df = combined_df.dropna(subset=['Thema'])
     
     # Group by columns and merge sources intelligently to reflect all combinations
@@ -143,143 +139,68 @@ def merge_dataframes():
     }).reset_index()
 
     combined_df = combined_df.drop_duplicates(subset=['Thema', 'Unterthema', 'Unter-Unterthema']).sort_values(by=['Thema', 'Unterthema', 'Unter-Unterthema'])
+    combined_df.insert(0, 'ID', range(1, 1 + len(combined_df)))
+   
+    longlist = pd.DataFrame(combined_df)
+    
+    # Initialisieren der Spalte 'Bewertet' mit 'Nein' für alle Zeilen
+    if 'selected_data' in st.session_state:
+        # Update 'Bewertet' basierend auf vorhandenen Bewertungen
+        longlist['Bewertet'] = longlist['ID'].apply(lambda x: 'Ja' if x in st.session_state.selected_data['ID'].values else 'Nein')
+    else:
+        longlist['Bewertet'] = 'Nein'
 
-    # Initialisieren Sie combined_df im st.session_state
-    st.session_state.combined_df = combined_df
+    # Erstellen der Bewertungsauswahl
+    bewertung = st.selectbox("Bewertung auswählen:", ["", "Gut", "Mittel", "Schlecht"])
 
-    # Erstellen Sie die Grid-Optionen
-    gb = GridOptionsBuilder.from_dataframe(combined_df)
-    gb.configure_selection('multiple', use_checkbox=True, groupSelectsChildren="Group checkbox select children", rowMultiSelectWithClick=True)
-    gridOptions = gb.build()
-    AgGrid(combined_df, gridOptions=gridOptions, enable_enterprise_modules=True, update_mode=GridUpdateMode.MODEL_CHANGED, fill_screen=True)
+    # Button zum Absenden der Bewertung
+    if st.button("Bewertung absenden") and bewertung:
+        if 'selected_rows' in st.session_state:
+            new_data = pd.DataFrame(st.session_state['selected_rows'])
+            # Entfernen der Spalte _selectedRowNodeInfo
+            if '_selectedRowNodeInfo' in new_data.columns:
+                new_data.drop('_selectedRowNodeInfo', axis=1, inplace=True)
+            new_data['Bewertung'] = bewertung  # Hinzufügen der Bewertung zu den ausgewählten Zeilen
+            
+            # Prüfen, ob bereits Daten im Session State gespeichert sind
+            if 'selected_data' in st.session_state:
+                # Anhängen der neuen Daten an das bestehende DataFrame
+                st.session_state.selected_data = pd.concat([st.session_state.selected_data, new_data], ignore_index=True)
+            else:
+                # Speichern des neuen DataFrame im Session State
+                st.session_state.selected_data = new_data
+            
+            # Aktualisieren der 'Bewertet' Spalte im Haupt-DataFrame
+            longlist['Bewertet'] = longlist['ID'].isin(st.session_state.selected_data['ID']).replace({True: 'Ja', False: 'Nein'})
+        else:
+            st.error("Bitte wählen Sie mindestens eine Zeile aus, bevor Sie eine Bewertung absenden.")
+        
+    # Anzeigen des DataFrame, wenn es im Session State gespeichert ist und Inhalt hat
+    if 'selected_data' in st.session_state and not st.session_state.selected_data.empty:
+        st.write("Bewertetes DataFrame:")
+        st.dataframe(st.session_state.selected_data)
 
-def Bewertungseinheit():
+    # Erstellen der Grid-Optionen
+    gb = GridOptionsBuilder.from_dataframe(longlist)
+    gb.configure_pagination()
+    gb.configure_side_bar()
+    gb.configure_selection('multiple', use_checkbox=True, groupSelectsChildren="Group checkbox select children", rowMultiSelectWithClick=False)
+    grid_options = gb.build()
 
-    # Add a selectbox to the main area
-    option = st.selectbox(
-        'Bitte wählen Sie aus:',
-        ('Wesentlichkeit der Auswirkung', 'Finanzielle Wesentlichkeit', 'Beide Dimensionen', ''),
-        index=3
-    )
+    # Anzeigen des AgGrid
+    grid_response = AgGrid(longlist, gridOptions=grid_options, enable_enterprise_modules=True, update_mode=GridUpdateMode.MODEL_CHANGED, fit_columns_on_grid_load=True)
 
-    # If 'Wesentlichkeit der Auswirkung' is selected, show another selectbox
-    if option == 'Wesentlichkeit der Auswirkung':
-        auswirkung_option = st.selectbox(
-            'Bitte wählen Sie die Eigenschaft der Auswirkung:',
-            ('Positive Auswirkung', 'Negative Auswirkung', ''),
-            index=2
-        )
-
-        # If 'Negative Auswirkung' is selected, show another selectbox
-        if auswirkung_option == 'Negative Auswirkung':
-            auswirkung_art_option = st.selectbox(
-                'Bitte wählen Sie die Art der Auswirkung:',
-                ('Tatsächliche Auswirkung', 'Potenzielle Auswirkung', ''),
-                index=2
-            )
-
-            # If 'Tatsächliche Auswirkung' is selected, show sliders in the main area
-            if auswirkung_art_option == 'Tatsächliche Auswirkung':
-                ausmass_neg_tat = st.select_slider(
-                    "Ausmaß:",
-                    options=["Keines", "Minimal", "Niedrig", "Medium", "Hoch", "Sehr hoch"],
-                    key="ausmass_negativ_tat_auswirkung"
-                )
-
-                umfang_neg_tat = st.select_slider(
-                    "Umfang:",
-                    options=["Keine", "Lokal", "Regional", "National", "International", "Global"],
-                    key="umfang_negativ_tat_auswirkung"
-                )
-
-                behebbarkeit_neg_tat = st.select_slider(
-                    "Behebbarkeit:",
-                    options=["Kein Aufwand", "Leicht zu beheben", "Mit Aufwand", "Mit hohem Aufwand", "Mit sehr hohem Aufwand", "Nicht behebbar"],
-                    key="behebbarkeit_negativ_tat_auswirkung"
-                )
-
-            # If 'Potenzielle Auswirkung' is selected, show sliders in the main area
-            elif auswirkung_art_option == 'Potenzielle Auswirkung':
-                ausmass_neg_pot = st.select_slider(
-                    "Ausmaß:",
-                    options=["Keines", "Minimal", "Niedrig", "Medium", "Hoch", "Sehr hoch"],
-                    key="ausmass_negativ_pot_auswirkung"
-                )
-
-                umfang_neg_pot = st.select_slider(
-                    "Umfang:",
-                    options=["Keine", "Lokal", "Regional", "National", "International", "Global"],
-                    key="umfang_negativ_pot_auswirkung"
-                )
-
-                behebbarkeit_neg_pot = st.select_slider(
-                    "Behebbarkeit:",
-                    options=["Kein Aufwand", "Leicht zu beheben", "Mit Aufwand", "Mit hohem Aufwand", "Mit sehr hohem Aufwand", "Nicht behebbar"],
-                    key="behebbarkeit_negativ_pot_auswirkung"
-                )
-
-                wahrscheinlichkeit_neg_pot = st.select_slider(
-                    "Wahrscheinlich:",
-                    options=["Tritt nicht ein", "Unwahrscheinlich", "Eher unwahrscheinlich", "Eher wahrscheinlich", "Wahrscheinlich", "Sicher"],
-                    key="wahrscheinlichkeit_negativ_pot_auswirkung"
-                )
-
-        if auswirkung_option == 'Positive Auswirkung':
-            auswirkung_positiv_art_option = st.selectbox(
-                'Bitte wählen Sie die Art der Auswirkung:',
-                ('Tatsächliche Auswirkung', 'Potenzielle Auswirkung', ''),
-                index=2
-            )
-
-            # If 'Tatsächliche Auswirkung' is selected, show sliders in the main area
-            if auswirkung_positiv_art_option == 'Tatsächliche Auswirkung':
-                ausmass_pos_tat = st.select_slider(
-                    "Ausmaß:",
-                    options=["Keines", "Minimal", "Niedrig", "Medium", "Hoch", "Sehr hoch"],
-                    key="ausmass_positiv_tat_auswirkung"
-                )
-
-                umfang_pos_tat = st.select_slider(
-                    "Umfang:",
-                    options=["Keine", "Lokal", "Regional", "National", "International", "Global"],
-                    key="umfang_positiv_tat_auswirkung"
-                )
-
-            # If 'Potenzielle Auswirkung' is selected, show sliders in the main area
-            elif auswirkung_positiv_art_option == 'Potenzielle Auswirkung':
-                ausmass_pos_pot = st.select_slider(
-                    "Ausmaß:",
-                    options=["Keines", "Minimal", "Niedrig", "Medium", "Hoch", "Sehr hoch"],
-                    key="ausmass_positiv_pot_auswirkung"
-                )
-
-                umfang_pos_pot = st.select_slider(
-                    "Umfang:",
-                    options=["Keine", "Lokal", "Regional", "National", "International", "Global"],
-                    key="umfang_positiv_pot_auswirkung"
-                )
-
-                behebbarkeit_pos_pot = st.select_slider(
-                    "Behebbarkeit:",
-                    options=["Kein Aufwand", "Leicht zu beheben", "Mit Aufwand", "Mit hohem Aufwand", "Mit sehr hohem Aufwand", "Nicht behebbar"],
-                    key="behebbarkeit_positiv_pot_auswirkung"
-                )
+    # Speichern der ausgewählten Zeilen im Session State
+    st.session_state['selected_rows'] = grid_response['selected_rows']
 
 def display_page():
     tab1, tab2, tab3 = st.tabs(["Eigene Nachhaltigkeitspunkte", "Stakeholder", "Gesamtübersicht"])
     with tab1: 
-        col1, col2 = st.columns([2, 1])
-        with col1:
-            merge_dataframes()
-        with col2:
-            Bewertungseinheit()
+        merge_dataframes()   
     with tab2:
         stakeholder_punkte()
     with tab3:
         st.write("Gesamtübersicht")
-
-
-        
 
 
 
