@@ -149,7 +149,7 @@ def submit_bewertung(longlist, ausgewaehlte_werte):
                 new_data.drop('_selectedRowNodeInfo', axis=1, inplace=True)
             
             # Kombinieren der Bewertungen zu einer String-Beschreibung
-            bewertungs_string = ' / '.join(filter(None, [ausgewaehlte_werte.get(key, '') for key in ['option', 'auswirkung_option', 'auswirkung_art_option', 'ausmass_neg_tat', 'umfang_neg_tat', 'behebbarkeit_neg_tat']]))
+            bewertungs_string = ' / '.join(filter(None, [ausgewaehlte_werte.get(key, '') for key in ['option', 'auswirkung_option', 'auswirkung_art_option', 'ausmass_neg_tat', 'umfang_neg_tat', 'behebbarkeit_neg_tat', 'ausmass_neg_pot', 'umfang_neg_pot', 'behebbarkeit_neg_pot', 'wahrscheinlichkeit_neg_pot', 'ausmass_pos_tat', 'umfang_pos_tat', 'ausmass_pos_pot', 'umfang_pos_pot', 'behebbarkeit_pos_pot']]))
             new_data['Bewertung'] = bewertungs_string
             
             # Aktualisieren oder Erstellen des `selected_data` DataFrames im Session State
@@ -213,30 +213,57 @@ def merge_dataframes():
     # Initialisieren der 'Bewertet'-Spalte in 'longlist'
     longlist = initialize_bewertet_column(longlist)
 
-    # Initialisierung aller erforderlichen Variablen
-    option = st.selectbox('Bitte wählen Sie aus:', ('Wesentlichkeit der Auswirkung', 'Finanzielle Wesentlichkeit', 'Beide Dimensionen', ''), index=3)
-    auswirkung_option = auswirkung_art_option = ausmass_neg_tat = umfang_neg_tat = behebbarkeit_neg_tat = ''
+    # Initialize all required variables for ausgewaehlte_werte
+    option = auswirkung_option = auswirkung_art_option = ausmass_neg_tat = umfang_neg_tat = behebbarkeit_neg_tat = ''
+    ausmass_neg_pot = umfang_neg_pot = behebbarkeit_neg_pot = wahrscheinlichkeit_neg_pot = ''  
+    ausmass_pos_tat = umfang_pos_tat = ausmass_pos_pot = umfang_pos_pot = behebbarkeit_pos_pot = ''
 
+
+    # Configuration for the selection boxes based on 'option'
+    option = st.selectbox('Bitte wählen Sie aus:', ['Wesentlichkeit der Auswirkung', 'Finanzielle Wesentlichkeit', 'Beide Dimensionen', ''], index=3, key="option")
     if option == 'Wesentlichkeit der Auswirkung':
-        auswirkung_option = st.selectbox('Bitte wählen Sie die Eigenschaft der Auswirkung:', ('Positive Auswirkung', 'Negative Auswirkung', ''), index=2)
-
+        auswirkung_option = st.selectbox('Bitte wählen Sie die Eigenschaft der Auswirkung:', ['Positive Auswirkung', 'Negative Auswirkung', ''], index=2, key="auswirkung_option")
         if auswirkung_option == 'Negative Auswirkung':
-            auswirkung_art_option = st.selectbox('Bitte wählen Sie die Art der Auswirkung:', ('Tatsächliche Auswirkung', 'Potenzielle Auswirkung', ''), index=2)
-
+            auswirkung_art_option = st.selectbox('Bitte wählen Sie die Art der Auswirkung:', ['Tatsächliche Auswirkung', 'Potenzielle Auswirkung', ''], index=2, key="auswirkung_art_option")
             if auswirkung_art_option == 'Tatsächliche Auswirkung':
-                ausmass_neg_tat = st.select_slider("Ausmaß:", options=["Keines", "Minimal", "Niedrig", "Medium", "Hoch", "Sehr hoch"], key="ausmass_negativ_tat_auswirkung")
-                umfang_neg_tat = st.select_slider("Umfang:", options=["Keine", "Lokal", "Regional", "National", "International", "Global"], key="umfang_negativ_tat_auswirkung")
-                behebbarkeit_neg_tat = st.select_slider("Behebbarkeit:", options=["Kein Aufwand", "Leicht zu beheben", "Mit Aufwand", "Mit hohem Aufwand", "Mit sehr hohem Aufwand", "Nicht behebbar"], key="behebbarkeit_negativ_tat_auswirkung")
-
+                ausmass_neg_tat = st.select_slider("Ausmaß:", options=["Keines", "Minimal", "Niedrig", "Medium", "Hoch", "Sehr hoch"], key="ausmass_neg_tat")
+                umfang_neg_tat = st.select_slider("Umfang:", options=["Keine", "Lokal", "Regional", "National", "International", "Global"], key="umfang_neg_tat")
+                behebbarkeit_neg_tat = st.select_slider("Behebbarkeit:", options=["Kein Aufwand", "Leicht zu beheben", "Mit Aufwand", "Mit hohem Aufwand", "Mit sehr hohem Aufwand", "Nicht behebbar"], key="behebbarkeit_neg_tat")
+            elif auswirkung_art_option == 'Potenzielle Auswirkung':
+                ausmass_neg_pot = st.select_slider("Ausmaß:", options=["Keines", "Minimal", "Niedrig", "Medium", "Hoch", "Sehr hoch"], key="ausmass_neg_pot")
+                umfang_neg_pot = st.select_slider("Umfang:", options=["Keine", "Lokal", "Regional", "National", "International", "Global"], key="umfang_neg_pot")
+                behebbarkeit_neg_pot = st.select_slider("Behebbarkeit:", options=["Kein Aufwand", "Leicht zu beheben", "Mit Aufwand", "Mit hohem Aufwand", "Mit sehr hohem Aufwand", "Nicht behebbar"], key="behebbarkeit_neg_pot")
+                wahrscheinlichkeit_neg_pot = st.select_slider("Wahrscheinlichkeit:", options=["Sehr niedrig", "Niedrig", "Mittel", "Hoch", "Sehr hoch"], key="wahrscheinlichkeit_neg_pot")
+        elif auswirkung_option == 'Positive Auswirkung':
+            auswirkung_art_option = st.selectbox('Bitte wählen Sie die Art der Auswirkung:', ['Tatsächliche Auswirkung', 'Potenzielle Auswirkung', ''], index=2, key="auswirkung_art_option_pos")
+            if auswirkung_art_option == 'Tatsächliche Auswirkung':
+                ausmass_pos_tat = st.select_slider("Ausmaß:", options=["Keines", "Minimal", "Niedrig", "Medium", "Hoch", "Sehr hoch"], key="ausmass_pos_tat")
+                umfang_pos_tat = st.select_slider("Umfang:", options=["Keine", "Lokal", "Regional", "National", "International", "Global"], key="umfang_pos_tat")
+            elif auswirkung_art_option == 'Potenzielle Auswirkung':
+                ausmass_pos_pot = st.select_slider("Ausmaß:", options=["Keines", "Minimal", "Niedrig", "Medium", "Hoch", "Sehr hoch"], key="ausmass_pos_pot")
+                umfang_pos_pot = st.select_slider("Umfang:", options=["Keine", "Lokal", "Regional", "National", "International", "Global"], key="umfang_pos_pot")
+                behebbarkeit_pos_pot = st.select_slider("Behebbarkeit:", options=["Kein Aufwand", "Leicht zu beheben", "Mit Aufwand", "Mit hohem Aufwand", "Mit sehr hohem Aufwand", "Nicht behebbar"], key="behebbarkeit_pos_pot")
+    
+    # Store selected values
     ausgewaehlte_werte = {
         "option": option,
         "auswirkung_option": auswirkung_option,
         "auswirkung_art_option": auswirkung_art_option,
         "ausmass_neg_tat": ausmass_neg_tat,
         "umfang_neg_tat": umfang_neg_tat,
-        "behebbarkeit_neg_tat": behebbarkeit_neg_tat
+        "behebbarkeit_neg_tat": behebbarkeit_neg_tat,
+        "ausmass_neg_pot": ausmass_neg_pot,
+        "umfang_neg_pot": umfang_neg_pot,
+        "behebbarkeit_neg_pot": behebbarkeit_neg_pot,
+        "wahrscheinlichkeit_neg_pot": wahrscheinlichkeit_neg_pot,
+        "ausmass_pos_tat": ausmass_pos_tat,
+        "umfang_pos_tat": umfang_pos_tat,
+        "ausmass_pos_pot": ausmass_pos_pot,
+        "umfang_pos_pot": umfang_pos_pot,
+        "behebbarkeit_pos_pot": behebbarkeit_pos_pot
     }
 
+    # Proceed with the rest of the logic
     longlist = submit_bewertung(longlist, ausgewaehlte_werte)
     display_selected_data()
     display_grid(longlist)
