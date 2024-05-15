@@ -70,7 +70,6 @@ def excel_upload():
             st.session_state.stakeholder_punkte_df['Platzierung'] = st.session_state.stakeholder_punkte_df['NumericalRating'].rank(method='min', ascending=False).astype(int)
         
             st.experimental_rerun()
-
         
 def display_page():          
     tab1, tab2 = st.tabs(["Auswahl", "Stakeholder Nachhaltigkeitspunkte"])
