@@ -154,13 +154,32 @@ def submit_bewertung(longlist, ausgewaehlte_werte):
             if '_selectedRowNodeInfo' in new_data.columns:
                 new_data.drop('_selectedRowNodeInfo', axis=1, inplace=True)
             
-            # Kombinieren der Bewertungen zu einer String-Beschreibung
-            bewertungs_string = ' / '.join(filter(None, [ausgewaehlte_werte.get(key, '') for key in ['option', 'auswirkung_option', 'auswirkung_art_option', 'ausmass_neg_tat', 'umfang_neg_tat', 'behebbarkeit_neg_tat', 'ausmass_neg_pot', 'umfang_neg_pot', 'behebbarkeit_neg_pot', 'wahrscheinlichkeit_neg_pot', 'ausmass_pos_tat', 'umfang_pos_tat', 'ausmass_pos_pot', 'umfang_pos_pot', 'behebbarkeit_pos_pot', 'wahrscheinlichkeit_finanziell', 'ausmass_finanziell', 'auswirkung_finanziell']]))
-            new_data['Bewertung'] = bewertungs_string
+            # Kombinieren der auswirkungsbezogenen Bewertungen zu einer String-Beschreibung
+            auswirkung_parts = [
+                ausgewaehlte_werte.get('auswirkung_option') if ausgewaehlte_werte.get('auswirkung_option') else '',
+                ausgewaehlte_werte.get('auswirkung_art_option') if ausgewaehlte_werte.get('auswirkung_art_option') else '',
+                f"Ausmaß: {ausgewaehlte_werte.get('ausmass_neg_tat')}" if ausgewaehlte_werte.get('ausmass_neg_tat') else '',
+                f"Umfang: {ausgewaehlte_werte.get('umfang_neg_tat')}" if ausgewaehlte_werte.get('umfang_neg_tat') else '',
+                f"Behebbarkeit: {ausgewaehlte_werte.get('behebbarkeit_neg_tat')}" if ausgewaehlte_werte.get('behebbarkeit_neg_tat') else '',
+                f"Ausmaß: {ausgewaehlte_werte.get('ausmass_neg_pot')}" if ausgewaehlte_werte.get('ausmass_neg_pot') else '',
+                f"Umfang: {ausgewaehlte_werte.get('umfang_neg_pot')}" if ausgewaehlte_werte.get('umfang_neg_pot') else '',
+                f"Behebbarkeit: {ausgewaehlte_werte.get('behebbarkeit_neg_pot')}" if ausgewaehlte_werte.get('behebbarkeit_neg_pot') else '',
+            ]
+            auswirkung_string = ' ; '.join(part for part in auswirkung_parts if part)  # Only join the parts that are not empty
+            
+            new_data['Auswirkung'] = auswirkung_string
+
+            # Kombinieren der finanziellen Bewertungen zu einer String-Beschreibung
+            finanziell_string = f"Ausmaß: {ausgewaehlte_werte.get('ausmass_finanziell', '')} ; Wahrscheinlichkeit: {ausgewaehlte_werte.get('wahrscheinlichkeit_finanziell', '')} ; Finanzielle Auswirkung: {ausgewaehlte_werte.get('auswirkung_finanziell', '')}"
+            
+            new_data['Auswirkung'] = auswirkung_string
+            new_data['Finanziell'] = finanziell_string
             
             # Aktualisieren oder Erstellen des `selected_data` DataFrames im Session State
             if 'selected_data' in st.session_state:
                 st.session_state.selected_data = pd.concat([st.session_state.selected_data, new_data], ignore_index=True)
+                # Entfernen von doppelten Bewertungen basierend auf der ID, wobei die neueste Bewertung beibehalten wird
+                st.session_state.selected_data.drop_duplicates(subset='ID', keep='last', inplace=True)
             else:
                 st.session_state.selected_data = new_data
             
@@ -172,8 +191,24 @@ def submit_bewertung(longlist, ausgewaehlte_werte):
 
 def display_selected_data():
     if 'selected_data' in st.session_state and not st.session_state.selected_data.empty:
-        st.write("Bewertetes DataFrame:")
-        st.dataframe(st.session_state.selected_data)
+        # Auswahl der benötigten Spalten
+        selected_columns = st.session_state.selected_data[['ID', 'Auswirkung', 'Finanziell']]
+        
+        # Definieren der gridOptions
+        gridOptions = {
+            'defaultColDef': {
+                'resizable': True,
+                'width': 150,
+                'minWidth': 50
+            },
+            'columnDefs': [
+                {'headerName': 'ID', 'field': 'ID', 'width': 100, 'minWidth': 50},
+                {'headerName': 'Auswirkung', 'field': 'Auswirkung', 'flex': 1},
+                {'headerName': 'Finanziell', 'field': 'Finanziell', 'flex': 1}
+            ]
+        }
+        # Erstellen des AgGrid
+        AgGrid(selected_columns, gridOptions=gridOptions)
 
 def display_grid(longlist):
     gb = GridOptionsBuilder.from_dataframe(longlist)
@@ -184,7 +219,14 @@ def display_grid(longlist):
     grid_response = AgGrid(longlist, gridOptions=grid_options, enable_enterprise_modules=True, update_mode=GridUpdateMode.MODEL_CHANGED, fit_columns_on_grid_load=True)
     st.session_state['selected_rows'] = grid_response['selected_rows']
 
+# Erstellen Sie ein leeres Wörterbuch zur Speicherung von Inhalt-ID-Zuordnungen
+content_id_map = {}
+
+# Dies ist die nächste ID, die zugewiesen werden soll
+next_id = 1
+
 def merge_dataframes():
+    global next_id  # Zugriff auf die globale Variable next_id
     # Abrufen der Daten von verschiedenen Quellen
     df4 = eigene_Nachhaltigkeitspunkte()
     df_essential = Top_down_Nachhaltigkeitspunkte()
@@ -207,11 +249,28 @@ def merge_dataframes():
     # Gruppieren der Daten nach 'Thema', 'Unterthema' und 'Unter-Unterthema' und Zusammenführen der 'Quelle'-Werte
     combined_df = combined_df.groupby(['Thema', 'Unterthema', 'Unter-Unterthema']).agg({'Quelle': lambda x: ' & '.join(sorted(set(x)))}).reset_index()
 
-    # Entfernen von Duplikaten und Sortieren der Daten
-    combined_df = combined_df.drop_duplicates(subset=['Thema', 'Unterthema', 'Unter-Unterthema']).sort_values(by=['Thema', 'Unterthema', 'Unter-Unterthema'])
+    # Entfernen von Duplikaten
+    combined_df = combined_df.drop_duplicates(subset=['Thema', 'Unterthema', 'Unter-Unterthema'])
 
     # Hinzufügen einer 'ID'-Spalte
     combined_df.insert(0, 'ID', range(1, 1 + len(combined_df)))
+
+     # Hinzufügen einer 'ID'-Spalte
+    for index, row in combined_df.iterrows():
+        content = (row['Thema'], row['Unterthema'], row['Unter-Unterthema'])
+
+        # Überprüfen Sie, ob der Inhalt bereits eine ID hat
+        if content in content_id_map:
+            # Verwenden Sie die vorhandene ID
+            id = content_id_map[content]
+        else:
+            # Erstellen Sie eine neue ID und speichern Sie die Zuordnung
+            id = next_id
+            content_id_map[content] = id
+            next_id += 1  # Inkrementieren Sie die nächste ID
+
+        # Setzen Sie die ID im DataFrame
+        combined_df.at[index, 'ID'] = id
 
     # Erstellen eines neuen DataFrame 'longlist', um Probleme mit der Zuordnung von 'selected_rows' zu vermeiden
     longlist = pd.DataFrame(combined_df)
@@ -227,7 +286,7 @@ def merge_dataframes():
 
     st.sidebar.markdown("---")
     st.sidebar.subheader("Auswirkungsbewertung")
-    auswirkung_option = st.sidebar.selectbox('Bitte wählen Sie die Eigenschaft der Auswirkung:', ['Positive Auswirkung', 'Negative Auswirkung', ''], index=2, key="auswirkung_option")
+    auswirkung_option = st.sidebar.selectbox('Bitte wählen Sie die Eigenschaft der Auswirkung:', ['Keine Auswirkung','Positive Auswirkung', 'Negative Auswirkung'], index=2, key="auswirkung_option")
     if auswirkung_option == 'Negative Auswirkung':
         auswirkung_art_option = st.sidebar.selectbox('Bitte wählen Sie die Art der Auswirkung:', ['Tatsächliche Auswirkung', 'Potenzielle Auswirkung', ''], index=2, key="auswirkung_art_option")
         if auswirkung_art_option == 'Tatsächliche Auswirkung':
@@ -279,11 +338,13 @@ def merge_dataframes():
 
     # Proceed with the rest of the logic
     longlist = submit_bewertung(longlist, ausgewaehlte_werte)
-    display_selected_data()
     display_grid(longlist)
+    
+    with st.expander("Bewertungen anzeigen"):
+        display_selected_data()
 
 def display_page():
-    tab1, tab2, tab3 = st.tabs(["Eigene Nachhaltigkeitspunkte", "Stakeholder", "Gesamtübersicht"])
+    tab1, tab2, tab3 = st.tabs(["Bewertung der Nachhaltigkeitspunkte", "Stakeholder", "Gesamtübersicht"])
     with tab1: 
         merge_dataframes()   
     with tab2:
