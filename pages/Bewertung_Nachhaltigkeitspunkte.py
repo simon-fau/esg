@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode, DataReturnMode
 from pages.Bottom_up_stakeholder import stakeholder_punkte
-import matplotlib.pyplot as plt
+import altair as alt
 
 def stakeholder_Nachhaltigkeitspunkte():
     # Zugriff auf den DataFrame aus Bottom_up_stakeholder.py über session_state
@@ -339,6 +339,9 @@ def merge_dataframes():
     # Gruppieren der Daten nach 'Thema', 'Unterthema' und 'Unter-Unterthema' und Zusammenführen der 'Quelle'-Werte
     combined_df = combined_df.groupby(['Thema', 'Unterthema', 'Unter-Unterthema']).agg({'Quelle': lambda x: ' & '.join(sorted(set(x)))}).reset_index()
 
+    # Hinzufügen der 'NumericalRating' Spalte aus 'selected_rows_st'
+    combined_df = pd.merge(combined_df, selected_rows_st[['Thema', 'Unterthema', 'Unter-Unterthema', 'NumericalRating']], on=['Thema', 'Unterthema', 'Unter-Unterthema'], how='left')
+
     # Entfernen von Duplikaten
     combined_df = combined_df.drop_duplicates(subset=['Thema', 'Unterthema', 'Unter-Unterthema'])
 
@@ -433,7 +436,7 @@ def merge_dataframes():
     with st.expander("Bewertungen anzeigen"):
         display_selected_data()
 
-import altair as alt
+
 
 def Scatter_chart():
     # Überprüfen Sie, ob 'selected_data' initialisiert wurde
