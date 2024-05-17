@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode, DataReturnMode
 from pages.Bottom_up_stakeholder import stakeholder_punkte
+import matplotlib.pyplot as plt
 
 def stakeholder_Nachhaltigkeitspunkte():
     # Zugriff auf den DataFrame aus Bottom_up_stakeholder.py über session_state
@@ -154,17 +155,52 @@ def submit_bewertung(longlist, ausgewaehlte_werte):
             if '_selectedRowNodeInfo' in new_data.columns:
                 new_data.drop('_selectedRowNodeInfo', axis=1, inplace=True)
 
-            # Zuordnung der Slider-Auswahlen zu numerischen Werten
+            # Zuordnung der Slider-Auswahlen zu numerischen Werten für die finanzielle Bewertung
             ausmass_finanziell_mapping = {
                 "Keine": 1, "Minimal": 2, "Niedrig": 3, "Medium": 4, "Hoch": 5, "Sehr hoch": 6
             }
-            
             wahrscheinlichkeit_finanziell_mapping = {
                 "Tritt nicht ein": 1, "Unwahrscheinlich": 2, "Eher unwahrscheinlich": 3, "Eher wahrscheinlich": 4, "Wahrscheinlich": 5, "Sicher": 6
             }
-            
             auswirkung_finanziell_mapping = {
-                "Keine": 1, "Geringfügig": 2, "Mittel": 3, "Hoch": 4, "Sehr hoch": 5
+                "Keine": 1, "Sehr gering": 2, "Eher gering": 3, "Eher Hoch": 4, "Hoch": 5, "Sehr hoch": 6
+            }
+            # Zuordnung der Slider-Auswahlen zu numerischen Werten für die Auswirkungsbewertung
+            ausmass_neg_tat_mapping = {
+                "Keine": 1, "Minimal": 2, "Niedrig": 3, "Medium": 4, "Hoch": 5, "Sehr hoch": 6
+            }
+            umfang_neg_tat_mapping = {
+                "Keine": 1, "Lokal": 2, "Regional": 3, "National": 4, "International": 5, "Global": 6
+            }
+            behebbarkeit_neg_tat_mapping = {
+                "Kein Aufwand": 1, "Leicht zu beheben": 2, "Mit Aufwand": 3, "Mit hohem Aufwand": 4, "Mit sehr hohem Aufwand": 5, "Nicht behebbar": 6
+            }
+            ausmass_neg_pot_mapping = {
+                "Keine": 1, "Minimal": 2, "Niedrig": 3, "Medium": 4, "Hoch": 5, "Sehr hoch": 6
+            }
+            umfang_neg_pot_mapping = {
+                "Keine": 1, "Lokal": 2, "Regional": 3, "National": 4, "International": 5, "Global": 6
+            }
+            behebbarkeit_neg_pot_mapping = {
+                "Kein Aufwand": 1, "Leicht zu beheben": 2, "Mit Aufwand": 3, "Mit hohem Aufwand": 4, "Mit sehr hohem Aufwand": 5, "Nicht behebbar": 6
+            }
+            wahrscheinlichkeit_neg_pot_mapping = {
+                "Tritt nicht ein": 1, "Unwahrscheinlich": 2, "Eher unwahrscheinlich": 3, "Eher wahrscheinlich": 4, "Wahrscheinlich": 5, "Sicher": 6
+            }
+            ausmass_pos_tat_mapping = {
+                "Keine": 1, "Minimal": 2, "Niedrig": 3, "Medium": 4, "Hoch": 5, "Sehr hoch": 6
+            }
+            umfang_pos_tat_mapping = {
+                "Keine": 1, "Lokal": 2, "Regional": 3, "National": 4, "International": 5, "Global": 6
+            }
+            ausmass_pos_pot_mapping = {
+                "Keine": 1, "Minimal": 2, "Niedrig": 3, "Medium": 4, "Hoch": 5, "Sehr hoch": 6
+            }
+            umfang_pos_pot_mapping = {
+                "Keine": 1, "Lokal": 2, "Regional": 3, "National": 4, "International": 5, "Global": 6
+            }
+            behebbarkeit_pos_pot_mapping = {
+                "Kein Aufwand": 1, "Leicht zu beheben": 2, "Mit Aufwand": 3, "Mit hohem Aufwand": 4, "Mit sehr hohem Aufwand": 5, "Nicht behebbar": 6
             }
             
             # Kombinieren der Bewertungen zu einer String-Beschreibung
@@ -183,12 +219,43 @@ def submit_bewertung(longlist, ausgewaehlte_werte):
             finanziell_string = f"Ausmaß: {ausgewaehlte_werte.get('ausmass_finanziell', '')} ; Wahrscheinlichkeit: {ausgewaehlte_werte.get('wahrscheinlichkeit_finanziell', '')} ; Finanzielle Auswirkung: {ausgewaehlte_werte.get('auswirkung_finanziell', '')}"
             new_data['Finanziell'] = finanziell_string
 
-            # Berechnung des Scores für finanzielle Bewertungen
-            new_data['Score Finanzen'] = (
+            # Berechnung des Scores für finanzielle Bewertungen normalized_score = ((produkt - min_produkt) / (max_produkt - min_produkt)) * 99 + 1
+            new_data['Score Finanzen'] = ((
                 ausmass_finanziell_mapping.get(ausgewaehlte_werte.get('ausmass_finanziell', 'Keine'), 1) *
                 wahrscheinlichkeit_finanziell_mapping.get(ausgewaehlte_werte.get('wahrscheinlichkeit_finanziell', 'Keine'), 1) *
-                auswirkung_finanziell_mapping.get(ausgewaehlte_werte.get('auswirkung_finanziell', 'Keine'), 1)
+                auswirkung_finanziell_mapping.get(ausgewaehlte_werte.get('auswirkung_finanziell', 'Keine'), 1) - 1) / (216 - 1) * 99 + 1
             )
+
+            # Berechnung Tatsächliche negative Auswirkungen
+            tatsaechlich_negativ = ((
+                ausmass_neg_tat_mapping.get(ausgewaehlte_werte.get('ausmass_neg_tat', 'Keine'), 1) *
+                umfang_neg_tat_mapping.get(ausgewaehlte_werte.get('umfang_neg_tat', 'Keine'), 1) *
+                behebbarkeit_neg_tat_mapping.get(ausgewaehlte_werte.get('behebbarkeit_neg_tat', 'Kein Aufwand'), 1) - 1) / (216 - 1) * 99 + 1
+            )
+            
+            # Berechnung Potenzielle negative Auswirkungen
+            potentiell_negativ = ((
+                ausmass_neg_pot_mapping.get(ausgewaehlte_werte.get('ausmass_neg_pot', 'Keine'), 1) *
+                umfang_neg_pot_mapping.get(ausgewaehlte_werte.get('umfang_neg_pot', 'Keine'), 1) *
+                behebbarkeit_neg_pot_mapping.get(ausgewaehlte_werte.get('behebbarkeit_neg_pot', 'Kein Aufwand'), 1) *
+                wahrscheinlichkeit_neg_pot_mapping.get(ausgewaehlte_werte.get('wahrscheinlichkeit_neg_pot', 'Tritt nicht ein'), 1) - 1) / (1296 - 1) * 99 + 1
+            )
+            
+            # Berechnung Tatsächliche positive Auswirkungen
+            tatsaechlich_positiv = ((
+                ausmass_pos_tat_mapping.get(ausgewaehlte_werte.get('ausmass_pos_tat', 'Keine'), 1) *
+                umfang_pos_tat_mapping.get(ausgewaehlte_werte.get('umfang_pos_tat', 'Keine'), 1) - 1) / (36 - 1) * 99 + 1
+            )
+            
+            # Berechnung Potenzielle positive Auswirkungen
+            potentiell_positiv = ((
+                ausmass_pos_pot_mapping.get(ausgewaehlte_werte.get('ausmass_pos_pot', 'Keine'), 1) *
+                umfang_pos_pot_mapping.get(ausgewaehlte_werte.get('umfang_pos_pot', 'Keine'), 1) *
+                behebbarkeit_pos_pot_mapping.get(ausgewaehlte_werte.get('behebbarkeit_pos_pot', 'Kein Aufwand'), 1) - 1) / (216 - 1) * 99 + 1
+            )
+            
+            # Berechnung des Gesamtscores für die Auswirkungsbewertung
+            new_data['Score Auswirkung'] = tatsaechlich_negativ * tatsaechlich_positiv * potentiell_negativ * potentiell_positiv
 
             # Aktualisieren oder Erstellen des `selected_data` DataFrames im Session State
             if 'selected_data' in st.session_state:
@@ -206,7 +273,7 @@ def submit_bewertung(longlist, ausgewaehlte_werte):
 def display_selected_data():
     if 'selected_data' in st.session_state and not st.session_state.selected_data.empty:
         # Auswahl der benötigten Spalten
-        selected_columns = st.session_state.selected_data[['ID', 'Auswirkung', 'Finanziell', 'Score Finanzen']]
+        selected_columns = st.session_state.selected_data[['ID', 'Auswirkung', 'Finanziell', 'Score Finanzen', 'Score Auswirkung']]
         
         # Definieren der gridOptions
         gridOptions = {
@@ -219,7 +286,8 @@ def display_selected_data():
                 {'headerName': 'ID', 'field': 'ID', 'width': 100, 'minWidth': 50},
                 {'headerName': 'Auswirkung', 'field': 'Auswirkung', 'flex': 1},
                 {'headerName': 'Finanziell', 'field': 'Finanziell', 'flex': 1},
-                {'headerName': 'Finanz-Score', 'field': 'Score Finanzen', 'width': 150, 'minWidth': 50}
+                {'headerName': 'Finanz-Score', 'field': 'Score Finanzen', 'width': 150, 'minWidth': 50},
+                {'headerName': 'Auswirkungs-Score', 'field': 'Score Auswirkung', 'width': 150, 'minWidth': 50}
             ]
         }
         # Erstellen des AgGrid
@@ -358,11 +426,31 @@ def merge_dataframes():
     with st.expander("Bewertungen anzeigen"):
         display_selected_data()
 
+def Scatter_chart():
+    # Überprüfen Sie, ob 'selected_data' initialisiert wurde
+    if "selected_data" not in st.session_state or st.session_state.selected_data.empty:
+        return
+
+    # Stellen Sie sicher, dass 'selected_data' ein DataFrame mit den Spalten 'Score Finanzen' und 'Score Auswirkung' ist
+    if 'Score Finanzen' in st.session_state.selected_data.columns and 'Score Auswirkung' in st.session_state.selected_data.columns:
+        selected_columns = st.session_state.selected_data[['Score Finanzen', 'Score Auswirkung']]
+    # Erstellen Sie ein Scatter-Chart mit Matplotlib
+    plt.figure(figsize=(10, 6))
+    plt.scatter(selected_columns['Score Finanzen'], selected_columns['Score Auswirkung'])
+    plt.xlim(0, 100)
+    plt.ylim(0, 100)
+    plt.xlabel('Score Finanzen')
+    plt.ylabel('Score Auswirkung')
+
+    # Zeigen Sie das Diagramm in Streamlit an
+    st.pyplot(plt)
 
 def display_page():
     tab1, tab2, tab3 = st.tabs(["Bewertung der Nachhaltigkeitspunkte", "Stakeholder", "Gesamtübersicht"])
     with tab1: 
-        merge_dataframes()   
+        merge_dataframes()
+        Scatter_chart()
+         
     with tab2:
         with st.expander("In Bewertung aufgenommene Stakeholderpunkte"):
             AgGrid(st.session_state.selected_rows_st)
