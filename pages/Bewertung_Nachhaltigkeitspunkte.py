@@ -272,8 +272,12 @@ def submit_bewertung(longlist, ausgewaehlte_werte):
 
 def display_selected_data():
     if 'selected_data' in st.session_state and not st.session_state.selected_data.empty:
+        # Füllen Sie fehlende Werte in 'Thema', 'Unterthema' und 'Unter-Unterthema' mit einem leeren String
+        for column in ['Thema', 'Unterthema', 'Unter-Unterthema']:
+            st.session_state.selected_data[column] = st.session_state.selected_data[column].fillna('')
+
         # Auswahl der benötigten Spalten
-        selected_columns = st.session_state.selected_data[['ID', 'Auswirkung', 'Finanziell', 'Score Finanzen', 'Score Auswirkung']]
+        selected_columns = st.session_state.selected_data[['ID', 'Auswirkung', 'Finanziell', 'Score Finanzen', 'Score Auswirkung', 'Thema', 'Unterthema', 'Unter-Unterthema']]
         
         # Definieren der gridOptions
         gridOptions = {
@@ -287,7 +291,10 @@ def display_selected_data():
                 {'headerName': 'Auswirkung', 'field': 'Auswirkung', 'flex': 1},
                 {'headerName': 'Finanziell', 'field': 'Finanziell', 'flex': 1},
                 {'headerName': 'Finanz-Score', 'field': 'Score Finanzen', 'width': 150, 'minWidth': 50},
-                {'headerName': 'Auswirkungs-Score', 'field': 'Score Auswirkung', 'width': 150, 'minWidth': 50}
+                {'headerName': 'Auswirkungs-Score', 'field': 'Score Auswirkung', 'width': 150, 'minWidth': 50},
+                {'headerName': 'Thema', 'field': 'Thema', 'flex': 1},
+                {'headerName': 'Unterthema', 'field': 'Unterthema', 'flex': 1},
+                {'headerName': 'Unter-Unterthema', 'field': 'Unter-Unterthema', 'flex': 1}
             ]
         }
         # Erstellen des AgGrid
@@ -426,24 +433,41 @@ def merge_dataframes():
     with st.expander("Bewertungen anzeigen"):
         display_selected_data()
 
+import altair as alt
+
 def Scatter_chart():
     # Überprüfen Sie, ob 'selected_data' initialisiert wurde
     if "selected_data" not in st.session_state or st.session_state.selected_data.empty:
         return
 
-    # Stellen Sie sicher, dass 'selected_data' ein DataFrame mit den Spalten 'Score Finanzen' und 'Score Auswirkung' ist
-    if 'Score Finanzen' in st.session_state.selected_data.columns and 'Score Auswirkung' in st.session_state.selected_data.columns:
-        selected_columns = st.session_state.selected_data[['Score Finanzen', 'Score Auswirkung']]
-    # Erstellen Sie ein Scatter-Chart mit Matplotlib
-    plt.figure(figsize=(10, 6))
-    plt.scatter(selected_columns['Score Finanzen'], selected_columns['Score Auswirkung'])
-    plt.xlim(0, 100)
-    plt.ylim(0, 100)
-    plt.xlabel('Score Finanzen')
-    plt.ylabel('Score Auswirkung')
+    # Stellen Sie sicher, dass 'selected_data' ein DataFrame mit den benötigten Spalten ist
+    required_columns = ['Score Finanzen', 'Score Auswirkung', 'Thema', 'Unterthema', 'Unter-Unterthema']
+    if all(column in st.session_state.selected_data.columns for column in required_columns):
+        selected_columns = st.session_state.selected_data[required_columns]
 
-    # Zeigen Sie das Diagramm in Streamlit an
-    st.pyplot(plt)
+        # Erstellen Sie eine neue Spalte 'color', die auf dem Wert der Spalte 'Thema' basiert
+        def assign_color(theme):
+            if theme in ['Klimawandel', 'Umweltverschmutzung', 'Wasser- & Meeresressourcen', 'Biodiversität', 'Kreislaufwirtschaft']:
+                return 'green'
+            elif theme in ['Eigene Belegschaft', 'Arbeitskräfte in der Wertschöpfungskette', 'Betroffene Gemeinschaften', 'Verbraucher und Endnutzer']:
+                return 'yellow'
+            elif theme == 'Unternehmenspolitik':
+                return 'blue'
+            else:
+                return 'gray'
+
+        selected_columns['color'] = selected_columns['Thema'].apply(assign_color)
+
+        # Erstellen Sie ein Scatter-Chart mit Altair
+        chart = alt.Chart(selected_columns).mark_circle(size=60).encode(
+            x=alt.X('Score Finanzen', scale=alt.Scale(domain=(0, 100)), title='Finanzielle Wesentlichkeit'),
+            y=alt.Y('Score Auswirkung', scale=alt.Scale(domain=(0, 100)), title='Auswirkungsbezogene Wesentlichkeit'),
+            color=alt.Color('color', scale=None),  # Verwenden Sie die 'color' Spalte für die Farbe der Punkte
+            tooltip=required_columns
+        )
+
+        # Zeigen Sie das Diagramm in Streamlit an
+        st.altair_chart(chart)
 
 def display_page():
     tab1, tab2, tab3 = st.tabs(["Bewertung der Nachhaltigkeitspunkte", "Stakeholder", "Gesamtübersicht"])
