@@ -327,7 +327,7 @@ def merge_dataframes():
     st.sidebar.subheader("Finanzielle Bewertung")
     ausmass_finanziell = st.sidebar.select_slider("Ausmaß:", options=["Keine", "Minimal", "Niedrig", "Medium", "Hoch", "Sehr hoch"], key="ausmass_finanziell")
     wahrscheinlichkeit_finanziell = st.sidebar.select_slider("Wahrscheinlichkeit:", options=["Tritt nicht ein", "Unwahrscheinlich", "Eher unwahrscheinlich", "Eher wahrscheinlich", "Wahrscheinlich", "Sicher"], key="wahrscheinlichkeit_finanziell")
-    auswirkung_finanziell = st.sidebar.select_slider("Finanzielle Auswirkung:", options=["Keine", "Geringfügig", "Mittel", "Hoch", "Sehr hoch"], key="auswirkung_finanziell")
+    auswirkung_finanziell = st.sidebar.select_slider("Finanzielle Auswirkung:", options=["Keine", "Sehr gering", "Eher gering", "Eher hoch", "Hoch", "Sehr hoch"], key="auswirkung_finanziell")
 
     # Store selected values
     ausgewaehlte_werte = {
