@@ -3,6 +3,7 @@ import pandas as pd
 from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode, DataReturnMode
 from pages.Bottom_up_stakeholder import stakeholder_punkte
 import altair as alt
+import numpy as np
 
 def stakeholder_Nachhaltigkeitspunkte():
     # Zugriff auf den DataFrame aus Bottom_up_stakeholder.py über session_state
@@ -218,41 +219,41 @@ def submit_bewertung(longlist, ausgewaehlte_werte):
             new_data['Auswirkung'] = auswirkung_string
             finanziell_string = f"Ausmaß: {ausgewaehlte_werte.get('ausmass_finanziell', '')} ; Wahrscheinlichkeit: {ausgewaehlte_werte.get('wahrscheinlichkeit_finanziell', '')} ; Finanzielle Auswirkung: {ausgewaehlte_werte.get('auswirkung_finanziell', '')}"
             new_data['Finanziell'] = finanziell_string
-
+            
             # Berechnung des Scores für finanzielle Bewertungen normalized_score = ((produkt - min_produkt) / (max_produkt - min_produkt)) * 99 + 1
-            new_data['Score Finanzen'] = ((
-                ausmass_finanziell_mapping.get(ausgewaehlte_werte.get('ausmass_finanziell', 'Keine'), 1) *
-                wahrscheinlichkeit_finanziell_mapping.get(ausgewaehlte_werte.get('wahrscheinlichkeit_finanziell', 'Keine'), 1) *
-                auswirkung_finanziell_mapping.get(ausgewaehlte_werte.get('auswirkung_finanziell', 'Keine'), 1) - 1) / (216 - 1) * 99 + 1
-            )
-
+            new_data['Score Finanzen'] = np.round((
+                                        ausmass_finanziell_mapping.get(ausgewaehlte_werte.get('ausmass_finanziell', 'Keine'), 1) *
+                                        wahrscheinlichkeit_finanziell_mapping.get(ausgewaehlte_werte.get('wahrscheinlichkeit_finanziell', 'Keine'), 1) *
+                                        auswirkung_finanziell_mapping.get(ausgewaehlte_werte.get('auswirkung_finanziell', 'Keine'), 1) - 1) / (216 - 1) * 99 + 1
+                                        , 1)
+            
             # Berechnung Tatsächliche negative Auswirkungen
-            tatsaechlich_negativ = ((
+            tatsaechlich_negativ = np.round(((
                 ausmass_neg_tat_mapping.get(ausgewaehlte_werte.get('ausmass_neg_tat', 'Keine'), 1) *
                 umfang_neg_tat_mapping.get(ausgewaehlte_werte.get('umfang_neg_tat', 'Keine'), 1) *
                 behebbarkeit_neg_tat_mapping.get(ausgewaehlte_werte.get('behebbarkeit_neg_tat', 'Kein Aufwand'), 1) - 1) / (216 - 1) * 99 + 1
-            )
+                ), 1)
             
             # Berechnung Potenzielle negative Auswirkungen
-            potentiell_negativ = ((
+            potentiell_negativ = np.round(((
                 ausmass_neg_pot_mapping.get(ausgewaehlte_werte.get('ausmass_neg_pot', 'Keine'), 1) *
                 umfang_neg_pot_mapping.get(ausgewaehlte_werte.get('umfang_neg_pot', 'Keine'), 1) *
                 behebbarkeit_neg_pot_mapping.get(ausgewaehlte_werte.get('behebbarkeit_neg_pot', 'Kein Aufwand'), 1) *
                 wahrscheinlichkeit_neg_pot_mapping.get(ausgewaehlte_werte.get('wahrscheinlichkeit_neg_pot', 'Tritt nicht ein'), 1) - 1) / (1296 - 1) * 99 + 1
-            )
+                ), 1)
             
             # Berechnung Tatsächliche positive Auswirkungen
-            tatsaechlich_positiv = ((
+            tatsaechlich_positiv = np.round(((
                 ausmass_pos_tat_mapping.get(ausgewaehlte_werte.get('ausmass_pos_tat', 'Keine'), 1) *
                 umfang_pos_tat_mapping.get(ausgewaehlte_werte.get('umfang_pos_tat', 'Keine'), 1) - 1) / (36 - 1) * 99 + 1
-            )
+                ), 1)
             
             # Berechnung Potenzielle positive Auswirkungen
-            potentiell_positiv = ((
+            potentiell_positiv = np.round(((
                 ausmass_pos_pot_mapping.get(ausgewaehlte_werte.get('ausmass_pos_pot', 'Keine'), 1) *
                 umfang_pos_pot_mapping.get(ausgewaehlte_werte.get('umfang_pos_pot', 'Keine'), 1) *
                 behebbarkeit_pos_pot_mapping.get(ausgewaehlte_werte.get('behebbarkeit_pos_pot', 'Kein Aufwand'), 1) - 1) / (216 - 1) * 99 + 1
-            )
+                ), 1)
             
             # Berechnung des Gesamtscores für die Auswirkungsbewertung
             new_data['Score Auswirkung'] = tatsaechlich_negativ * tatsaechlich_positiv * potentiell_negativ * potentiell_positiv
@@ -269,15 +270,15 @@ def submit_bewertung(longlist, ausgewaehlte_werte):
             st.error("Bitte wählen Sie mindestens eine Zeile aus, bevor Sie eine Bewertung absenden.")
     return longlist
 
-
 def display_selected_data():
+    
     if 'selected_data' in st.session_state and not st.session_state.selected_data.empty:
         # Füllen Sie fehlende Werte in 'Thema', 'Unterthema' und 'Unter-Unterthema' mit einem leeren String
         for column in ['Thema', 'Unterthema', 'Unter-Unterthema']:
             st.session_state.selected_data[column] = st.session_state.selected_data[column].fillna('')
 
         # Auswahl der benötigten Spalten
-        selected_columns = st.session_state.selected_data[['ID', 'Auswirkung', 'Finanziell', 'Score Finanzen', 'Score Auswirkung', 'Thema', 'Unterthema', 'Unter-Unterthema']]
+        selected_columns = st.session_state.selected_data[['ID', 'Auswirkung', 'Finanziell', 'Score Finanzen', 'Score Auswirkung', 'Thema', 'Unterthema', 'Unter-Unterthema', 'NumericalRating']]
         
         # Definieren der gridOptions
         gridOptions = {
@@ -294,7 +295,8 @@ def display_selected_data():
                 {'headerName': 'Auswirkungs-Score', 'field': 'Score Auswirkung', 'width': 150, 'minWidth': 50},
                 {'headerName': 'Thema', 'field': 'Thema', 'flex': 1},
                 {'headerName': 'Unterthema', 'field': 'Unterthema', 'flex': 1},
-                {'headerName': 'Unter-Unterthema', 'field': 'Unter-Unterthema', 'flex': 1}
+                {'headerName': 'Unter-Unterthema', 'field': 'Unter-Unterthema', 'flex': 1},
+                {'headerName': 'NumericalRating', 'field': 'NumericalRating', 'width': 150, 'minWidth': 50}
             ]
         }
         # Erstellen des AgGrid
