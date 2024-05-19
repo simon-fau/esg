@@ -364,6 +364,9 @@ def merge_dataframes():
 
         # Setzen Sie die ID im DataFrame
         combined_df.at[index, 'ID'] = id
+    
+    # Erstellen eines session_state von combined_df
+    st.session_state.combined_df = combined_df
 
     # Erstellen eines neuen DataFrame 'longlist', um Probleme mit der Zuordnung von 'selected_rows' zu vermeiden
     longlist = pd.DataFrame(combined_df)
@@ -436,17 +439,18 @@ def merge_dataframes():
     with st.expander("Bewertungen anzeigen"):
         display_selected_data()
 
-
-
 def Scatter_chart():
-    # Überprüfen Sie, ob 'selected_data' initialisiert wurde
-    if "selected_data" not in st.session_state or st.session_state.selected_data.empty:
+    # Überprüfen Sie, ob 'selected_data' und 'combined_df' initialisiert wurden
+    if "selected_data" not in st.session_state or st.session_state.selected_data.empty or "combined_df" not in st.session_state or st.session_state.combined_df.empty:
         return
 
     # Stellen Sie sicher, dass 'selected_data' ein DataFrame mit den benötigten Spalten ist
-    required_columns = ['Score Finanzen', 'Score Auswirkung', 'Thema', 'Unterthema', 'Unter-Unterthema']
+    required_columns = ['ID', 'Score Finanzen', 'Score Auswirkung', 'Thema', 'Unterthema', 'Unter-Unterthema']
     if all(column in st.session_state.selected_data.columns for column in required_columns):
         selected_columns = st.session_state.selected_data[required_columns]
+
+        # Innerer Join zwischen selected_columns und combined_df auf der Basis der 'ID'
+        selected_columns = pd.merge(selected_columns, st.session_state.combined_df[['ID']], on='ID', how='inner')
 
         # Erstellen Sie eine neue Spalte 'color', die auf dem Wert der Spalte 'Thema' basiert
         def assign_color(theme):
