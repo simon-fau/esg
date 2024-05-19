@@ -458,7 +458,7 @@ def Scatter_chart():
         selected_columns = st.session_state.selected_data[required_columns]
 
         # Innerer Join zwischen selected_columns und combined_df auf der Basis der 'ID'
-        selected_columns = pd.merge(selected_columns, st.session_state.combined_df[['ID']], on='ID', how='inner')
+        selected_columns = pd.merge(selected_columns, st.session_state.combined_df[['ID', 'NumericalRating']], on='ID', how='inner')
 
         # Erstellen Sie eine neue Spalte 'color', die auf dem Wert der Spalte 'Thema' basiert
         def assign_color(theme):
@@ -473,11 +473,17 @@ def Scatter_chart():
 
         selected_columns['color'] = selected_columns['Thema'].apply(assign_color)
 
+        # Normalisieren Sie die 'NumericalRating' Werte auf den Bereich [100, 600] und speichern Sie sie in der neuen Spalte 'size'
+        min_rating = st.session_state.combined_df['NumericalRating'].min()
+        max_rating = st.session_state.combined_df['NumericalRating'].max()
+        selected_columns['size'] = ((selected_columns['NumericalRating'] - min_rating) / (max_rating - min_rating)) * (3000 - 100) + 100
+
         # Erstellen Sie ein Scatter-Chart mit Altair
-        chart = alt.Chart(selected_columns).mark_circle(size=60).encode(
+        chart = alt.Chart(selected_columns, width=800, height=600).mark_circle().encode(
             x=alt.X('Score Finanzen', scale=alt.Scale(domain=(0, 100)), title='Finanzielle Wesentlichkeit'),
             y=alt.Y('Score Auswirkung', scale=alt.Scale(domain=(0, 100)), title='Auswirkungsbezogene Wesentlichkeit'),
             color=alt.Color('color', scale=None),  # Verwenden Sie die 'color' Spalte für die Farbe der Punkte
+             size=alt.Size('size', scale=alt.Scale(range=[100, 3000])),  # Verwenden Sie die 'size' Spalte für die Größe der Punkte  # Verwenden Sie die 'size' Spalte für die Größe der Punkte
             tooltip=required_columns
         )
 
