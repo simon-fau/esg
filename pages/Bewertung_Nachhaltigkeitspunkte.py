@@ -270,16 +270,21 @@ def submit_bewertung(longlist, ausgewaehlte_werte):
             st.error("Bitte wählen Sie mindestens eine Zeile aus, bevor Sie eine Bewertung absenden.")
     return longlist
 
+
 def display_selected_data():
-    
     if 'selected_data' in st.session_state and not st.session_state.selected_data.empty:
         # Füllen Sie fehlende Werte in 'Thema', 'Unterthema' und 'Unter-Unterthema' mit einem leeren String
         for column in ['Thema', 'Unterthema', 'Unter-Unterthema']:
             st.session_state.selected_data[column] = st.session_state.selected_data[column].fillna('')
 
         # Auswahl der benötigten Spalten
-        selected_columns = st.session_state.selected_data[['ID', 'Auswirkung', 'Finanziell', 'Score Finanzen', 'Score Auswirkung', 'Thema', 'Unterthema', 'Unter-Unterthema', 'NumericalRating']]
-        
+        selected_columns = st.session_state.selected_data[['ID', 'Auswirkung', 'Finanziell', 'Score Finanzen', 'Score Auswirkung', 'Thema', 'Unterthema', 'Unter-Unterthema']]
+
+        # Extrahieren Sie die Spalte 'NumericalRating' aus 'combined_df' und fügen Sie sie zu 'selected_columns' hinzu
+        if 'combined_df' in st.session_state and 'NumericalRating' in st.session_state.combined_df.columns:
+            combined_df_with_numerical_rating = st.session_state.combined_df[['ID', 'NumericalRating']]
+            selected_columns = pd.merge(selected_columns, combined_df_with_numerical_rating, on='ID', how='left')
+
         # Definieren der gridOptions
         gridOptions = {
             'defaultColDef': {
@@ -299,6 +304,7 @@ def display_selected_data():
                 {'headerName': 'NumericalRating', 'field': 'NumericalRating', 'width': 150, 'minWidth': 50}
             ]
         }
+
         # Erstellen des AgGrid
         AgGrid(selected_columns, gridOptions=gridOptions)
 
@@ -306,7 +312,7 @@ def display_grid(longlist):
     gb = GridOptionsBuilder.from_dataframe(longlist)
     gb.configure_pagination()
     gb.configure_side_bar()
-    gb.configure_selection('multiple', use_checkbox=True, groupSelectsChildren="Group checkbox select children", rowMultiSelectWithClick=False)
+    gb.configure_selection('single', use_checkbox=True, groupSelectsChildren="Group checkbox select children", rowMultiSelectWithClick=False)
     grid_options = gb.build()
     grid_response = AgGrid(longlist, gridOptions=grid_options, enable_enterprise_modules=True, update_mode=GridUpdateMode.MODEL_CHANGED, fit_columns_on_grid_load=True)
     st.session_state['selected_rows'] = grid_response['selected_rows']
