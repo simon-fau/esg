@@ -476,17 +476,20 @@ def Scatter_chart():
         # Normalisieren Sie die 'NumericalRating' Werte auf den Bereich [100, 600] und speichern Sie sie in der neuen Spalte 'size'
         min_rating = st.session_state.combined_df['NumericalRating'].min()
         max_rating = st.session_state.combined_df['NumericalRating'].max()
-        selected_columns['size'] = ((selected_columns['NumericalRating'] - min_rating) / (max_rating - min_rating)) * (3000 - 100) + 100
-
+        selected_columns['size'] = ((selected_columns['NumericalRating'] - min_rating) / (max_rating - min_rating)) * (2000 - 100) + 100
+        
+        # Füllen Sie fehlende Werte in der 'size' Spalte mit 100
+        selected_columns['size'] = selected_columns['size'].fillna(100)
+        
         # Erstellen Sie ein Scatter-Chart mit Altair
         chart = alt.Chart(selected_columns, width=800, height=600).mark_circle().encode(
             x=alt.X('Score Finanzen', scale=alt.Scale(domain=(0, 100)), title='Finanzielle Wesentlichkeit'),
             y=alt.Y('Score Auswirkung', scale=alt.Scale(domain=(0, 100)), title='Auswirkungsbezogene Wesentlichkeit'),
             color=alt.Color('color', scale=None),  # Verwenden Sie die 'color' Spalte für die Farbe der Punkte
-             size=alt.Size('size', scale=alt.Scale(range=[100, 3000])),  # Verwenden Sie die 'size' Spalte für die Größe der Punkte  # Verwenden Sie die 'size' Spalte für die Größe der Punkte
+            size=alt.Size('size', scale=alt.Scale(range=[100, 2000])),  # Verwenden Sie die 'size' Spalte für die Größe der Punkte
             tooltip=required_columns
         )
-
+        
         # Zeigen Sie das Diagramm in Streamlit an
         st.altair_chart(chart)
 
