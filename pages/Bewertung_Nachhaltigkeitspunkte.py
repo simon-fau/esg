@@ -284,6 +284,9 @@ def display_selected_data():
         if 'combined_df' in st.session_state and 'NumericalRating' in st.session_state.combined_df.columns:
             combined_df_with_numerical_rating = st.session_state.combined_df[['ID', 'NumericalRating']]
             selected_columns = pd.merge(selected_columns, combined_df_with_numerical_rating, on='ID', how='left')
+        
+        # Speichern Sie 'selected_columns' in 'st.session_state'
+        st.session_state['selected_columns'] = selected_columns
 
         # Definieren der gridOptions
         gridOptions = {
@@ -305,8 +308,22 @@ def display_selected_data():
             ]
         }
 
-        # Erstellen des AgGrid
-        AgGrid(selected_columns, gridOptions=gridOptions)
+def bewertung():
+    if 'selected_columns' in st.session_state and not st.session_state.selected_columns.empty:
+        selected_columns = st.session_state['selected_columns']
+
+        # Create a selectbox for IDs
+        selected_id = st.selectbox('Select ID', selected_columns['ID'].unique())
+
+        # Filter the row with the selected ID
+        selected_row = selected_columns[selected_columns['ID'] == selected_id]
+
+        if not selected_row.empty:
+            # Display the details
+            st.write('Auswirkung:', selected_row['Auswirkung'].values[0])
+            st.write('Finanziell:', selected_row['Finanziell'].values[0])
+            st.write('Finanz-Score:', selected_row['Score Finanzen'].values[0])
+            st.write('Auswirkungs-Score:', selected_row['Score Auswirkung'].values[0])
 
 def display_grid(longlist):
     gb = GridOptionsBuilder.from_dataframe(longlist)
@@ -443,9 +460,6 @@ def merge_dataframes():
     # Proceed with the rest of the logic
     longlist = submit_bewertung(longlist, ausgewaehlte_werte)
     display_grid(longlist)
-    
-    with st.expander("Bewertungen anzeigen"):
-        display_selected_data()
 
 def Scatter_chart():
     # Überprüfen Sie, ob 'selected_data' und 'combined_df' initialisiert wurden
@@ -476,7 +490,7 @@ def Scatter_chart():
         # Normalisieren Sie die 'NumericalRating' Werte auf den Bereich [100, 600] und speichern Sie sie in der neuen Spalte 'size'
         min_rating = st.session_state.combined_df['NumericalRating'].min()
         max_rating = st.session_state.combined_df['NumericalRating'].max()
-        selected_columns['size'] = ((selected_columns['NumericalRating'] - min_rating) / (max_rating - min_rating)) * (2000 - 100) + 100
+        selected_columns['size'] = ((selected_columns['NumericalRating'] - min_rating) / (max_rating - min_rating)) * (1000 - 100) + 100
         
         # Füllen Sie fehlende Werte in der 'size' Spalte mit 100
         selected_columns['size'] = selected_columns['size'].fillna(100)
@@ -485,8 +499,19 @@ def Scatter_chart():
         chart = alt.Chart(selected_columns, width=800, height=600).mark_circle().encode(
             x=alt.X('Score Finanzen', scale=alt.Scale(domain=(0, 100)), title='Finanzielle Wesentlichkeit'),
             y=alt.Y('Score Auswirkung', scale=alt.Scale(domain=(0, 100)), title='Auswirkungsbezogene Wesentlichkeit'),
-            color=alt.Color('color', scale=None),  # Verwenden Sie die 'color' Spalte für die Farbe der Punkte
-            size=alt.Size('size', scale=alt.Scale(range=[100, 2000])),  # Verwenden Sie die 'size' Spalte für die Größe der Punkte
+            color=alt.Color('color:N', scale=alt.Scale(
+                domain=['green', 'yellow', 'blue', 'gray'],
+                range=['green', 'yellow', 'blue', 'gray']
+            ), legend=alt.Legend(
+                title="Thema",
+                orient="right",
+                titleColor='black',
+                labelColor='black',
+                titleFontSize=12,
+                labelFontSize=10,
+                values=['Environmental', 'Social', 'Governance', 'Sonstige']
+            )),
+            size=alt.Size('size', scale=alt.Scale(range=[100, 1000]), legend=None),  # Keine Legende für die Größe der Punkte
             tooltip=required_columns
         )
         
@@ -494,13 +519,17 @@ def Scatter_chart():
         st.altair_chart(chart)
 
 def display_page():
-    tab1, tab2, tab3 = st.tabs(["Bewertung der Nachhaltigkeitspunkte", "Stakeholder", "Gesamtübersicht"])
+    tab1, tab2, tab3, tab4 = st.tabs(["Bewertung der Nachhaltigkeitspunkte", "Graphische Übersicht", "Stakeholder", "Gesamtübersicht"])
     with tab1: 
         merge_dataframes()
+        display_selected_data()
+        bewertung()
+    with tab2:
+        st.write("Graphische Übersicht")
         Scatter_chart()
          
-    with tab2:
+    with tab3:
         with st.expander("In Bewertung aufgenommene Stakeholderpunkte"):
             AgGrid(st.session_state.selected_rows_st)
-    with tab3:
+    with tab4:
         st.write("Gesamtübersicht")
