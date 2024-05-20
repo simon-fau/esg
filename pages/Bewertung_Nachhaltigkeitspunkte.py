@@ -28,13 +28,12 @@ def stakeholder_Nachhaltigkeitspunkte():
             st.session_state.slider_value = options[0]
     
         # Speichern Sie den aktuellen Zustand des Schiebereglers
-        current_slider_value = st.session_state.slider_value
-    
-        # Aktualisieren Sie 'slider_value' im session_state, wenn der Benutzer den Schieberegler bewegt
-        st.session_state.slider_value = st.select_slider('', options=options, value=st.session_state.slider_value)
-    
-        # Wenn der Wert des Schiebereglers geändert wurde, führen Sie st.experimental_rerun() aus, um die Seite neu zu laden 
-        if st.session_state.slider_value != current_slider_value:
+        current_slider_value = st.select_slider('', options=options, value=st.session_state.slider_value)
+
+        # Fügen Sie einen Button hinzu
+        if st.button('Auswahl übernehmen'):
+            # Aktualisieren Sie 'slider_value' im session_state, wenn der Benutzer den Button drückt
+            st.session_state.slider_value = current_slider_value
             st.experimental_rerun()
     
         st.markdown("""
@@ -208,16 +207,22 @@ def submit_bewertung(longlist, ausgewaehlte_werte):
             auswirkung_string = ' ; '.join(part for part in [
                 ausgewaehlte_werte.get('auswirkung_option', ''),
                 ausgewaehlte_werte.get('auswirkung_art_option', ''),
-                "Ausmaß: " + ausgewaehlte_werte.get('ausmass_neg_tat', '') if ausgewaehlte_werte.get('ausmass_neg_tat') else '',
-                "Umfang: " + ausgewaehlte_werte.get('umfang_neg_tat', '') if ausgewaehlte_werte.get('umfang_neg_tat') else '',
-                "Behebbarkeit: " + ausgewaehlte_werte.get('behebbarkeit_neg_tat', '') if ausgewaehlte_werte.get('behebbarkeit_neg_tat') else '',
-                "Ausmaß: " + ausgewaehlte_werte.get('ausmass_neg_pot', '') if ausgewaehlte_werte.get('ausmass_neg_pot') else '',
-                "Umfang: " + ausgewaehlte_werte.get('umfang_neg_pot', '') if ausgewaehlte_werte.get('umfang_neg_pot') else '',
-                "Behebbarkeit: " + ausgewaehlte_werte.get('behebbarkeit_neg_pot', '') if ausgewaehlte_werte.get('behebbarkeit_neg_pot') else ''
+                ausgewaehlte_werte.get('ausmass_neg_tat', '') if ausgewaehlte_werte.get('ausmass_neg_tat') else '',
+                ausgewaehlte_werte.get('umfang_neg_tat', '') if ausgewaehlte_werte.get('umfang_neg_tat') else '',
+                ausgewaehlte_werte.get('behebbarkeit_neg_tat', '') if ausgewaehlte_werte.get('behebbarkeit_neg_tat') else '',
+                ausgewaehlte_werte.get('ausmass_neg_pot', '') if ausgewaehlte_werte.get('ausmass_neg_pot') else '',
+                ausgewaehlte_werte.get('umfang_neg_pot', '') if ausgewaehlte_werte.get('umfang_neg_pot') else '',
+                ausgewaehlte_werte.get('behebbarkeit_neg_pot', '') if ausgewaehlte_werte.get('behebbarkeit_neg_pot') else '',
+                ausgewaehlte_werte.get('wahrscheinlichkeit_neg_pot', '') if ausgewaehlte_werte.get('wahrscheinlichkeit_neg_pot') else '',
+                ausgewaehlte_werte.get('ausmass_pos_tat', '') if ausgewaehlte_werte.get('ausmass_pos_tat') else '',
+                ausgewaehlte_werte.get('umfang_pos_tat', '') if ausgewaehlte_werte.get('umfang_pos_tat') else '',
+                ausgewaehlte_werte.get('ausmass_pos_pot', '') if ausgewaehlte_werte.get('ausmass_pos_pot') else '',
+                ausgewaehlte_werte.get('umfang_pos_pot', '') if ausgewaehlte_werte.get('umfang_pos_pot') else '',
+                ausgewaehlte_werte.get('behebbarkeit_pos_pot', '') if ausgewaehlte_werte.get('behebbarkeit_pos_pot') else ''
             ] if part)
 
             new_data['Auswirkung'] = auswirkung_string
-            finanziell_string = f"Ausmaß: {ausgewaehlte_werte.get('ausmass_finanziell', '')} ; Wahrscheinlichkeit: {ausgewaehlte_werte.get('wahrscheinlichkeit_finanziell', '')} ; Finanzielle Auswirkung: {ausgewaehlte_werte.get('auswirkung_finanziell', '')}"
+            finanziell_string = f"{ausgewaehlte_werte.get('ausmass_finanziell', '')} ; {ausgewaehlte_werte.get('wahrscheinlichkeit_finanziell', '')} ; {ausgewaehlte_werte.get('auswirkung_finanziell', '')}"
             new_data['Finanziell'] = finanziell_string
             
             # Berechnung des Scores für finanzielle Bewertungen normalized_score = ((produkt - min_produkt) / (max_produkt - min_produkt)) * 99 + 1
@@ -313,18 +318,64 @@ def bewertung():
         selected_columns = st.session_state['selected_columns']
 
         # Create a selectbox for IDs
-        selected_id = st.selectbox('Select ID', selected_columns['ID'].unique())
+        selected_id = st.selectbox('Bewertungen anzeigen', selected_columns['ID'].unique())
 
         # Filter the row with the selected ID
         selected_row = selected_columns[selected_columns['ID'] == selected_id]
 
         if not selected_row.empty:
-            # Display the details
-            st.write('Auswirkung:', selected_row['Auswirkung'].values[0])
-            st.write('Finanziell:', selected_row['Finanziell'].values[0])
-            st.write('Finanz-Score:', selected_row['Score Finanzen'].values[0])
-            st.write('Auswirkungs-Score:', selected_row['Score Auswirkung'].values[0])
 
+            # Split the 'Auswirkung' string into parts by ';'
+            auswirkung_parts = selected_row['Auswirkung'].values[0].split(';')
+
+            # Split the 'Finanziell' string into parts by ';'
+            finanziell_parts = selected_row['Finanziell'].values[0].split(';')
+
+            # Display each part of 'Auswirkung'
+            auswirkung_mapping = {
+                1: 'Eigenschaft',
+                2: 'Art',
+                3: 'Ausmaß',
+                4: 'Umfang',
+                5: 'Behebarkeit',
+                6: 'Wahrscheinlichkeit'
+            }
+
+            # Display each part of 'Finanziell'
+            finanziell_mapping = {
+                1: 'Ausmaß',
+                2: 'Wahrscheinlichkeit',
+                3: 'Finanzielle Auswirkung'
+            }
+
+            col1, col2, col3 = st.columns([1, 1, 1])
+
+            with col1:
+                st.write("**Auswirkung**")
+            
+                for i, part in enumerate(auswirkung_parts, start=1):
+                    if i in auswirkung_mapping:
+                        st.write(f'{auswirkung_mapping[i]}:', part.strip())
+                    else:
+                        st.write(f'Auswirkung Teil {i}:', part.strip())
+
+                st.write('Score:', selected_row['Score Auswirkung'].values[0])
+
+            with col2:
+                st.write("**Finanziell**")
+
+                for i, part in enumerate(finanziell_parts, start=1):
+                    if i in finanziell_mapping:
+                        st.write(f'{finanziell_mapping[i]}:', part.strip())
+                    else:
+                        st.write(f'Finanziell Teil {i}:', part.strip())
+
+                st.write('Score:', selected_row['Score Finanzen'].values[0])
+            
+            with col3:
+
+                return
+            
 def display_grid(longlist):
     gb = GridOptionsBuilder.from_dataframe(longlist)
     gb.configure_pagination()
