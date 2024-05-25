@@ -21,17 +21,18 @@ def stakeholder_Nachhaltigkeitspunkte():
     # Fügen Sie einen Schieberegler in der ersten Spalte hinzu
     with col1:
         options = ['Nicht Wesentlich', 'Eher nicht wesentlich', 'Eher Wesentlich', 'Wesentlich']
-        st.text("Grenzwert für die Auswahl der Stakeholderpunkte:")
+        st.sidebar.markdown("---")
+        st.sidebar.text("Grenzwert für die Auswahl der Stakeholderpunkte:")
     
         # Überprüfen, ob 'slider_value' bereits im session_state gespeichert ist, wenn nicht, initialisieren Sie es mit einem Standardwert
         if 'slider_value' not in st.session_state:
             st.session_state.slider_value = options[0]
     
         # Speichern Sie den aktuellen Zustand des Schiebereglers
-        current_slider_value = st.select_slider('', options=options, value=st.session_state.slider_value)
+        current_slider_value = st.sidebar.select_slider('', options=options, value=st.session_state.slider_value)
 
         # Fügen Sie einen Button hinzu
-        if st.button('Auswahl übernehmen'):
+        if st.sidebar.button('Auswahl übernehmen'):
             # Aktualisieren Sie 'slider_value' im session_state, wenn der Benutzer den Button drückt
             st.session_state.slider_value = current_slider_value
             st.experimental_rerun()
@@ -149,7 +150,7 @@ def initialize_bewertet_column(longlist):
     return longlist
 
 def submit_bewertung(longlist, ausgewaehlte_werte):
-    if st.sidebar.button("Bewertung absenden") and any(ausgewaehlte_werte.values()):
+    if st.button("Bewertung absenden") and any(ausgewaehlte_werte.values()):
         if 'selected_rows' in st.session_state:
             new_data = pd.DataFrame(st.session_state['selected_rows'])
             if '_selectedRowNodeInfo' in new_data.columns:
@@ -318,7 +319,7 @@ def bewertung():
         selected_columns = st.session_state['selected_columns']
 
         # Create a selectbox for IDs
-        selected_id = st.selectbox('Bewertungen anzeigen', selected_columns['ID'].unique())
+        selected_id = st.selectbox('ID auswählen', selected_columns['ID'].unique())
 
         # Filter the row with the selected ID
         selected_row = selected_columns[selected_columns['ID'] == selected_id]
@@ -375,10 +376,10 @@ def bewertung():
             with col3:
 
                 return
-            
+           
 def display_grid(longlist):
     gb = GridOptionsBuilder.from_dataframe(longlist)
-    gb.configure_pagination()
+      # Set the number of rows per page to 10
     gb.configure_side_bar()
     gb.configure_selection('single', use_checkbox=True, groupSelectsChildren="Group checkbox select children", rowMultiSelectWithClick=False)
     grid_options = gb.build()
@@ -444,8 +445,13 @@ def merge_dataframes():
     # Erstellen eines session_state von combined_df
     st.session_state.combined_df = combined_df
 
+    #Erstellung einer Kopie von combined_df ohne NumericalRating zur Darstellung der Longlist mit lediglich relevanten Spalten
+    combined_df_without_numerical_rating = st.session_state.combined_df.drop(columns='NumericalRating')
+    # Speichern Sie die neue DataFrame in 'st.session_state'
+    st.session_state['combined_df_without_numerical_rating'] = combined_df_without_numerical_rating
+
     # Erstellen eines neuen DataFrame 'longlist', um Probleme mit der Zuordnung von 'selected_rows' zu vermeiden
-    longlist = pd.DataFrame(combined_df)
+    longlist = pd.DataFrame(combined_df_without_numerical_rating)
 
     # Initialisieren der 'Bewertet'-Spalte in 'longlist'
     longlist = initialize_bewertet_column(longlist)
@@ -456,35 +462,39 @@ def merge_dataframes():
     ausmass_pos_tat = umfang_pos_tat = ausmass_pos_pot = umfang_pos_pot = behebbarkeit_pos_pot = ''
     wahrscheinlichkeit_finanziell = ausmass_finanziell = auswirkung_finanziell = ''
 
-    st.sidebar.markdown("---")
-    st.sidebar.subheader("Auswirkungsbewertung")
-    auswirkung_option = st.sidebar.selectbox('Bitte wählen Sie die Eigenschaft der Auswirkung:', ['Keine Auswirkung','Positive Auswirkung', 'Negative Auswirkung'], index=2, key="auswirkung_option")
-    if auswirkung_option == 'Negative Auswirkung':
-        auswirkung_art_option = st.sidebar.selectbox('Bitte wählen Sie die Art der Auswirkung:', ['Tatsächliche Auswirkung', 'Potenzielle Auswirkung', ''], index=2, key="auswirkung_art_option")
-        if auswirkung_art_option == 'Tatsächliche Auswirkung':
-            ausmass_neg_tat = st.sidebar.select_slider("Ausmaß:", options=["Keine", "Minimal", "Niedrig", "Medium", "Hoch", "Sehr hoch"], key="ausmass_neg_tat")
-            umfang_neg_tat = st.sidebar.select_slider("Umfang:", options=["Keine", "Lokal", "Regional", "National", "International", "Global"], key="umfang_neg_tat")
-            behebbarkeit_neg_tat = st.sidebar.select_slider("Behebbarkeit:", options=["Kein Aufwand", "Leicht zu beheben", "Mit Aufwand", "Mit hohem Aufwand", "Mit sehr hohem Aufwand", "Nicht behebbar"], key="behebbarkeit_neg_tat")
-        elif auswirkung_art_option == 'Potenzielle Auswirkung':
-            ausmass_neg_pot = st.sidebar.select_slider("Ausmaß:", options=["Keine", "Minimal", "Niedrig", "Medium", "Hoch", "Sehr hoch"], key="ausmass_neg_pot")
-            umfang_neg_pot = st.sidebar.select_slider("Umfang:", options=["Keine", "Lokal", "Regional", "National", "International", "Global"], key="umfang_neg_pot")
-            behebbarkeit_neg_pot = st.sidebar.select_slider("Behebbarkeit:", options=["Kein Aufwand", "Leicht zu beheben", "Mit Aufwand", "Mit hohem Aufwand", "Mit sehr hohem Aufwand", "Nicht behebbar"], key="behebbarkeit_neg_pot")
-            wahrscheinlichkeit_neg_pot = st.sidebar.select_slider("Wahrscheinlichkeit:", options=["Tritt nicht ein", "Unwahrscheinlich", "Eher unwahrscheinlich", "Eher wahrscheinlich", "Wahrscheinlich", "Sicher"], key="wahrscheinlichkeit_neg_pot")
-    elif auswirkung_option == 'Positive Auswirkung':
-        auswirkung_art_option = st.sidebar.selectbox('Bitte wählen Sie die Art der Auswirkung:', ['Tatsächliche Auswirkung', 'Potenzielle Auswirkung', ''], index=2, key="auswirkung_art_option_pos")
-        if auswirkung_art_option == 'Tatsächliche Auswirkung':
-            ausmass_pos_tat = st.sidebar.select_slider("Ausmaß:", options=["Keine", "Minimal", "Niedrig", "Medium", "Hoch", "Sehr hoch"], key="ausmass_pos_tat")
-            umfang_pos_tat = st.sidebar.select_slider("Umfang:", options=["Keine", "Lokal", "Regional", "National", "International", "Global"], key="umfang_pos_tat")
-        elif auswirkung_art_option == 'Potenzielle Auswirkung':
-            ausmass_pos_pot = st.sidebar.select_slider("Ausmaß:", options=["Keine", "Minimal", "Niedrig", "Medium", "Hoch", "Sehr hoch"], key="ausmass_pos_pot")
-            umfang_pos_pot = st.sidebar.select_slider("Umfang:", options=["Keine", "Lokal", "Regional", "National", "International", "Global"], key="umfang_pos_pot")
-            behebbarkeit_pos_pot = st.sidebar.select_slider("Behebbarkeit:", options=["Kein Aufwand", "Leicht zu beheben", "Mit Aufwand", "Mit hohem Aufwand", "Mit sehr hohem Aufwand", "Nicht behebbar"], key="behebbarkeit_pos_pot")
-   
-    st.sidebar.markdown("---")
-    st.sidebar.subheader("Finanzielle Bewertung")
-    ausmass_finanziell = st.sidebar.select_slider("Ausmaß:", options=["Keine", "Minimal", "Niedrig", "Medium", "Hoch", "Sehr hoch"], key="ausmass_finanziell")
-    wahrscheinlichkeit_finanziell = st.sidebar.select_slider("Wahrscheinlichkeit:", options=["Tritt nicht ein", "Unwahrscheinlich", "Eher unwahrscheinlich", "Eher wahrscheinlich", "Wahrscheinlich", "Sicher"], key="wahrscheinlichkeit_finanziell")
-    auswirkung_finanziell = st.sidebar.select_slider("Finanzielle Auswirkung:", options=["Keine", "Sehr gering", "Eher gering", "Eher hoch", "Hoch", "Sehr hoch"], key="auswirkung_finanziell")
+    col1, col2, col_3_placeholder, col4 = st.columns([1, 1, 0.2, 1])
+    with col1:
+        st.subheader("Auwirkungsbewertung")
+        auswirkung_option = st.selectbox('Bitte wählen Sie die Eigenschaft der Auswirkung:', ['Negative Auswirkung','Positive Auswirkung', 'Keine Auswirkung'], index=2, key="auswirkung_option")
+        if auswirkung_option == 'Negative Auswirkung':
+            auswirkung_art_option = st.selectbox('Bitte wählen Sie die Art der Auswirkung:', ['Tatsächliche Auswirkung', 'Potenzielle Auswirkung', ''], index=2, key="auswirkung_art_option")      
+            with col2:
+                if auswirkung_art_option == 'Tatsächliche Auswirkung':
+                    ausmass_neg_tat = st.select_slider("Ausmaß:", options=["Keine", "Minimal", "Niedrig", "Medium", "Hoch", "Sehr hoch"], key="ausmass_neg_tat")
+                    umfang_neg_tat = st.select_slider("Umfang:", options=["Keine", "Lokal", "Regional", "National", "International", "Global"], key="umfang_neg_tat")
+                    behebbarkeit_neg_tat = st.select_slider("Behebbarkeit:", options=["Kein Aufwand", "Leicht zu beheben", "Mit Aufwand", "Mit hohem Aufwand", "Mit sehr hohem Aufwand", "Nicht behebbar"], key="behebbarkeit_neg_tat")
+                elif auswirkung_art_option == 'Potenzielle Auswirkung':
+                    ausmass_neg_pot = st.select_slider("Ausmaß:", options=["Keine", "Minimal", "Niedrig", "Medium", "Hoch", "Sehr hoch"], key="ausmass_neg_pot")
+                    umfang_neg_pot = st.select_slider("Umfang:", options=["Keine", "Lokal", "Regional", "National", "International", "Global"], key="umfang_neg_pot")
+                    behebbarkeit_neg_pot = st.select_slider("Behebbarkeit:", options=["Kein Aufwand", "Leicht zu beheben", "Mit Aufwand", "Mit hohem Aufwand", "Mit sehr hohem Aufwand", "Nicht behebbar"], key="behebbarkeit_neg_pot")
+                    wahrscheinlichkeit_neg_pot = st.select_slider("Wahrscheinlichkeit:", options=["Tritt nicht ein", "Unwahrscheinlich", "Eher unwahrscheinlich", "Eher wahrscheinlich", "Wahrscheinlich", "Sicher"], key="wahrscheinlichkeit_neg_pot")
+        elif auswirkung_option == 'Positive Auswirkung':
+            auswirkung_art_option = st.selectbox('Bitte wählen Sie die Art der Auswirkung:', ['Tatsächliche Auswirkung', 'Potenzielle Auswirkung', ''], index=2, key="auswirkung_art_option_pos")
+            with col2:
+                if auswirkung_art_option == 'Tatsächliche Auswirkung':
+                    ausmass_pos_tat = st.select_slider("Ausmaß:", options=["Keine", "Minimal", "Niedrig", "Medium", "Hoch", "Sehr hoch"], key="ausmass_pos_tat")
+                    umfang_pos_tat = st.select_slider("Umfang:", options=["Keine", "Lokal", "Regional", "National", "International", "Global"], key="umfang_pos_tat")
+                elif auswirkung_art_option == 'Potenzielle Auswirkung':
+                    ausmass_pos_pot = st.select_slider("Ausmaß:", options=["Keine", "Minimal", "Niedrig", "Medium", "Hoch", "Sehr hoch"], key="ausmass_pos_pot")
+                    umfang_pos_pot = st.select_slider("Umfang:", options=["Keine", "Lokal", "Regional", "National", "International", "Global"], key="umfang_pos_pot")
+                    behebbarkeit_pos_pot = st.select_slider("Behebbarkeit:", options=["Kein Aufwand", "Leicht zu beheben", "Mit Aufwand", "Mit hohem Aufwand", "Mit sehr hohem Aufwand", "Nicht behebbar"], key="behebbarkeit_pos_pot")
+    with col_3_placeholder:
+        pass
+    with col4:
+        st.subheader("Finanzielle Bewertung")
+        ausmass_finanziell = st.select_slider("Ausmaß:", options=["Keine", "Minimal", "Niedrig", "Medium", "Hoch", "Sehr hoch"], key="ausmass_finanziell")
+        wahrscheinlichkeit_finanziell = st.select_slider("Wahrscheinlichkeit:", options=["Tritt nicht ein", "Unwahrscheinlich", "Eher unwahrscheinlich", "Eher wahrscheinlich", "Wahrscheinlich", "Sicher"], key="wahrscheinlichkeit_finanziell")
+        auswirkung_finanziell = st.select_slider("Finanzielle Auswirkung:", options=["Keine", "Sehr gering", "Eher gering", "Eher hoch", "Hoch", "Sehr hoch"], key="auswirkung_finanziell")
 
     # Store selected values
     ausgewaehlte_werte = {
@@ -511,6 +521,7 @@ def merge_dataframes():
     # Proceed with the rest of the logic
     longlist = submit_bewertung(longlist, ausgewaehlte_werte)
     display_grid(longlist)
+    
 
 def Scatter_chart():
     # Überprüfen Sie, ob 'selected_data' und 'combined_df' initialisiert wurden
@@ -571,10 +582,11 @@ def Scatter_chart():
 
 def display_page():
     tab1, tab2, tab3, tab4 = st.tabs(["Bewertung der Nachhaltigkeitspunkte", "Graphische Übersicht", "Stakeholder", "Gesamtübersicht"])
-    with tab1: 
+    with tab1:    
         merge_dataframes()
-        display_selected_data()
-        bewertung()
+        display_selected_data()    
+        with st.expander("Bewertungen"):
+            bewertung()
     with tab2:
         st.write("Graphische Übersicht")
         Scatter_chart()
