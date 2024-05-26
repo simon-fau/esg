@@ -1,16 +1,43 @@
 import streamlit as st
 import pandas as pd
+import pickle
+import os
 from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode, DataReturnMode
 
+# Datei zum Speichern des Sitzungszustands
+state_file = 'session_state.pkl'
+
+# Funktion zum Laden des Sitzungszustands
+def load_session_state():
+    if os.path.exists(state_file):
+        with open(state_file, 'rb') as f:
+            return pickle.load(f)
+    else:
+        return {}
+
+# Funktion zum Speichern des Sitzungszustands
+def save_session_state(state):
+    # Laden des aktuellen Zustands
+    current_state = load_session_state()
+    # Hinzufügen des neuen Zustands zum aktuellen Zustand
+    combined_state = {**current_state, **state}
+    # Speichern des kombinierten Zustands
+    with open(state_file, 'wb') as f:
+        pickle.dump(combined_state, f)
+    
+# Laden des Sitzungszustands aus der Datei
+loaded_state = load_session_state()
+if 'df2' not in st.session_state:
+    st.session_state.df2 = pd.DataFrame({
+        "Thema": [""],
+        "Unterthema": [""],
+        "Unter-Unterthema": [""]
+    })
+
+if 'df2' in loaded_state:
+    st.session_state.df2 = loaded_state['df2']
 
 def eigene_punkte():
-    if 'df2' not in st.session_state:
-        st.session_state.df2 = pd.DataFrame({
-            "Thema": [""],
-            "Unterthema": [""],
-            "Unter-Unterthema":[""]
-        })
-
     with st.sidebar:
         st.markdown("---")
         thema = st.selectbox('Thema auswählen',
@@ -104,6 +131,7 @@ def eigene_punkte():
             else:
                 new_row = {"Thema": thema, "Unterthema": unterthema, "Unter-Unterthema": unter_unterthema}
                 st.session_state.df2 = st.session_state.df2._append(new_row, ignore_index=True)
+            save_session_state({'df2': st.session_state.df2})
 
     gb = GridOptionsBuilder.from_dataframe(st.session_state.df2)
     gb.configure_default_column(editable=True, resizable=True, sortable=True, filterable=True)
@@ -125,10 +153,12 @@ def eigene_punkte():
         return_mode=DataReturnMode.__members__['AS_INPUT'],  # Adjust the DataReturnMode as per available options
         selection_mode='multiple'
     )
+
     add_empty_row = st.button('Leere Zeile hinzufügen', key='add_empty_row')
     if add_empty_row:
         empty_row = {"Thema": "", "Unterthema": "", "Unter-Unterthema": ""}
         st.session_state.df2 = st.session_state.df2._append(empty_row, ignore_index=True)
+        save_session_state({'df2': st.session_state.df2})
         st.experimental_rerun()
 
     delete_rows = st.button('Ausgewählte Zeilen löschen', key='delete_rows')
@@ -136,14 +166,27 @@ def eigene_punkte():
         selected_rows = grid_response['selected_rows']
         selected_indices = [row['index'] for row in selected_rows]
         st.session_state.df2 = st.session_state.df2.drop(selected_indices)
+        save_session_state({'df2': st.session_state.df2})
         st.experimental_rerun()
 
     save_changes = st.button('Änderungen speichern', key='save_changes')
     if save_changes:
         st.session_state.df2 = grid_response['data'].set_index('index')
-    
+        save_session_state({'df2': st.session_state.df2})
+
 def display_page():
-        eigene_punkte()
+    eigene_punkte()
+
+
+
+
+
+
+
+
+
+
+
 
         
 

@@ -1,9 +1,35 @@
 import streamlit as st
 import pandas as pd
+import pickle
+import os
+
+# Datei zum Speichern des Sitzungszustands
+state_file = 'session_state.pkl'
+
+# Funktion zum Laden des Sitzungszustands
+def load_session_state():
+    if os.path.exists(state_file):
+        with open(state_file, 'rb') as f:
+            return pickle.load(f)
+    else:
+        return {}
+
+# Funktion zum Speichern des Sitzungszustands
+def save_session_state(state):
+    # Laden des aktuellen Zustands
+    current_state = load_session_state()
+    # Hinzufügen des neuen Zustands zum aktuellen Zustand
+    combined_state = {**current_state, **state}
+    # Speichern des kombinierten Zustands
+    with open(state_file, 'wb') as f:
+        pickle.dump(combined_state, f)
+
+# Laden des Sitzungszustands beim Start der App
+loaded_state = load_session_state()
+st.session_state.update(loaded_state)
 
 class ProductSelection:
     def __init__(self):
-        # Initialize the product selection states if not already present
         self.initialize_state()
 
     def initialize_state(self):
@@ -23,7 +49,12 @@ class ProductSelection:
         verbraucher_und_endnutzer = ['Datenschutz', 'Meinungsfreiheit', 'Zugang zu (hochwertigen) Informationen', 'Gesundheitsschutz und Sicherheit', 'Persönliche Sicherheit', 'Kinderschutz', 'Nichtdiskriminierung', 'Zugang zu Produkten und Dienstleistungen', 'Verantwortliche Vermarktungspraktiken']
         unternehmenspolitik = ['Unternehmenskultur', 'Schutz von Hinweisgebern (Whistleblowers)', 'Tierschutz', 'Politisches Engagement und Lobbytätigkeiten', 'Management der Beziehungen zu Lieferanten, einschließlich Zahlungspraktiken', 'Vermeidung und Aufdeckung von Korruption und Bestechung einschließlich Schulung', 'Vorkomnisse von Korruption und Bestechung']
         options = {'Wesentlich': False, 'Eher Wesentlich': False,'Eher nicht Wesentlich': False, 'Nicht Wesentlich': False}
-        
+
+        # Load the saved state if it exists
+        saved_state = load_session_state()
+        if saved_state:
+            st.session_state.update(saved_state)
+
         for product in climate_change:
             if f'climate_change_{product}' not in st.session_state:
                 st.session_state[f'climate_change_{product}'] = options.copy()
@@ -64,6 +95,9 @@ class ProductSelection:
             if f'unternehmenspolitik_{product}' not in st.session_state:
                 st.session_state[f'unternehmenspolitik_{product}'] = options.copy()
 
+    def save_session_state(self):
+        save_session_state(st.session_state)
+
     def create_options_row(self, options, topics, prefix=''):
         for topic in topics:
             row = st.columns([2, 0.3, 0.3, 0.4, 0.3])
@@ -72,6 +106,7 @@ class ProductSelection:
                 key = f'{prefix}_{topic}_{option}'  # Add the prefix to the key
                 current_value = st.session_state[f'{prefix}_{topic}'][option]
                 st.session_state[f'{prefix}_{topic}'][option] = row[i+1].checkbox(" ", value=current_value, key=key)
+
 
     def display_climate_change(self):
         options = ['Wesentlich', 'Eher Wesentlich', 'Eher nicht Wesentlich', 'Nicht Wesentlich']
@@ -98,6 +133,7 @@ class ProductSelection:
         button_row = st.columns([4, 1])
         submitted_climate_change = button_row[1].button("Auswahl speichern", key='climate_change_button_key')
         if submitted_climate_change:
+            self.save_session_state()
             st.success("Auswahl erfolgreich gespeichert!")
 
     def display_pollution_topics(self):
@@ -126,6 +162,7 @@ class ProductSelection:
         button_row = st.columns([4, 1])
         submitted_pollution = button_row[1].button("Auswahl speichern", key='pollution_button_key')
         if submitted_pollution:
+            self.save_session_state()
             st.success("Auswahl erfolgreich gespeichert!")
     
     def display_water_usage_topics(self):
@@ -153,6 +190,7 @@ class ProductSelection:
         button_row = st.columns([4, 1])
         submitted_water_usage = button_row[1].button("Auswahl speichern", key='water_usage_button_key')
         if submitted_water_usage:
+            self.save_session_state()
             st.success("Auswahl erfolgreich gespeichert!")
     
     def display_biodiversity_topics(self):
@@ -182,6 +220,7 @@ class ProductSelection:
         button_row = st.columns([4, 1])
         submitted_biodiversity = button_row[1].button("Auswahl speichern", key='biodiversity_button_key')
         if submitted_biodiversity:
+            self.save_session_state()
             st.success("Auswahl erfolgreich gespeichert!")
 
     def display_circular_economy(self):
@@ -208,6 +247,7 @@ class ProductSelection:
         button_row = st.columns([4, 1])
         submitted_kreislaufwirtschaft = button_row[1].button("Auswahl speichern", key='kreislaufwirtschaft_button_key')
         if submitted_kreislaufwirtschaft:
+            self.save_session_state()
             st.success("Auswahl erfolgreich gespeichert!")
 
     def display_eigene_belegschaft(self):
@@ -237,6 +277,7 @@ class ProductSelection:
         button_row = st.columns([4, 1])
         submitted_eigene_belegschaft = button_row[1].button("Auswahl speichern", key='eigene_belegschaft_button_key')
         if submitted_eigene_belegschaft:
+            self.save_session_state()
             st.success("Auswahl erfolgreich gespeichert!")
 
     def display_wertschöpfungskette_belegschaft(self):
@@ -266,6 +307,7 @@ class ProductSelection:
         button_row = st.columns([4, 1])
         submitted_eigene_belegschaft = button_row[1].button("Auswahl speichern", key='wertschöpfungskette_belegschaft_button_key')
         if submitted_eigene_belegschaft:
+            self.save_session_state()
             st.success("Auswahl erfolgreich gespeichert!")
 
     def display_betroffene_gemeinschaft(self):
@@ -295,8 +337,9 @@ class ProductSelection:
         button_row = st.columns([4, 1])
         submitted_betroffene_gemeinschaften = button_row[1].button("Auswahl speichern", key='betroffene_gemeinschaften_button_key')
         if submitted_betroffene_gemeinschaften:
+            self.save_session_state()
             st.success("Auswahl erfolgreich gespeichert!")
-
+    
     def display_verbraucher_endnutzer(self):
         options = ['Wesentlich', 'Eher Wesentlich', 'Eher nicht Wesentlich', 'Nicht Wesentlich']
         verbraucher_endnutzer_data = {
@@ -323,6 +366,7 @@ class ProductSelection:
         button_row = st.columns([4, 1])
         submitted_verbraucher_endnutzer = button_row[1].button("Auswahl speichern", key='verbraucher_endnutzer_button_key')
         if submitted_verbraucher_endnutzer:
+            self.save_session_state()
             st.success("Auswahl erfolgreich gespeichert!")
 
     def display_unternehmenspolitik(self):
@@ -349,16 +393,28 @@ class ProductSelection:
         button_row = st.columns([4, 1])
         submitted_unternehmenspolitik = button_row[1].button("Auswahl speichern", key='unternehmenspolitik_button_key')
         if submitted_unternehmenspolitik:
+            self.save_session_state()
             st.success("Auswahl erfolgreich gespeichert!")
 
 def display_page():
     st.title("Top-Down-Analyse")
     st.markdown("""
-        Zur Erstellung einer Liste von potentiellen Nachhaltigekitsthemen, gilt es wesentliche Inhalte zu identifizieren.
+        Zur Erstellung einer Liste von potentiellen Nachhaltigkeitsthemen gilt es wesentliche Inhalte zu identifizieren.
         Wählen Sie die entsprechenden Kategorien aus und bewerten Sie die Inhalte anhand deren Wesentlichkeit.       
     """)
     selection = ProductSelection()
-    tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9, tab10 = st.tabs(["Klimawandel", "Umweltverschmutzung", "Wasser- & Meeresressourcen", "Biodiversität", "Kreislaufwirtschaft", "Eigene Belegschaft", "Lieferkette Belegschaft", "Betroffene Gemeinschaften", "Verbraucher & Endnutzer", "Unternehmenspolitik"])
+    tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9, tab10 = st.tabs([
+        "Klimawandel", 
+        "Umweltverschmutzung", 
+        "Wasser- & Meeresressourcen", 
+        "Biodiversität", 
+        "Kreislaufwirtschaft", 
+        "Eigene Belegschaft", 
+        "Lieferkette Belegschaft", 
+        "Betroffene Gemeinschaften", 
+        "Verbraucher & Endnutzer", 
+        "Unternehmenspolitik"
+    ])
     with tab1:
         selection.display_climate_change()
     with tab2:
@@ -379,14 +435,3 @@ def display_page():
         selection.display_verbraucher_endnutzer()
     with tab10:
         selection.display_unternehmenspolitik()
-
-
-
-
-
-
-
-
-
-
-

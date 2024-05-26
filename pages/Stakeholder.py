@@ -1,10 +1,51 @@
 import streamlit as st
 import pandas as pd
+import pickle
+import os
 from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode, DataReturnMode
 from pyvis.network import Network
 
-def generate_stakeholder_ranking():
+# Datei zum Speichern des Sitzungszustands
+state_file = 'session_state.pkl'
 
+# Funktion zum Laden des Sitzungszustands
+def load_session_state():
+    if os.path.exists(state_file):
+        with open(state_file, 'rb') as f:
+            return pickle.load(f)
+    else:
+        return {}
+
+# Funktion zum Speichern des Sitzungszustands
+def save_session_state(state):
+    # Laden des aktuellen Zustands
+    current_state = load_session_state()
+    # Hinzufügen des neuen Zustands zum aktuellen Zustand
+    combined_state = {**current_state, **state}
+    # Speichern des kombinierten Zustands
+    with open(state_file, 'wb') as f:
+        pickle.dump(combined_state, f)
+    
+# Laden des Sitzungszustands aus der Datei
+loaded_state = load_session_state()
+if 'df' not in st.session_state:
+    st.session_state.df = pd.DataFrame([[
+        "", "", "", "", "", "", "", ""
+    ]], columns=[
+            "Gruppe",
+            "Bestehende Beziehung",
+            "Auswirkung auf Interessen",
+            "Level des Engagements",
+            "Stakeholdergruppe",
+            "Kommunikation",
+            "Art der Betroffenheit",
+            "Zeithorizont"
+    ])
+
+if 'df' in loaded_state:
+    st.session_state.df = loaded_state['df']
+
+def generate_stakeholder_ranking():
     score_table = st.session_state['namen_tabelle'][['Gruppe', 'Score']].copy()
     if not score_table.empty:
         score_table['Ranking'] = range(1, len(score_table) + 1)
@@ -69,6 +110,7 @@ def display_page():
             zeithorizont = st.selectbox("Zeithorizont", ['', 'Kurzfristig', 'Mittelfristig', 'Langfristig'])
             add_row = st.button('Hinzufügen')
 
+
         gb = GridOptionsBuilder.from_dataframe(st.session_state.df)
         gb.configure_default_column(editable=True, resizable=True, sortable=True, filterable=True)
         gb.configure_grid_options(domLayout='autoHeight', enableRowId=True, rowId='index')
@@ -93,7 +135,9 @@ def display_page():
             selected_rows = grid_response['selected_rows']
             selected_indices = [row['index'] for row in selected_rows]
             st.session_state.df = st.session_state.df.drop(selected_indices)
+            save_session_state({'df': st.session_state.df})
             st.experimental_rerun()
+
 
         new_row = {}
         if add_row:
@@ -111,52 +155,54 @@ def display_page():
         if add_row:
             # Prepend the new row to the DataFrame
             st.session_state.df = pd.concat([new_row, st.session_state.df]).reset_index(drop=True)
+            save_session_state({'df': st.session_state.df})
             st.experimental_rerun()
 
-    with tab2:
 
-        col1, col2, col3 = st.columns([1.3, 1.5, 1.5])
-        with col1:
-            st.subheader("Ranking")
-            df_temp = pd.DataFrame(grid_response['data'])
-            df_temp['Score'] = df_temp.apply(calculate_score, axis=1)
-            st.session_state['namen_tabelle'] = df_temp.sort_values(by='Score', ascending=False).reset_index(drop=True)
-            generate_stakeholder_ranking()
+        with tab2:
+            col1, col2, col3 = st.columns([1.3, 1.5, 1.5])
+            with col1:
+                st.subheader("Ranking")
+                df_temp = pd.DataFrame(grid_response['data'])
+                df_temp['Score'] = df_temp.apply(calculate_score, axis=1)
+                st.session_state['namen_tabelle'] = df_temp.sort_values(by='Score', ascending=False).reset_index(drop=True)
+                generate_stakeholder_ranking()
         
-        with col2:
-            # CSS to increase space between columns
-            spacing_css = """
-            <style>
-                .reportview-container .main .block-container {
-                    margin: 10px;  # Adjust this value to increase/decrease space
-                }
-            </style>
-            """
-            
-            # Apply the CSS
-            st.markdown(spacing_css, unsafe_allow_html=True)
-            st.subheader("Netzwerkdiagramm")
-            net = Network(height="300px", width="100%", bgcolor="white", font_color="black")
-            net.add_node("Mein Unternehmen", color="black", label="", title="")
-            for _, row in st.session_state['namen_tabelle'].iterrows():
-                size = row['Score'] / 100 * 10 + 15
-                color = get_node_color(row['Score'])
-                net.add_node(row['Gruppe'], color=color, label=row['Gruppe'], title=row['Gruppe'], size=size)
-                net.add_edge("Mein Unternehmen", row['Gruppe'])
-            net.save_graph("network.html")
-            st.components.v1.html(open("network.html", "r").read(), height=600)
+            with col2:
+                # CSS to increase space between columns
+                spacing_css = """
+                <style>
+                    .reportview-container .main .block-container {
+                        margin: 10px;  # Adjust this value to increase/decrease space
+                    }
+                </style>
+                """
+                
+                # Apply the CSS
+                st.markdown(spacing_css, unsafe_allow_html=True)
+                st.subheader("Netzwerkdiagramm")
+                net = Network(height="300px", width="100%", bgcolor="white", font_color="black")
+                net.add_node("Mein Unternehmen", color="black", label="", title="")
+                for _, row in st.session_state['namen_tabelle'].iterrows():
+                    size = row['Score'] / 100 * 10 + 15
+                    color = get_node_color(row['Score'])
+                    net.add_node(row['Gruppe'], color=color, label=row['Gruppe'], title=row['Gruppe'], size=size)
+                    net.add_edge("Mein Unternehmen", row['Gruppe'])
+                net.save_graph("network.html")
+                st.components.v1.html(open("network.html", "r").read(), height=600)
 
-        with col3:
-            st.subheader("Stakeholder Input Vorlage")
-            st.write("Um die wichtigsten Anliegen Ihrer Stakeholder leicht zu bewerten, steht Ihnen unsere Vorlage zum Download bereit.")
-            # Pfad zur Excel-Datei
-            file_path = r"C:\Users\andre\OneDrive\Desktop\Masterarbeit_V1\Wesentlichkeitsanalyse_Stakeholder_Input.xlsx"
+            with col3:
+                st.subheader("Stakeholder Input Vorlage")
+                st.write("Um die wichtigsten Anliegen Ihrer Stakeholder leicht zu bewerten, steht Ihnen unsere Vorlage zum Download bereit.")
+                # Pfad zur Excel-Datei
+                file_path = r"C:\Users\andre\OneDrive\Desktop\Masterarbeit_V1\Wesentlichkeitsanalyse_Stakeholder_Input.xlsx"
 
-            # Fügen Sie die Download-Schaltfläche in die Streamlit-App ein
-            with open(file_path, "rb") as file:
-                st.download_button(
-                    label="Download Excel-Datei",
-                    data=file.read(),
-                    file_name='Wesentlichkeitsanalyse_Stakeholder_Input.xlsx',
-                    mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-                )
+                # Fügen Sie die Download-Schaltfläche in die Streamlit-App ein
+                with open(file_path, "rb") as file:
+                    st.download_button(
+                        label="Download Excel-Datei",
+                        data=file.read(),
+                        file_name='Wesentlichkeitsanalyse_Stakeholder_Input.xlsx',
+                        mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                    )
+
