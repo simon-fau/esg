@@ -27,13 +27,9 @@ def save_session_state(state):
     
 # Laden des Sitzungszustands aus der Datei
 loaded_state = load_session_state()
+# Überprüfen, ob 'df2' im Sitzungszustand vorhanden ist, und initialisieren Sie ihn andernfalls ohne Zeilen
 if 'df2' not in st.session_state:
-    st.session_state.df2 = pd.DataFrame({
-        "Thema": [""],
-        "Unterthema": [""],
-        "Unter-Unterthema": [""]
-    })
-
+    st.session_state.df2 = pd.DataFrame(columns=["Thema", "Unterthema", "Unter-Unterthema"])
 if 'df2' in loaded_state:
     st.session_state.df2 = loaded_state['df2']
 

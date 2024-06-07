@@ -80,7 +80,7 @@ def display_page():
     st.markdown("""
         Dieses Tool hilft Ihnen, Ihre Stakeholder effektiv zu verwalten und zu analysieren. Sie können relevante Informationen über verschiedene Stakeholdergruppen hinzufügen, bearbeiten und visualisieren. Die Daten helfen Ihnen, Strategien für den Umgang mit Ihren Stakeholdern zu entwickeln und zu priorisieren, basierend auf verschiedenen Kriterien wie Engagement-Level und Kommunikationshäufigkeit.          
     """)      
-    tab1, tab2 = st.tabs(["Stakeholder Tabelle", "Stakeholder Ranking & Netzwerkdiagramm"])
+    tab1, tab2, tab3 = st.tabs(["Stakeholder Überischt", "Stakeholder Ranking & Netzwerkdiagramm", "Stakeholder Umfragen Vorlage"])
 
     with tab1:
         # Initialize the session state for the DataFrame with an empty row if it does not exist
@@ -160,7 +160,7 @@ def display_page():
 
 
         with tab2:
-            col1, col2, col3 = st.columns([1.3, 1.5, 1.5])
+            col1, col2 = st.columns([1.5, 1.5,])
             with col1:
                 st.subheader("Ranking")
                 df_temp = pd.DataFrame(grid_response['data'])
@@ -191,9 +191,7 @@ def display_page():
                 net.save_graph("network.html")
                 st.components.v1.html(open("network.html", "r").read(), height=600)
 
-            with col3:
-                st.subheader("Stakeholder Input Vorlage")
-                st.write("Um die wichtigsten Anliegen Ihrer Stakeholder leicht zu bewerten, steht Ihnen unsere Vorlage zum Download bereit.")
+        with tab3:
                 # Pfad zur Excel-Datei
                 file_path = r"C:\Users\andre\OneDrive\Desktop\Masterarbeit_V1\Wesentlichkeitsanalyse_Stakeholder_Input.xlsx"
 

@@ -5,6 +5,7 @@ from pages.Bottom_up_stakeholder import stakeholder_punkte
 import altair as alt
 import numpy as np
 
+
 def stakeholder_Nachhaltigkeitspunkte():
     # Zugriff auf den DataFrame aus Bottom_up_stakeholder.py über session_state
     if 'stakeholder_punkte_df' not in st.session_state:
