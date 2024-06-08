@@ -120,7 +120,15 @@ class YesNoSelection:
             ("Globales Ausrottungsrisiko von Arten", "Globales_Ausrottungsrisiko_Arten")
         ]
 
-        
+        auswirkung_auf_Oekosysteme = [
+            ("Landdegradation", "Landdegradation"),
+            ("Wüstenbildung", "Wüstenbildung"),
+            ("Bodenversiegelung", "Bodenversiegelung")
+        ]
+
+        Auswirkungen_und_Abhängigkeiten_von_Ökosystemdienstleistunge = [
+            ("Auswirkungen und Abhängigkeiten von Ökosystemdienstleistungen", "Auswirkungen und Abhängigkeiten von Ökosystemdienstleistungen")
+        ]
 
         headers = ["Wesentlich", "Eher Wesentlich", "Eher nicht Wesentlich", "Nicht Wesentlich"]
 
@@ -144,7 +152,8 @@ class YesNoSelection:
             **st.session_state['yes_no_selection'],
             **create_section("Direkte Ursachen des Biodiversitätsverlusts", direkte_Ursachen_Biodiversitätsverlust),
             **create_section("Auswirkungen auf den Zustand der Arten", auswirkung_auf_zustand_der_Arten),
-            **create_section("Auswirkungen auf den Umfang und den Zustand von Ökosystemen", impact_on_ecosystems),
+            **create_section("Auswirkungen auf den Umfang und den Zustand von Ökosystemen", auswirkung_auf_Oekosysteme),
+            **create_section("Auswirkungen und Abhängigkeiten von Ökosystemdienstleistungen", Auswirkungen_und_Abhängigkeiten_von_Ökosystemdienstleistunge),
         }
 
     def display_E1_Klimawandel(self):
