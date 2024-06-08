@@ -22,21 +22,29 @@ class YesNoSelection:
                 st.session_state['yes_no_selection'] = pickle.load(f)
 
     def create_options_row(self):
-        hunger_row = st.columns([1, 0.5, 0.5])
-        hunger_row[0].write("Hunger:")
-        ja_checked = hunger_row[1].checkbox("Ja", value=st.session_state['yes_no_selection'].get('Hunger_Ja', False), key="hunger_ja")
-        nein_checked = hunger_row[2].checkbox("Nein", value=st.session_state['yes_no_selection'].get('Hunger_Nein', False), key="hunger_nein")
+        hunger_row = st.columns([1, 0.5, 0.5, 0.5, 0.5])
+        hunger_row[0].write("Anapssung an Klimawandel:")
+        wesentlich_Klimawandel = hunger_row[1].checkbox("Wesentlich", value=st.session_state['yes_no_selection'].get('Wesentlich_Klimawandel', False), key="Wesentlich_Klimawandel")
+        eher_wesentlich_Klimawandel = hunger_row[2].checkbox("Eher Wesentlich", value=st.session_state['yes_no_selection'].get('Eher_Wesentlich_Klimawandel', False), key="Eher_Wesentlich_Klimawandel")
+        eher_nicht_wesentlich_Klimawandel = hunger_row[3].checkbox("Eher nicht Wesentlich", value=st.session_state['yes_no_selection'].get('Eher_nicht_wesentlich', False), key="Eher_nicht_wesentlich")
+        nicht_wesentlich_Klimawandel = hunger_row[4].checkbox("Nicht Wesentlich", value=st.session_state['yes_no_selection'].get('Nicht_Wesentlich_Klimawandel', False), key="Nicht_Wesentlich_Klimawandel")
         
-        durst_row = st.columns([1, 0.5, 0.5])
-        durst_row[0].write("Durst:")
-        durst_ja_checked = durst_row[1].checkbox("Ja", value=st.session_state['yes_no_selection'].get('Durst_Ja', False), key="durst_ja")
-        durst_nein_checked = durst_row[2].checkbox("Nein", value=st.session_state['yes_no_selection'].get('Durst_Nein', False), key="durst_nein")
+        durst_row = st.columns([1, 0.5, 0.5, 0.5, 0.5])
+        durst_row[0].write("Klimaschutz:")
+        wesentlich_Klimawandel_2 = hunger_row[1].checkbox("Wesentlich", value=st.session_state['yes_no_selection'].get('Wesentlich_Klimawandel_2', False), key="Wesentlich_Klimawandel_2")
+        eher_wesentlich_Klimawandel_2 = hunger_row[2].checkbox("Eher Wesentlich", value=st.session_state['yes_no_selection'].get('Eher_Wesentlich_Klimawandel_2', False), key="Eher_Wesentlich_Klimawandel_2")
+        eher_nicht_wesentlich_Klimawandel_2 = hunger_row[3].checkbox("Eher nicht Wesentlich", value=st.session_state['yes_no_selection'].get('Eher_nicht_wesentlich_2', False), key="Eher_nicht_wesentlich_2")
+        nicht_wesentlich_Klimawandel_2 = hunger_row[4].checkbox("Nicht Wesentlich", value=st.session_state['yes_no_selection'].get('Nicht_Wesentlich_Klimawandel_2', False), key="Nicht_Wesentlich_Klimawandel_2")
         
         # Aktualisieren Sie die Zustände im st.session_state korrekt, ohne Schlüssel zu überschreiben
-        st.session_state['yes_no_selection']['Hunger_Ja'] = ja_checked
-        st.session_state['yes_no_selection']['Hunger_Nein'] = nein_checked
-        st.session_state['yes_no_selection']['Durst_Ja'] = durst_ja_checked
-        st.session_state['yes_no_selection']['Durst_Nein'] = durst_nein_checked
+        st.session_state['yes_no_selection']['Wesentlich_Klimawandel'] = wesentlich_Klimawandel
+        st.session_state['yes_no_selection']['Eher_Wesentlich_Klimawandel'] = eher_wesentlich_Klimawandel
+        st.session_state['yes_no_selection']['Eher_nicht_wesentlich'] = eher_nicht_wesentlich_Klimawandel
+        st.session_state['yes_no_selection']['Nicht_Wesentlich_Klimawandel'] = nicht_wesentlich_Klimawandel
+        st.session_state['yes_no_selection']['Wesentlich_Klimawandel_2'] = wesentlich_Klimawandel_2
+        st.session_state['yes_no_selection']['Eher_Wesentlich_Klimawandel_2'] = eher_wesentlich_Klimawandel_2
+        st.session_state['yes_no_selection']['Eher_nicht_wesentlich_2'] = eher_nicht_wesentlich_Klimawandel_2
+        st.session_state['yes_no_selection']['Nicht_Wesentlich_Klimawandel_2'] = nicht_wesentlich_Klimawandel_2
 
     def display_selection(self):
         st.header('Ja oder Nein Auswahl')
