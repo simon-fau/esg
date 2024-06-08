@@ -80,9 +80,9 @@ def Top_down_Nachhaltigkeitspunkte():
     if 'yes_no_selection' not in st.session_state:
         st.session_state['yes_no_selection'] = {
             'Wesentlich_Klimawandel': False,
-            'Eher_Wesentlich_Klimawandel': False,
-            'Eher_nicht_wesentlich': False,
-            'Nicht_Wesentlich_Klimawandel': False,
+            'Eher_wesentlich_Klimawandel': False,
+            'Eher_nicht_wesentlich_Klimawandel': False,
+            'Nicht_wesentlich_Klimawandel': False,
             'Wesentlich_Klimawandel_2': False,
             'Eher_Wesentlich_Klimawandel_2': False,
             'Eher_nicht_wesentlich_2': False,

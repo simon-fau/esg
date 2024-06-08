@@ -30,42 +30,37 @@ class YesNoSelection:
             with open('a.pkl', 'rb') as f:
                 st.session_state['yes_no_selection'] = pickle.load(f)
 
-    def create_options_row(self):
+    def E1_Klimawandel(self):
+        topics = [
+            ("Anpassung an Klimawandel", "Klimawandel"),
+            ("Klimaschutz", "Klimaschutz"),
+            ("Energie", "Energie")
+        ]
+        
         # Erstellen der Überschriftenzeile
         header_row = st.columns([2, 1, 1, 1, 1])
-        header_row[1].write("Wesentlich")
-        header_row[2].write("Eher Wesentlich")
-        header_row[3].write("Eher nicht Wesentlich")
-        header_row[4].write("Nicht Wesentlich")
+        headers = ["Wesentlich", "Eher Wesentlich", "Eher nicht Wesentlich", "Nicht Wesentlich"]
+        for i, header in enumerate(headers):
+            header_row[i + 1].write(header)
+        
+        # Aktualisiere den session_state nur mit den aktuellen Werten der Checkboxen
+        current_selection = {}
+        for topic, key in topics:
+            cols = st.columns([2, 1, 1, 1, 1])
+            cols[0].write(f"{topic}:")
+            for i, header in enumerate(headers):
+                checkbox_key = f"{header}_{key}"
+                value = cols[i + 1].checkbox("", value=st.session_state['yes_no_selection'].get(checkbox_key, False), key=checkbox_key)
+                current_selection[checkbox_key] = value
+    
+        # Aktualisiere den session_state mit den aktuellen Auswahlwerten
+        st.session_state['yes_no_selection'] = current_selection
+    
+        st.write(st.session_state['yes_no_selection'])
 
-        # Erste Zeile für "Anpassung an Klimawandel"
-        Klimawandel_row = st.columns([2, 1, 1, 1, 1])
-        Klimawandel_row[0].write("Anpassung an Klimawandel:")
-        wesentlich_Klimawandel = Klimawandel_row[1].checkbox("", value=st.session_state['yes_no_selection'].get('Wesentlich_Klimawandel', False), key="Wesentlich_Klimawandel")
-        eher_wesentlich_Klimawandel = Klimawandel_row[2].checkbox("", value=st.session_state['yes_no_selection'].get('Eher_Wesentlich_Klimawandel', False), key="Eher_Wesentlich_Klimawandel")
-        eher_nicht_wesentlich_Klimawandel = Klimawandel_row[3].checkbox("", value=st.session_state['yes_no_selection'].get('Eher_nicht_wesentlich', False), key="Eher_nicht_wesentlich")
-        nicht_wesentlich_Klimawandel = Klimawandel_row[4].checkbox("", value=st.session_state['yes_no_selection'].get('Nicht_Wesentlich_Klimawandel', False), key="Nicht_Wesentlich_Klimawandel")
-        
-        # Zweite Zeile für "Klimaschutz"
-        Klimawandel_2_row = st.columns([2, 1, 1, 1, 1])
-        Klimawandel_2_row[0].write("Klimaschutz:")
-        wesentlich_Klimawandel_2 = Klimawandel_2_row[1].checkbox("", value=st.session_state['yes_no_selection'].get('Wesentlich_Klimawandel_2', False), key="Wesentlich_Klimawandel_2")
-        eher_wesentlich_Klimawandel_2 = Klimawandel_2_row[2].checkbox("", value=st.session_state['yes_no_selection'].get('Eher_Wesentlich_Klimawandel_2', False), key="Eher_Wesentlich_Klimawandel_2")
-        eher_nicht_wesentlich_Klimawandel_2 = Klimawandel_2_row[3].checkbox("", value=st.session_state['yes_no_selection'].get('Eher_nicht_wesentlich_2', False), key="Eher_nicht_wesentlich_2")
-        nicht_wesentlich_Klimawandel_2 = Klimawandel_2_row[4].checkbox("", value=st.session_state['yes_no_selection'].get('Nicht_Wesentlich_Klimawandel_2', False), key="Nicht_Wesentlich_Klimawandel_2")
-        
-        # Aktualisieren der Zustände im st.session_state
-        st.session_state['yes_no_selection']['Wesentlich_Klimawandel'] = wesentlich_Klimawandel
-        st.session_state['yes_no_selection']['Eher_Wesentlich_Klimawandel'] = eher_wesentlich_Klimawandel
-        st.session_state['yes_no_selection']['Eher_nicht_wesentlich'] = eher_nicht_wesentlich_Klimawandel
-        st.session_state['yes_no_selection']['Nicht_Wesentlich_Klimawandel'] = nicht_wesentlich_Klimawandel
-        st.session_state['yes_no_selection']['Wesentlich_Klimawandel_2'] = wesentlich_Klimawandel_2
-        st.session_state['yes_no_selection']['Eher_Wesentlich_Klimawandel_2'] = eher_wesentlich_Klimawandel_2
-        st.session_state['yes_no_selection']['Eher_nicht_wesentlich_2'] = eher_nicht_wesentlich_Klimawandel_2
-        st.session_state['yes_no_selection']['Nicht_Wesentlich_Klimawandel_2'] = nicht_wesentlich_Klimawandel_2
 
     def display_selection(self):
-        self.create_options_row()
+        self.E1_Klimawandel()
         button = st.button("Auswahl speichern")
         if button:
             self.save_session_state()
@@ -76,7 +71,17 @@ def display_session_state_contents():
     st.json(st.session_state['yes_no_selection'])
 
 def display_page():
-    st.title("Klimawandel")
-    selection = YesNoSelection()
-    selection.display_selection()
-    display_session_state_contents()  # Zeigt den Inhalt des Session State an
+    tabs = st.tabs(["Klimawandel", "Klimaschutz", "Energie", "Wasser", "Biodiversität"])
+    with tabs[0]:
+        st.title("Klimawandel")
+        selection = YesNoSelection()
+        selection.display_selection()
+    with tabs[1]:
+        st.title("Umweltverschmutzung")
+    with tabs[2]:
+        pass
+    with tabs[3]:
+        pass
+    with tabs[4]:
+        pass
+    #display_session_state_contents()  # Zeigt den Inhalt des Session State an
