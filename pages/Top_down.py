@@ -37,31 +37,140 @@ class YesNoSelection:
             ("Energie", "Energie")
         ]
         
-        # Erstellen der Überschriftenzeile
-        header_row = st.columns([2, 1, 1, 1, 1])
+        header_row = st.columns([3, 1, 1, 1, 1])
         headers = ["Wesentlich", "Eher Wesentlich", "Eher nicht Wesentlich", "Nicht Wesentlich"]
         for i, header in enumerate(headers):
             header_row[i + 1].write(header)
         
-        # Aktualisiere den session_state nur mit den aktuellen Werten der Checkboxen
         current_selection = {}
         for topic, key in topics:
-            cols = st.columns([2, 1, 1, 1, 1])
+            cols = st.columns([3, 1, 1, 1, 1])
             cols[0].write(f"{topic}:")
             for i, header in enumerate(headers):
-                checkbox_key = f"{header}_{key}"
+                checkbox_key = f"{header}_{key}_E1"
                 value = cols[i + 1].checkbox("", value=st.session_state['yes_no_selection'].get(checkbox_key, False), key=checkbox_key)
                 current_selection[checkbox_key] = value
-    
-        # Aktualisiere den session_state mit den aktuellen Auswahlwerten
-        st.session_state['yes_no_selection'] = current_selection
-    
-        st.write(st.session_state['yes_no_selection'])
 
+        st.session_state['yes_no_selection'] = {**st.session_state['yes_no_selection'], **current_selection}
 
-    def display_selection(self):
+    def E2_Umweltverschmutzung(self):
+        topics = [
+            ("Luftverschmutzung", "Luftverschmutzung"),
+            ("Wasserverschmutzung", "Wasserverschmutzung"),
+            ("Bodenverschmutzung", "Bodenverschmutzung"),
+            ("Verschmutzung von lebenden Organismen und Nahrungsressourcen", "Organismen_Nahrungsressourcen"),
+            ("Besorgniserregende Stoffe", "Besorgniserregende_Stoffe"),
+            ("Besonders besorgniserregende Stoffe", "Besonders_besorgniserregende_Stoffe"),
+            ("Mikroplastik", "Mikroplastik")
+        ]
+        
+        header_row = st.columns([3, 1, 1, 1, 1])
+        headers = ["Wesentlich", "Eher Wesentlich", "Eher nicht Wesentlich", "Nicht Wesentlich"]
+        for i, header in enumerate(headers):
+            header_row[i + 1].write(header)
+        
+        current_selection = {}
+        for topic, key in topics:
+            cols = st.columns([3, 1, 1, 1, 1])
+            cols[0].write(f"{topic}:")
+            for i, header in enumerate(headers):
+                checkbox_key = f"{header}_{key}_E2"
+                value = cols[i + 1].checkbox("", value=st.session_state['yes_no_selection'].get(checkbox_key, False), key=checkbox_key)
+                current_selection[checkbox_key] = value
+
+        st.session_state['yes_no_selection'] = {**st.session_state['yes_no_selection'], **current_selection}
+
+    def E3_Wasser_und_Meeresressourcen(self):
+        topics = [
+            ("Wasserverbrauch", "Wasserverbrauch"),
+            ("Wasserentnahme", "Wasserentnahme"),
+            ("Ableitung von Wasser", "Ableitung_Wasser"),
+            ("Ableitung von Wasser in die Ozeane", "Ableitung_Wasser_Ozeane"),
+            ("Gewinnung und Nutzung von Meeresressourcen", "Meeresressourcen_Nutzung")
+        ]
+        
+        header_row = st.columns([3, 1, 1, 1, 1])
+        headers = ["Wesentlich", "Eher Wesentlich", "Eher nicht Wesentlich", "Nicht Wesentlich"]
+        for i, header in enumerate(headers):
+            header_row[i + 1].write(header)
+        
+        current_selection = {}
+        for topic, key in topics:
+            cols = st.columns([3, 1, 1, 1, 1])
+            cols[0].write(f"{topic}:")
+            for i, header in enumerate(headers):
+                checkbox_key = f"{header}_{key}_E3"
+                value = cols[i + 1].checkbox("", value=st.session_state['yes_no_selection'].get(checkbox_key, False), key=checkbox_key)
+                current_selection[checkbox_key] = value
+
+        st.session_state['yes_no_selection'] = {**st.session_state['yes_no_selection'], **current_selection}
+
+    def E4_Biologische_Vielfalt_und_Oekosysteme(self):
+        direkte_Ursachen_Biodiversitätsverlust = [
+            ("Klimawandel", "Klimawandel"),
+            ("Landnutzungsänderungen, Süßwasser- und Meeresnutzungsänderungen", "Landnutzungsänderungen"),
+            ("Direkte Ausbeutung", "Direkte_Ausbeutung"),
+            ("Invasive gebietsfremde Arten", "Invasive_Arten"),
+            ("Umweltverschmutzung", "Umweltverschmutzung"),
+            ("Sonstige", "Sonstige")
+        ]
+        
+        auswirkung_auf_zustand_der_Arten = [
+            ("Populationsgröße von Arten", "Populationsgröße_Arten"),
+            ("Globales Ausrottungsrisiko von Arten", "Globales_Ausrottungsrisiko_Arten")
+        ]
+
+        
+
+        headers = ["Wesentlich", "Eher Wesentlich", "Eher nicht Wesentlich", "Nicht Wesentlich"]
+
+        def create_section(title, topics):
+            st.subheader(title)
+            header_row = st.columns([3, 1, 1, 1, 1])
+            for i, header in enumerate(headers):
+                header_row[i + 1].write(header)
+            
+            current_selection = {}
+            for topic, key in topics:
+                cols = st.columns([3, 1, 1, 1, 1])
+                cols[0].write(f"{topic}:")
+                for i, header in enumerate(headers):
+                    checkbox_key = f"{header}_{key}_E4"
+                    value = cols[i + 1].checkbox("", value=st.session_state['yes_no_selection'].get(checkbox_key, False), key=checkbox_key)
+                    current_selection[checkbox_key] = value
+            return current_selection
+
+        st.session_state['yes_no_selection'] = {
+            **st.session_state['yes_no_selection'],
+            **create_section("Direkte Ursachen des Biodiversitätsverlusts", direkte_Ursachen_Biodiversitätsverlust),
+            **create_section("Auswirkungen auf den Zustand der Arten", auswirkung_auf_zustand_der_Arten),
+            **create_section("Auswirkungen auf den Umfang und den Zustand von Ökosystemen", impact_on_ecosystems),
+        }
+
+    def display_E1_Klimawandel(self):
         self.E1_Klimawandel()
-        button = st.button("Auswahl speichern")
+        button = st.button("Auswahl speichern", key ='Button_Klimawandel')
+        if button:
+            self.save_session_state()
+            st.success("Auswahl erfolgreich gespeichert!")
+
+    def display_E2_Umweltverschmutzung(self):
+        self.E2_Umweltverschmutzung()
+        button = st.button("Auswahl speichern", key ='Button_Umweltverschmutzung')
+        if button:
+            self.save_session_state()
+            st.success("Auswahl erfolgreich gespeichert!")
+
+    def display_E3_Wasser_und_Meeresressourcen(self):
+        self.E3_Wasser_und_Meeresressourcen()
+        button = st.button("Auswahl speichern", key = 'Button_WasserundMeeresressourcen')
+        if button:
+            self.save_session_state()
+            st.success("Auswahl erfolgreich gespeichert!")
+
+    def display_E4_Biologische_Vielfalt_und_Oekosysteme(self):
+        self.E4_Biologische_Vielfalt_und_Oekosysteme()
+        button = st.button("Auswahl speichern", key = 'Button_Biologische_Vielfalt_und_Oekosysteme')
         if button:
             self.save_session_state()
             st.success("Auswahl erfolgreich gespeichert!")
@@ -71,17 +180,22 @@ def display_session_state_contents():
     st.json(st.session_state['yes_no_selection'])
 
 def display_page():
-    tabs = st.tabs(["Klimawandel", "Klimaschutz", "Energie", "Wasser", "Biodiversität"])
+    selection = YesNoSelection()
+    tabs = st.tabs(["Klimawandel", "Umweltverschmutzung", "Meeres- und Wasserressourcen", "Biologische_Vielfalt_und_Oekosysteme", "Biodiversität"])
     with tabs[0]:
         st.title("Klimawandel")
-        selection = YesNoSelection()
-        selection.display_selection()
+        selection.display_E1_Klimawandel()
     with tabs[1]:
         st.title("Umweltverschmutzung")
+        selection.display_E2_Umweltverschmutzung()
     with tabs[2]:
-        pass
+        st.title("Meeres- und Wasserressourcen")
+        selection.display_E3_Wasser_und_Meeresressourcen()
     with tabs[3]:
-        pass
+        st.title("Biologische Vielfalt und Oekosysteme")
+        selection.display_E4_Biologische_Vielfalt_und_Oekosysteme()  
     with tabs[4]:
         pass
-    #display_session_state_contents()  # Zeigt den Inhalt des Session State an
+
+
+
