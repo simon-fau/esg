@@ -75,6 +75,7 @@ def eigene_Nachhaltigkeitspunkte():
     df4['Quelle'] = 'Eigene'
     return df4
 
+
 def Top_down_Nachhaltigkeitspunkte():
     if 'yes_no_selection' not in st.session_state:
         st.session_state['yes_no_selection'] = {
@@ -87,13 +88,31 @@ def Top_down_Nachhaltigkeitspunkte():
             'Eher_nicht_wesentlich_2': False,
             'Nicht_Wesentlich_Klimawandel_2': False
         }
-    else:
-        pass
 
-    # Filtern und Anzeigen nur der wesentlichen und eher wesentlichen Inhalte, die True sind
-    filtered_selection = {key: value for key, value in st.session_state['yes_no_selection'].items() if value and "Wesentlich" in key}
-    st.write("Wesentliche und eher wesentliche Inhalte im 'yes_no_selection' des Session State:")
-    st.json(filtered_selection)
+    wesentliche_themen = {
+        'Wesentlich_Klimawandel': 'Anpassung an den Klimawandel',
+        'Eher_Wesentlich_Klimawandel': 'Anpassung an den Klimawandel',
+        'Wesentlich_Klimawandel_2': 'Klimaschutz',
+        'Eher_Wesentlich_Klimawandel_2': 'Klimaschutz'
+    }
+
+    # Erstellen eines Dataframes für die wesentlichen Themen
+    themen_liste = []
+    for key, unterthema in wesentliche_themen.items():
+        if st.session_state['yes_no_selection'][key]:
+            themen_liste.append({
+                'Thema': 'Klimawandel',
+                'Unterthema': unterthema,
+                'Unter-Unterthema': ''
+            })
+
+    if themen_liste:
+        df_themen = pd.DataFrame(themen_liste)
+        st.session_state['wesentliche_themen_df'] = df_themen
+        st.write("Wesentliche Themen Dataframe:")
+        st.dataframe(df_themen)
+    else:
+        st.write("Keine wesentlichen Themen ausgewählt.")
 
 def initialize_bewertet_column(longlist):
     if 'selected_data' in st.session_state:

@@ -8,7 +8,16 @@ class YesNoSelection:
         self.initialize_state()
 
     def initialize_state(self):
-        options = {'Ja': False, 'Nein': False, 'Durst_Ja': False, 'Durst_Nein': False}
+        options = {
+            'Wesentlich_Klimawandel': False,
+            'Eher_Wesentlich_Klimawandel': False,
+            'Eher_nicht_wesentlich': False,
+            'Nicht_Wesentlich_Klimawandel': False,
+            'Wesentlich_Klimawandel_2': False,
+            'Eher_Wesentlich_Klimawandel_2': False,
+            'Eher_nicht_wesentlich_2': False,
+            'Nicht_Wesentlich_Klimawandel_2': False
+        }
         if 'yes_no_selection' not in st.session_state:
             st.session_state['yes_no_selection'] = options
 
@@ -56,7 +65,6 @@ class YesNoSelection:
         st.session_state['yes_no_selection']['Nicht_Wesentlich_Klimawandel_2'] = nicht_wesentlich_Klimawandel_2
 
     def display_selection(self):
-        st.header('Ja oder Nein Auswahl')
         self.create_options_row()
         button = st.button("Auswahl speichern")
         if button:
@@ -68,7 +76,7 @@ def display_session_state_contents():
     st.json(st.session_state['yes_no_selection'])
 
 def display_page():
-    st.title("Ja oder Nein Auswahl")
+    st.title("Klimawandel")
     selection = YesNoSelection()
     selection.display_selection()
     display_session_state_contents()  # Zeigt den Inhalt des Session State an
