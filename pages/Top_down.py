@@ -105,7 +105,7 @@ class YesNoSelection:
 
         st.session_state['yes_no_selection'] = {**st.session_state['yes_no_selection'], **current_selection}
 
-    def E4_Biologische_Vielfalt_und_Oekosysteme(self):
+    def E4_Biodiversität(self):
         direkte_Ursachen_Biodiversitätsverlust = [
             ("Klimawandel", "Klimawandel"),
             ("Landnutzungsänderungen, Süßwasser- und Meeresnutzungsänderungen", "Landnutzungsänderungen"),
@@ -230,7 +230,7 @@ class YesNoSelection:
             **create_section("Sonstige arbeitsbezogene Rechte", sonstige_arbeitsbezogene_rechte),
         }
 
-    def S2_Arbeitskräfte_in_der_Wertschöpfungskette(self):
+    def S2_Belegschaft_Lieferkette(self):
         arbeitsbedingungen = [
             ("Sichere Beschäftigung", "Sichere Beschäftigung"),
             ("Arbeitszeit", "Arbeitszeit"),
@@ -281,6 +281,95 @@ class YesNoSelection:
             **create_section("Sonstige arbeitsbezogene Rechte", sonstige_arbeitsbezogene_rechte),
         }
 
+    def S3_Betroffene_Gemeinschaften(self):
+        wirtschafttliche_soziale_und_kulturelle_rechte = [
+            ("Angemessene Unterbringungen", "Unterbringungen"),
+            ("Angemessene Ernährung", "Ernährung"),
+            ("Wasser- und Sanitäreinrichtungen", "Wasser"),
+            ("Bodenbezogene Auswirkungen", "Boden"),
+            ("Sicherheitsbezogene Auswirkungen", "Sicherheit"),
+        ]
+
+        bürgerrechte_und_politische_rechte = [
+            ("Meinungsfreiheit", "Meinungsfreiheit"),
+            ("Versammlungsfreiheit", "Versammlungsfreiheit"),
+            ("Auswirkungen auf Menschenrechtsverteidiger", "Menschenrechtsverteidiger"),
+        ]
+
+        rechte_von_indigenen_völkern = [
+            ("Freiwillige und in Kenntnis der Sachlage erteilte vorherige Zustimmung", "Zustimmung"),
+            ("Selbstbestimmung", "Selbstbestimmung"),
+            ("Kulturelle Rechte", "Kulturelle_Rechte"),
+        ]
+
+        headers = ["Wesentlich", "Eher Wesentlich", "Eher nicht Wesentlich", "Nicht Wesentlich"]
+    
+        header_row = st.columns([4, 1, 1, 1, 1])
+        for i, header in enumerate(headers):
+            header_row[i + 1].write(header)
+    
+        def create_section(title, topics):
+            st.markdown(f"**{title}**")
+            current_selection = {}
+            for topic, key in topics:
+                cols = st.columns([4, 1, 1, 1, 1])
+                cols[0].write(f"{topic}:")
+                for i, header in enumerate(headers):
+                    checkbox_key = f"{header}_{key}_S3"
+                    value = cols[i + 1].checkbox("Select", value=st.session_state['yes_no_selection'].get(checkbox_key, False), key=checkbox_key, label_visibility='collapsed')
+                    current_selection[checkbox_key] = value
+            return current_selection
+    
+        st.session_state['yes_no_selection'] = {
+            **st.session_state['yes_no_selection'],
+            **create_section("Wirtschaftliche, soziale und kulturelle Rechte von Gemeinschaften", wirtschafttliche_soziale_und_kulturelle_rechte),
+            **create_section("Bürgerrechte und politische Rechte von Gemeinschaften", bürgerrechte_und_politische_rechte),
+            **create_section("Rechte von indigenen Völkern", rechte_von_indigenen_völkern),
+        }
+            
+    def S4_Verbraucher_und_Endnutzer(self):
+        informationsbezogene_auswirkungen_für_verbraucher_und_endnutzer = [
+            ("Datenschutz", "Datenschutz"),
+            ("Meinungsfreiheit", "Meinungsfreiheit"),
+            ("Zugang zu (hochwertigen) Informationen", "Zugang"),   
+        ]
+
+        persönliche_sicherheit_von_verbrauchern_und_endnutzern = [
+            ("Gesundheitsschutz und Sicherheit", "Gesundheitsschutz"),
+            ("Persönliche Sicherheit", "Persönliche_Sicherheit"),
+            ("Kinderschutz", "Kinderschutz"),
+        ]
+
+        soziale_inklusion_von_verbrauchern_und_endnutzern = [
+            ("Nichtdiskriminierung", "Nichtdiskriminierung"),
+            ("Zugang zu Produkten und Dienstleistungen", "Zugang"),
+            ("Verantwortliche Vermarktungspraktiken", "Vermarktungspraktiken"),
+        ]
+
+        headers = ["Wesentlich", "Eher Wesentlich", "Eher nicht Wesentlich", "Nicht Wesentlich"]
+    
+        header_row = st.columns([4, 1, 1, 1, 1])
+        for i, header in enumerate(headers):
+            header_row[i + 1].write(header)
+    
+        def create_section(title, topics):
+            st.markdown(f"**{title}**")
+            current_selection = {}
+            for topic, key in topics:
+                cols = st.columns([4, 1, 1, 1, 1])
+                cols[0].write(f"{topic}:")
+                for i, header in enumerate(headers):
+                    checkbox_key = f"{header}_{key}_S4"
+                    value = cols[i + 1].checkbox("Select", value=st.session_state['yes_no_selection'].get(checkbox_key, False), key=checkbox_key, label_visibility='collapsed')
+                    current_selection[checkbox_key] = value
+            return current_selection
+    
+        st.session_state['yes_no_selection'] = {
+            **st.session_state['yes_no_selection'],
+            **create_section("Informationsbezogene Auswirkungen für Verbraucher und Endnutzer", informationsbezogene_auswirkungen_für_verbraucher_und_endnutzer),
+            **create_section("Persönliche Sicherheit von Verbrauchern und Endnutzern", persönliche_sicherheit_von_verbrauchern_und_endnutzern),
+            **create_section("Soziale Inklusion von Verbrauchern und Endnutzern", soziale_inklusion_von_verbrauchern_und_endnutzern),
+        }
     
     
     
@@ -317,13 +406,13 @@ class YesNoSelection:
             self.save_session_state()
             st.success("Auswahl erfolgreich gespeichert!")
 
-    def display_E4_Biologische_Vielfalt_und_Oekosysteme(self):
-        self.E4_Biologische_Vielfalt_und_Oekosysteme()
+    def display_E4_Biodiversität(self):
+        self.E4_Biodiversität()
         col1, col2 = st.columns([5, 0.8]) # Erstellt zwei Spalten, wobei die zweite Spalte für den Button ist
         with col1:
             pass  
         with col2:
-            button = st.button("Auswahl speichern", key = 'Button_Biologische_Vielfalt_und_Oekosysteme')
+            button = st.button("Auswahl speichern", key = 'Button_Biodiversität')
         if button:
             self.save_session_state()
             st.success("Auswahl erfolgreich gespeichert!")
@@ -339,7 +428,7 @@ class YesNoSelection:
             self.save_session_state()
             st.success("Auswahl erfolgreich gespeichert!")
 
-    def display_Eigene_Belegschaft(self):
+    def display_S1_Eigene_Belegschaft(self):
         self.S1_Eigene_Belegschaft()
         col1, col2 = st.columns([5, 0.8])
         with col1:
@@ -350,13 +439,35 @@ class YesNoSelection:
             self.save_session_state()
             st.success("Auswahl erfolgreich gespeichert!")
 
-    def display_Arbeitskräfte_in_der_Wertschöpfungskette(self):
-        self.S2_Arbeitskräfte_in_der_Wertschöpfungskette()
+    def display_S2_Belegschaft_Lieferkette(self):
+        self.S2_Belegschaft_Lieferkette()
         col1, col2 = st.columns([5, 0.8])
         with col1:
             pass
         with col2:
-            button = st.button("Auswahl speichern", key = 'Button_Arbeitskräfte_in_der_Wertschöpfungskette')
+            button = st.button("Auswahl speichern", key = 'Button_Belegschaft_Lieferkette')
+        if button:
+            self.save_session_state()
+            st.success("Auswahl erfolgreich gespeichert!")
+
+    def display_S3_Betroffene_Gemeinschaften(self):
+        self.S3_Betroffene_Gemeinschaften()
+        col1, col2 = st.columns([5, 0.8])
+        with col1:
+            pass
+        with col2:
+            button = st.button("Auswahl speichern", key = 'Button_Betroffene_Gemeinschaften')
+        if button:
+            self.save_session_state()
+            st.success("Auswahl erfolgreich gespeichert!")
+
+    def display_S4_Verbraucher_und_Endnutzer(self):
+        self.S4_Verbraucher_und_Endnutzer()
+        col1, col2 = st.columns([5, 0.8])
+        with col1:
+            pass
+        with col2:
+            button = st.button("Auswahl speichern", key = 'Button_Verbraucher_und_Endnutzer')
         if button:
             self.save_session_state()
             st.success("Auswahl erfolgreich gespeichert!")
@@ -367,7 +478,7 @@ def display_session_state_contents():
 
 def display_page():
     selection = YesNoSelection()
-    tabs = st.tabs(["Klimawandel", "Umweltverschmutzung", "Meeres- und Wasserressourcen", "Biologische Vielfalt und Ökosysteme", "Kreislaufwirtschaft", "Eigene Belegschaft", "Arbeitskräfte in der Wertschöpfungskette", "Betroffene Gemeinschaften", "Verbraucher und End-nutzer", "Unternehmenspolitik"])
+    tabs = st.tabs(["Klimawandel", "Umweltverschmutzung", "Meeres- und Wasserressourcen", "Biodiversität", "Kreislaufwirtschaft", "Eigene Belegschaft", "Belegschaft Lieferkette", "Betroffene Gemeinschaften", "Verbraucher und End-nutzer", "Unternehmenspolitik"])
     with tabs[0]:
         st.subheader("Klimawandel")
         selection.display_E1_Klimawandel()
@@ -378,17 +489,17 @@ def display_page():
         st.subheader("Meeres- und Wasserressourcen")
         selection.display_E3_Wasser_und_Meeresressourcen()
     with tabs[3]:
-        st.subheader("Biologische Vielfalt und Ökosysteme")
+        st.subheader("Biodiversität")
         selection.display_E4_Biologische_Vielfalt_und_Oekosysteme()  
     with tabs[4]:
         st.subheader("Kreislaufwirtschaft")
         selection.display_E5_Kreislaufwirtschaft()
     with tabs[5]:
         st.subheader("Eigene Belegschaft")
-        selection.display_Eigene_Belegschaft()
+        selection.display_S1_Eigene_Belegschaft()
     with tabs[6]:
-        st.subheader("Arbeitskräfte in der Wertschöpfungskette")
-        selection.display_Arbeitskräfte_in_der_Wertschöpfungskette()
+        st.subheader("Belegschaft Lieferkette")
+        selection.display_S2_Arbeitskräfte_in_der_Wertschöpfungskette()
     with tabs[7]:
         st.subheader("Betroffene Gemeinschaften")
     with tabs[8]:
