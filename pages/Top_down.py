@@ -331,7 +331,7 @@ class YesNoSelection:
         informationsbezogene_auswirkungen_für_verbraucher_und_endnutzer = [
             ("Datenschutz", "Datenschutz"),
             ("Meinungsfreiheit", "Meinungsfreiheit"),
-            ("Zugang zu (hochwertigen) Informationen", "Zugang"),   
+            ("Zugang zu (hochwertigen) Informationen", "Zugang zu Informationen"),   
         ]
 
         persönliche_sicherheit_von_verbrauchern_und_endnutzern = [
@@ -490,7 +490,7 @@ def display_page():
         selection.display_E3_Wasser_und_Meeresressourcen()
     with tabs[3]:
         st.subheader("Biodiversität")
-        selection.display_E4_Biologische_Vielfalt_und_Oekosysteme()  
+        selection.display_E4_Biodiversität()  
     with tabs[4]:
         st.subheader("Kreislaufwirtschaft")
         selection.display_E5_Kreislaufwirtschaft()
@@ -499,11 +499,13 @@ def display_page():
         selection.display_S1_Eigene_Belegschaft()
     with tabs[6]:
         st.subheader("Belegschaft Lieferkette")
-        selection.display_S2_Arbeitskräfte_in_der_Wertschöpfungskette()
+        selection.display_S2_Belegschaft_Lieferkette()
     with tabs[7]:
         st.subheader("Betroffene Gemeinschaften")
+        selection.display_S3_Betroffene_Gemeinschaften()
     with tabs[8]:
         st.subheader("Verbraucher und End-nutzer")
+        selection.display_S4_Verbraucher_und_Endnutzer()
     with tabs[9]:
         st.subheader("Unternehmenspolitik")
 
