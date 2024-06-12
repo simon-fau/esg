@@ -22,17 +22,17 @@ class YesNoSelection:
             st.session_state['yes_no_selection'] = options
 
     def save_session_state(self):
-        with open('a.pkl', 'wb') as f:
+        with open('ab.pkl', 'wb') as f:
             pickle.dump(st.session_state['yes_no_selection'], f)
 
     def load_session_state(self):
-        if os.path.exists('a.pkl'):
-            with open('a.pkl', 'rb') as f:
+        if os.path.exists('ab.pkl'):
+            with open('ab.pkl', 'rb') as f:
                 st.session_state['yes_no_selection'] = pickle.load(f)
 
     def E1_Klimawandel(self):
         topics = [
-            ("Anpassung an Klimawandel", "Klimawandel"),
+            ("Anpassung an Klimawandel", "Anpassung_an_den_Klimawandel"),
             ("Klimaschutz", "Klimaschutz"),
             ("Energie", "Energie")
         ]
@@ -58,7 +58,7 @@ class YesNoSelection:
             ("Luftverschmutzung", "Luftverschmutzung"),
             ("Wasserverschmutzung", "Wasserverschmutzung"),
             ("Bodenverschmutzung", "Bodenverschmutzung"),
-            ("Verschmutzung von lebenden Organismen und Nahrungsressourcen", "Organismen_Nahrungsressourcen"),
+            ("Verschmutzung von lebenden Organismen und Nahrungsressourcen", "Verschmutzung_von_lebenden_Organismen_und_Nahrungsressourcen"),
             ("Besorgniserregende Stoffe", "Besorgniserregende_Stoffe"),
             ("Besonders besorgniserregende Stoffe", "Besonders_besorgniserregende_Stoffe"),
             ("Mikroplastik", "Mikroplastik")
@@ -84,9 +84,9 @@ class YesNoSelection:
         topics = [
             ("Wasserverbrauch", "Wasserverbrauch"),
             ("Wasserentnahme", "Wasserentnahme"),
-            ("Ableitung von Wasser", "Ableitung_Wasser"),
-            ("Ableitung von Wasser in die Ozeane", "Ableitung_Wasser_Ozeane"),
-            ("Gewinnung und Nutzung von Meeresressourcen", "Meeresressourcen_Nutzung")
+            ("Ableitung von Wasser", "Ableitung_von_Wasser"),
+            ("Ableitung von Wasser in die Ozeane", "Ableitung_von_Wasser_in_die_Ozeane"),
+            ("Gewinnung und Nutzung von Meeresressourcen", "Gewinnung_und_Nutzung_von_Meeresressourcen")
         ]
         
         header_row = st.columns([4, 1, 1, 1, 1])
@@ -108,16 +108,16 @@ class YesNoSelection:
     def E4_Biodiversität(self):
         direkte_Ursachen_Biodiversitätsverlust = [
             ("Klimawandel", "Klimawandel"),
-            ("Landnutzungsänderungen, Süßwasser- und Meeresnutzungsänderungen", "Landnutzungsänderungen"),
+            ("Landnutzungsänderungen, Süßwasser- und Meeresnutzungsänderungen", "Landnutzungsänderungen,_Süßwasser-_und_Meeresnutzungsänderungen"),
             ("Direkte Ausbeutung", "Direkte_Ausbeutung"),
-            ("Invasive gebietsfremde Arten", "Invasive_Arten"),
+            ("Invasive gebietsfremde Arten", "Invasive_gebietsfremde_Arten"),
             ("Umweltverschmutzung", "Umweltverschmutzung"),
             ("Sonstige", "Sonstige")
         ]
         
         auswirkung_auf_zustand_der_Arten = [
-            ("Populationsgröße von Arten", "Populationsgröße_Arten"),
-            ("Globales Ausrottungsrisiko von Arten", "Globales_Ausrottungsrisiko_Arten")
+            ("Populationsgröße von Arten", "Populationsgröße_von_Arten"),
+            ("Globales Ausrottungsrisiko von Arten", "Globales_Ausrottungsrisiko_von_Arten")
         ]
     
         auswirkung_auf_Oekosysteme = [
@@ -127,7 +127,7 @@ class YesNoSelection:
         ]
     
         Auswirkungen_und_Abhängigkeiten_von_Ökosystemdienstleistunge = [
-            ("Auswirkungen und Abhängigkeiten von Ökosystemdienstleistungen", "Auswirkungen und Abhängigkeiten von Ökosystemdienstleistungen")
+            ("Auswirkungen und Abhängigkeiten von Ökosystemdienstleistungen", "Auswirkungen_und_Abhängigkeiten_von_Ökosystemdienstleistungen")
         ]
     
         headers = ["Wesentlich", "Eher Wesentlich", "Eher nicht Wesentlich", "Nicht Wesentlich"]
@@ -158,8 +158,8 @@ class YesNoSelection:
 
     def E5_Kreislaufwirtschaft(self):
         topics = [
-            ("Ressourcenzuflüsse, einschließlich Ressourcennutzung", "Ressourcenzuflüsse"),
-            ("Ressourcenabflüsse im Zusammenhang mit Produkten und Dienstleistungen", "Ressourcenabflüsse"),
+            ("Ressourcenzuflüsse, einschließlich Ressourcennutzung", "Ressourcenzuflüsse,_einschließlich_Ressourcennutzung"),
+            ("Ressourcenabflüsse im Zusammenhang mit Produkten und Dienstleistungen", "Ressourcenabflüsse_im_Zusammenhang_mit_Produkten_und_Dienstleistungen"),
             ("Abfälle", "Abfälle")
         ]
 
@@ -183,25 +183,25 @@ class YesNoSelection:
         arbeitsbedingungen = [
             ("Sichere Beschäftigung", "Sichere Beschäftigung"),
             ("Arbeitszeit", "Arbeitszeit"),
-            ("Angemessene Entlohnung", "Angemessene Entlohnung"),
-            ("Vereinigungsfreiheit, Existenz von Betriebsräten und Rechte der Arbeitnehmer auf Information, Anhörung und Mitbestimmung", "Vereinigungsfreiheit"),
-            ("Tarifverhandlungen, einschließlich der Quote der durch Tarifverträge abgedeckten Arbeitskräften", "Tarifverhandlungen"),
-            ("Vereinbarkeit von Beruf und Privatleben", "Vereinbarkeit"),
-            ("Gesundheitsschutz und Sicherheit", "Gesundheitsschutz"),
+            ("Angemessene Entlohnung", "Angemessene_Entlohnung"),
+            ("Vereinigungsfreiheit, Existenz von Betriebsräten und Rechte der Arbeitnehmer auf Information, Anhörung und Mitbestimmung", "Vereinigungsfreiheit,_Existenz_von_Betriebsräten_und_Rechte_der_Arbeitnehmer_auf_Information,_Anhörung_und_Mitbestimmung"),
+            ("Tarifverhandlungen, einschließlich der Quote der durch Tarifverträge abgedeckten Arbeitskräften", "Tarifverhandlungen,_einschließlich_der_Quote_der_durch_Tarifverträge_abgedeckten_Arbeitskräften"),
+            ("Vereinbarkeit von Beruf und Privatleben", "Vereinbarkeit_von_Beruf_und_Privatleben"),
+            ("Gesundheitsschutz und Sicherheit", "Gesundheitsschutz_und_Sicherheit"),
         ]
 
         gleichbehandlung_und_chancengleichheit = [
-            ("Gleichstellung der Geschlechter und gleicher Lohn für gleiche Arbeit", "Gleichstellung"),
-            ("Schulungen und Kompetenzentwicklung", "Schulungen"),
-            ("Beschäftigung und Inklusion von Menschen mit Behinderungen", "Inklusion"),
-            ("Maßnahmen gegen Gewalt und Belästigung am Arbeitsplatz", "Gewalt"),
+            ("Gleichstellung der Geschlechter und gleicher Lohn für gleiche Arbeit", "Gleichstellung_der_Geschlechter_und_gleicher_Lohn_für_gleiche_Arbeit"),
+            ("Schulungen und Kompetenzentwicklung", "Schulungen_und_Kompetenzentwicklung"),
+            ("Beschäftigung und Inklusion von Menschen mit Behinderungen", "Beschäftigung_und_Inklusion_von_Menschen_mit_Behinderungen"),
+            ("Maßnahmen gegen Gewalt und Belästigung am Arbeitsplatz", "Maßnahmen_gegen_Gewalt_und_Belästigung_am_Arbeitsplatz"),
             ("Vielfalt", "Vielfalt"),
         ]
 
         sonstige_arbeitsbezogene_rechte = [
             ("Kinderarbeit", "Kinderarbeit"),
             ("Zwangarbeit", "Zwangarbeit"),
-            ("Angemessene Unterbringungen", "Unterbringungen"),
+            ("Angemessene Unterbringungen", "Angemessene_Unterbringungen"),
             ("Datenschutz", "Datenschutz"),
         ]
 
@@ -234,25 +234,25 @@ class YesNoSelection:
         arbeitsbedingungen = [
             ("Sichere Beschäftigung", "Sichere Beschäftigung"),
             ("Arbeitszeit", "Arbeitszeit"),
-            ("Angemessene Entlohnung", "Angemessene Entlohnung"),
-            ("Vereinigungsfreiheit, Existenz von Betriebsräten und Rechte der Arbeitnehmer auf Information, Anhörung und Mitbestimmung", "Vereinigungsfreiheit"),
-            ("Tarifverhandlungen, einschließlich der Quote der durch Tarifverträge abgedeckten Arbeitskräften", "Tarifverhandlungen"),
-            ("Vereinbarkeit von Beruf und Privatleben", "Vereinbarkeit"),
-            ("Gesundheitsschutz und Sicherheit", "Gesundheitsschutz"),
+            ("Angemessene Entlohnung", "Angemessene_Entlohnung"),
+            ("Vereinigungsfreiheit, Existenz von Betriebsräten und Rechte der Arbeitnehmer auf Information, Anhörung und Mitbestimmung", "Vereinigungsfreiheit,_Existenz_von_Betriebsräten_und_Rechte_der_Arbeitnehmer_auf_Information,_Anhörung_und_Mitbestimmung"),
+            ("Tarifverhandlungen, einschließlich der Quote der durch Tarifverträge abgedeckten Arbeitskräften", "Tarifverhandlungen,_einschließlich_der_Quote_der_durch_Tarifverträge_abgedeckten_Arbeitskräften"),
+            ("Vereinbarkeit von Beruf und Privatleben", "Vereinbarkeit_von_Beruf_und_Privatleben"),
+            ("Gesundheitsschutz und Sicherheit", "Gesundheitsschutz_und_Sicherheit"),
         ]
 
         gleichbehandlung_und_chancengleichheit = [
-            ("Gleichstellung der Geschlechter und gleicher Lohn für gleiche Arbeit", "Gleichstellung"),
-            ("Schulungen und Kompetenzentwicklung", "Schulungen"),
-            ("Beschäftigung und Inklusion von Menschen mit Behinderungen", "Inklusion"),
-            ("Maßnahmen gegen Gewalt und Belästigung am Arbeitsplatz", "Gewalt"),
+            ("Gleichstellung der Geschlechter und gleicher Lohn für gleiche Arbeit", "Gleichstellung_der_Geschlechter_und_gleicher_Lohn_für_gleiche_Arbeit"),
+            ("Schulungen und Kompetenzentwicklung", "Schulungen_und_Kompetenzentwicklung"),
+            ("Beschäftigung und Inklusion von Menschen mit Behinderungen", "Beschäftigung_und_Inklusion_von_Menschen_mit_Behinderungen"),
+            ("Maßnahmen gegen Gewalt und Belästigung am Arbeitsplatz", "Maßnahmen_gegen_Gewalt_und_Belästigung_am_Arbeitsplatz"),
             ("Vielfalt", "Vielfalt"),
         ]
 
         sonstige_arbeitsbezogene_rechte = [
             ("Kinderarbeit", "Kinderarbeit"),
             ("Zwangarbeit", "Zwangarbeit"),
-            ("Angemessene Unterbringungen", "Unterbringungen"),
+            ("Angemessene Unterbringungen", "Angemessene_Unterbringungen"),
             ("Datenschutz", "Datenschutz"),
         ]
 
@@ -283,21 +283,21 @@ class YesNoSelection:
 
     def S3_Betroffene_Gemeinschaften(self):
         wirtschafttliche_soziale_und_kulturelle_rechte = [
-            ("Angemessene Unterbringungen", "Unterbringungen"),
-            ("Angemessene Ernährung", "Ernährung"),
-            ("Wasser- und Sanitäreinrichtungen", "Wasser"),
-            ("Bodenbezogene Auswirkungen", "Boden"),
-            ("Sicherheitsbezogene Auswirkungen", "Sicherheit"),
+            ("Angemessene Unterbringungen", "Angemessene_Unterbringungen"),
+            ("Angemessene Ernährung", "Angemessene_Ernährung"),
+            ("Wasser- und Sanitäreinrichtungen", "Wasser-_und_Sanitäreinrichtungen"),
+            ("Bodenbezogene Auswirkungen", "Bodenbezogene_Auswirkungen"),
+            ("Sicherheitsbezogene Auswirkungen", "Sicherheitsbezogene_Auswirkungen"),
         ]
 
         bürgerrechte_und_politische_rechte = [
             ("Meinungsfreiheit", "Meinungsfreiheit"),
             ("Versammlungsfreiheit", "Versammlungsfreiheit"),
-            ("Auswirkungen auf Menschenrechtsverteidiger", "Menschenrechtsverteidiger"),
+            ("Auswirkungen auf Menschenrechtsverteidiger", "Auswirkungen_auf_Menschenrechtsverteidiger"),
         ]
 
         rechte_von_indigenen_völkern = [
-            ("Freiwillige und in Kenntnis der Sachlage erteilte vorherige Zustimmung", "Zustimmung"),
+            ("Freiwillige und in Kenntnis der Sachlage erteilte vorherige Zustimmung", "Freiwillige_und_in_Kenntnis_der_Sachlage_erteilte_vorherige_Zustimmung"),
             ("Selbstbestimmung", "Selbstbestimmung"),
             ("Kulturelle Rechte", "Kulturelle_Rechte"),
         ]
@@ -331,19 +331,19 @@ class YesNoSelection:
         informationsbezogene_auswirkungen_für_verbraucher_und_endnutzer = [
             ("Datenschutz", "Datenschutz"),
             ("Meinungsfreiheit", "Meinungsfreiheit"),
-            ("Zugang zu (hochwertigen) Informationen", "Zugang zu Informationen"),   
+            ("Zugang zu (hochwertigen) Informationen", "Zugang_zu_(hochwertigen)_Informationen"),   
         ]
 
         persönliche_sicherheit_von_verbrauchern_und_endnutzern = [
-            ("Gesundheitsschutz und Sicherheit", "Gesundheitsschutz"),
+            ("Gesundheitsschutz und Sicherheit", "Gesundheitsschutz_und_Sicherheit"),
             ("Persönliche Sicherheit", "Persönliche_Sicherheit"),
             ("Kinderschutz", "Kinderschutz"),
         ]
 
         soziale_inklusion_von_verbrauchern_und_endnutzern = [
             ("Nichtdiskriminierung", "Nichtdiskriminierung"),
-            ("Zugang zu Produkten und Dienstleistungen", "Zugang"),
-            ("Verantwortliche Vermarktungspraktiken", "Vermarktungspraktiken"),
+            ("Zugang zu Produkten und Dienstleistungen", "Zugang_zu_Produkten_und_Dienstleistungen"),
+            ("Verantwortliche Vermarktungspraktiken", "Verantwortliche_Vermarktungspraktiken"),
         ]
 
         headers = ["Wesentlich", "Eher Wesentlich", "Eher nicht Wesentlich", "Nicht Wesentlich"]
@@ -374,11 +374,11 @@ class YesNoSelection:
     def G1_Unternehmenspolitik(self):
         topics = [
             ("Unternehmenskultur", "Unternehmenskultur"),
-            ("Schutz von Hinweisgebern (Whistleblowers)", "Whistleblowers"),
+            ("Schutz von Hinweisgebern (Whistleblowers)", "Schutz_von_Hinweisgebern_(Whistleblowers)"),
             ("Tierschutz", "Tierschutz"),
-            ("Politisches Engagement und Lobbytätigkeiten", "Lobbytätigkeiten"),
-            ("Management der Beziehungen zu Lieferanten, einschließlich Zahlungspraktiken", "Management"),
-            ("Vermeidung und Aufdeckung einschließlich Schulung", "Vermeidung"),
+            ("Politisches Engagement und Lobbytätigkeiten", "Politisches_Engagement_und_Lobbytätigkeiten"),
+            ("Management der Beziehungen zu Lieferanten, einschließlich Zahlungspraktiken", "Management_der_Beziehungen_zu_Lieferanten,_einschließlich_Zahlungspraktiken"),
+            ("Vermeidung und Aufdeckung einschließlich Schulung", "Vermeidung_und_Aufdeckung_einschließlich_Schulung"),
             ("Vorkommnisse", "Vorkommnisse"),
         ]
 

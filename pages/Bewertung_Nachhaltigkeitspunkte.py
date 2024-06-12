@@ -85,22 +85,134 @@ def Top_down_Nachhaltigkeitspunkte():
         for key, value in yes_no_selection.items():
             if value and (key.startswith('Wesentlich') or key.startswith('Eher Wesentlich')):
                 if key.endswith('E1'):
-                    # Extrahieren des Unterthemas aus dem Schlüssel
-                    parts = key.split('_')
-                    unterthema_index = parts.index('E1') - 1
-                    unterthema = parts[unterthema_index] if unterthema_index > 0 else ""
+                    # Initialisiere start und end mit None
+                    start = None
+                    end = key.find('_E1')
+                    
+                    # Extrahieren des Unterthemas aus dem Schlüssel für E2
+                    if 'Wesentlich_' in key:
+                        start = key.find('Wesentlich_') + len('Wesentlich_')
+                    elif 'Eher_Wesentlich_' in key:
+                        start = key.find('Eher_Wesentlich_') + len('Eher_Wesentlich_')
+                    
+                    # Überprüfe, ob start einen Wert hat
+                    if start is not None:
+                        unterthema = key[start:end].replace('_', ' ')
+                        
+                        data.append({
+                            'Thema': 'Klimawandel',
+                            'Unterthema': unterthema,
+                            'Unter-Unterthema': ''
+                        })
+                    
+                    
+                elif key.endswith('E2'):
+                    # Initialisiere start und end mit None
+                    start = None
+                    end = key.find('_E2')
+                    
+                    # Extrahieren des Unterthemas aus dem Schlüssel für E2
+                    if 'Wesentlich_' in key:
+                        start = key.find('Wesentlich_') + len('Wesentlich_')
+                    elif 'Eher_Wesentlich_' in key:
+                        start = key.find('Eher_Wesentlich_') + len('Eher_Wesentlich_')
+                    
+                    # Überprüfe, ob start einen Wert hat
+                    if start is not None:
+                        unterthema = key[start:end].replace('_', ' ')
+                        
+                        data.append({
+                            'Thema': 'Umweltverschmutzung',
+                            'Unterthema': unterthema,
+                            'Unter-Unterthema': ''
+                        })
+                
+                elif key.endswith('E3'):
+                    # Initialisiere start und end mit None
+                    start = None
+                    end = key.find('_E3')
+                    
+                    # Extrahieren des Unterthemas aus dem Schlüssel für E2
+                    if 'Wesentlich_' in key:
+                        start = key.find('Wesentlich_') + len('Wesentlich_')
+                    elif 'Eher_Wesentlich_' in key:
+                        start = key.find('Eher_Wesentlich_') + len('Eher_Wesentlich_')
+                    
+                    # Überprüfe, ob start einen Wert hat
+                    if start is not None:
+                        unterthema = key[start:end].replace('_', ' ')
+                        
+                        data.append({
+                            'Thema': 'Meeres- und Wasserressourcen',
+                            'Unterthema': unterthema,
+                            'Unter-Unterthema': ''
+                        })
+
+                elif key.endswith('E4'):
+                    # Biodiversität und Direkte Ursachen des Biodiversitätsverlusts
+                    start = None
+                    if 'Wesentlich_' in key:
+                        start = key.find('Wesentlich_') + len('Wesentlich_')
+                    elif 'Eher_Wesentlich_' in key:
+                        start = key.find('Eher_Wesentlich_') + len('Eher_Wesentlich_')
+
+                    end = key.find('_E4')
+                    if start is not None:
+                        unterthema_raw = key[start:end].replace('_', ' ').strip()
+                        
+                        # Zuordnung des Unterthemas basierend auf dem Inhalt von unterthema_raw
+                        if unterthema_raw in ['Klimawandel', 'Landnutzungsänderungen, Süßwasser- und Meeresnutzungsänderungen', 'Direkte Ausbeutung', 'Invasive gebietsfremde Arten', 'Umweltverschmutzung', 'Sonstige']:
+                            unterthema = 'Direkte Ursachen des Biodiversitätsverlusts'
+                        elif unterthema_raw in ['Populationsgröße von Arten', 'Globales Ausrottungsrisiko von Arten']:
+                            unterthema = 'Auswirkungen auf den Zustand der Arten'
+                        elif unterthema_raw in ['Landdegradation', 'Wüstenbildung', 'Bodenversiegelung']:
+                            unterthema = 'Auswirkungen auf den Umfang und den Zustand von Ökosystemen'
+                        elif unterthema_raw in ['Auswirkungen und Abhängigkeiten von Ökosystemdienstleistungen']:
+                            unterthema = 'Auswirkungen und Abhängigkeiten von Ökosystemdienstleistungen'
+                        
+                        data.append({
+                            'Thema': 'Biodiversität',
+                            'Unterthema': unterthema,
+                            'Unter-Unterthema': unterthema_raw
+                        })
+
+                
+                elif key.endswith('E5'):
+                    # Extrahieren des Unterthemas aus dem Schlüssel für E2
+                    start = key.find('wesentlich_') + len('wesentlich_')
+                    end = key.find('_E5')
+                    unterthema = key[start:end].replace('_', ' ')
                     
                     data.append({
-                        'Thema': 'Klimawandel',
+                        'Thema': 'Meeres- und Wasserressourcen',
                         'Unterthema': unterthema,
                         'Unter-Unterthema': ''
                     })
-                # Hier können weitere Bedingungen für andere Themen hinzugefügt werden
-        
+
+                elif key.endswith('S1'):
+                    # Biodiversität und Direkte Ursachen des Biodiversitätsverlusts
+                    start = key.find('wesentlich_') + len('wesentlich_')
+                    end = key.find('_S1')
+                    unterthema_raw = key[start:end].replace('_', ' ')
+
+                    if unterthema_raw in [' Sichere Beschäftigung', ' Arbeitszeit', ' Angemessene Entlohnung', ' Vereinigungsfreiheit', ' Existenz von Betriebsräten und Rechte der Arbeitnehmer auf Information, Anhörung und Mitbestimmung', ' Tarifverhandlungen, einschließlich der Quote der durch Tarifverträge abgedeckten Arbeitskräften', ' Vereinbarkeit von Beruf und Privatleben', ' Gesundheitsschutz und Sicherheit']:
+                        unterthema = 'Arbeitsbedingungen'
+                    elif unterthema_raw in [' Gleichstellung der Geschlechter und gleicher Lohn für gleiche Arbeit', ' Schulungen und Kompetenzentwicklung', ' Beschäftigung und Inklusion von Menschen mit Behinderungen', ' Maßnahmen gegen Gewalt und Belästigung am Arbeitsplatz', ' Vielfalt']:
+                        unterthema = 'Gleichbehandlung und Chancengleichheit für alle'
+                    elif unterthema_raw in [' Kinderarbeit', ' Zwangarbeit', ' Angemessene Unterbringungen', ' Datenschutz']:
+                        unterthema = 'Sonstige arbeitsbezogene Rechte'
+                    
+                    data.append({
+                        'Thema': 'Eigene Belegschaft',
+                        'Unterthema': unterthema,
+                        'Unter-Unterthema': unterthema_raw
+                    })
+
         selected_points_df = pd.DataFrame(data)
         
         # Anzeigen des DataFrames
         st.write(selected_points_df)
+        st.write(yes_no_selection)
         
     
 def initialize_bewertet_column(longlist):
