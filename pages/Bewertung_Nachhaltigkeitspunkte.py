@@ -176,30 +176,44 @@ def Top_down_Nachhaltigkeitspunkte():
                             'Unter-Unterthema': unterthema_raw
                         })
 
-                
                 elif key.endswith('E5'):
-                    # Extrahieren des Unterthemas aus dem Schlüssel für E2
-                    start = key.find('wesentlich_') + len('wesentlich_')
+                    # Initialisiere start und end mit None
+                    start = None
                     end = key.find('_E5')
-                    unterthema = key[start:end].replace('_', ' ')
                     
-                    data.append({
-                        'Thema': 'Meeres- und Wasserressourcen',
-                        'Unterthema': unterthema,
-                        'Unter-Unterthema': ''
-                    })
+                    # Extrahieren des Unterthemas aus dem Schlüssel für E2
+                    if 'Wesentlich_' in key:
+                        start = key.find('Wesentlich_') + len('Wesentlich_')
+                    elif 'Eher_Wesentlich_' in key:
+                        start = key.find('Eher_Wesentlich_') + len('Eher_Wesentlich_')
+                    
+                    # Überprüfe, ob start einen Wert hat
+                    if start is not None:
+                        unterthema = key[start:end].replace('_', ' ')
+                        
+                        data.append({
+                            'Thema': 'Kreislaufwirtschaft',
+                            'Unterthema': unterthema,
+                            'Unter-Unterthema': ''
+                        })
 
                 elif key.endswith('S1'):
                     # Biodiversität und Direkte Ursachen des Biodiversitätsverlusts
-                    start = key.find('wesentlich_') + len('wesentlich_')
-                    end = key.find('_S1')
-                    unterthema_raw = key[start:end].replace('_', ' ')
+                    start = None
+                    if 'Wesentlich_' in key:
+                        start = key.find('Wesentlich_') + len('Wesentlich_')
+                    elif 'Eher_Wesentlich_' in key:
+                        start = key.find('Eher_Wesentlich_') + len('Eher_Wesentlich_')
 
-                    if unterthema_raw in [' Sichere Beschäftigung', ' Arbeitszeit', ' Angemessene Entlohnung', ' Vereinigungsfreiheit', ' Existenz von Betriebsräten und Rechte der Arbeitnehmer auf Information, Anhörung und Mitbestimmung', ' Tarifverhandlungen, einschließlich der Quote der durch Tarifverträge abgedeckten Arbeitskräften', ' Vereinbarkeit von Beruf und Privatleben', ' Gesundheitsschutz und Sicherheit']:
+                    end = key.find('_S1')
+                    if start is not None:
+                        unterthema_raw = key[start:end].replace('_', ' ').strip()
+
+                    if unterthema_raw in ['Sichere Beschäftigung', 'Arbeitszeit', 'Angemessene Entlohnung', 'Vereinigungsfreiheit, Existenz von Betriebsräten und Rechte der Arbeitnehmer auf Information, Anhörung und Mitbestimmung', 'Tarifverhandlungen, einschließlich der Quote der durch Tarifverträge abgedeckten Arbeitskräften', 'Vereinbarkeit von Beruf und Privatleben', 'Gesundheitsschutz und Sicherheit']:
                         unterthema = 'Arbeitsbedingungen'
-                    elif unterthema_raw in [' Gleichstellung der Geschlechter und gleicher Lohn für gleiche Arbeit', ' Schulungen und Kompetenzentwicklung', ' Beschäftigung und Inklusion von Menschen mit Behinderungen', ' Maßnahmen gegen Gewalt und Belästigung am Arbeitsplatz', ' Vielfalt']:
+                    elif unterthema_raw in ['Gleichstellung der Geschlechter und gleicher Lohn für gleiche Arbeit', 'Schulungen und Kompetenzentwicklung', 'Beschäftigung und Inklusion von Menschen mit Behinderungen', 'Maßnahmen gegen Gewalt und Belästigung am Arbeitsplatz', 'Vielfalt']:
                         unterthema = 'Gleichbehandlung und Chancengleichheit für alle'
-                    elif unterthema_raw in [' Kinderarbeit', ' Zwangarbeit', ' Angemessene Unterbringungen', ' Datenschutz']:
+                    elif unterthema_raw in ['Kinderarbeit', 'Zwangarbeit', 'Angemessene Unterbringungen', 'Datenschutz']:
                         unterthema = 'Sonstige arbeitsbezogene Rechte'
                     
                     data.append({
@@ -208,11 +222,107 @@ def Top_down_Nachhaltigkeitspunkte():
                         'Unter-Unterthema': unterthema_raw
                     })
 
+                elif key.endswith('S2'):
+                    
+                    start = None
+                    if 'Wesentlich_' in key:
+                        start = key.find('Wesentlich_') + len('Wesentlich_')
+                    elif 'Eher_Wesentlich_' in key:
+                        start = key.find('Eher_Wesentlich_') + len('Eher_Wesentlich_')
+
+                    end = key.find('_S2')
+                    if start is not None:
+                        unterthema_raw = key[start:end].replace('_', ' ').strip()
+
+                    if unterthema_raw in ['Sichere Beschäftigung', 'Arbeitszeit', 'Angemessene Entlohnung', 'Vereinigungsfreiheit, Existenz von Betriebsräten und Rechte der Arbeitnehmer auf Information, Anhörung und Mitbestimmung', 'Tarifverhandlungen, einschließlich der Quote der durch Tarifverträge abgedeckten Arbeitskräften', 'Vereinbarkeit von Beruf und Privatleben', 'Gesundheitsschutz und Sicherheit']:
+                        unterthema = 'Arbeitsbedingungen'
+                    elif unterthema_raw in ['Gleichstellung der Geschlechter und gleicher Lohn für gleiche Arbeit', 'Schulungen und Kompetenzentwicklung', 'Beschäftigung und Inklusion von Menschen mit Behinderungen', 'Maßnahmen gegen Gewalt und Belästigung am Arbeitsplatz', 'Vielfalt']:
+                        unterthema = 'Gleichbehandlung und Chancengleichheit für alle'
+                    elif unterthema_raw in ['Kinderarbeit', 'Zwangarbeit', 'Angemessene Unterbringungen', 'Datenschutz']:
+                        unterthema = 'Sonstige arbeitsbezogene Rechte'
+                    
+                    data.append({
+                        'Thema': 'Belegschaft Lieferkette',
+                        'Unterthema': unterthema,
+                        'Unter-Unterthema': unterthema_raw
+                    })
+
+                elif key.endswith('S3'):
+                    
+                    start = None
+                    if 'Wesentlich_' in key:
+                        start = key.find('Wesentlich_') + len('Wesentlich_')
+                    elif 'Eher_Wesentlich_' in key:
+                        start = key.find('Eher_Wesentlich_') + len('Eher_Wesentlich_')
+
+                    end = key.find('_S3')
+                    if start is not None:
+                        unterthema_raw = key[start:end].replace('_', ' ').strip()
+
+                    if unterthema_raw in ['Angemessene Unterbringungen', 'Angemessene Ernährung', 'Wasser- und Sanitäreinrichtungen', 'Bodenbezogene Auswirkungen', 'Sicherheitsbezogene Auswirkungen']:
+                        unterthema = 'Wirtschaftliche, soziale und kulturelle Rechte von Gemeinschaften'
+                    elif unterthema_raw in ['Meinungsfreiheit', 'Versammlungsfreiheit', 'Auswirkungen auf Menschenrechtsverteidiger']:
+                        unterthema = 'Bürgerrechte und politische Rechte von Gemeinschaften'
+                    elif unterthema_raw in ['Freiwillige und in Kenntnis der Sachlage erteilte vorherige Zustimmung', 'Selbstbestimmung', 'Kulturelle Rechte']:
+                        unterthema = 'Rechte von indigenen Völkern'
+
+                    data.append({
+                        'Thema': 'Betroffene Gemeinschaften',
+                        'Unterthema': unterthema,
+                        'Unter-Unterthema': unterthema_raw
+                    })
+
+                elif key.endswith('S4'):
+                    # Biodiversität und Direkte Ursachen des Biodiversitätsverlusts
+                    start = None
+                    if 'Wesentlich_' in key:
+                        start = key.find('Wesentlich_') + len('Wesentlich_')
+                    elif 'Eher_Wesentlich_' in key:
+                        start = key.find('Eher_Wesentlich_') + len('Eher_Wesentlich_')
+
+                    end = key.find('_S4')
+                    if start is not None:
+                        unterthema_raw = key[start:end].replace('_', ' ').strip()
+
+                    if unterthema_raw in ['Datenschutz', 'Meinungsfreiheit', 'Zugang zu (hochwertigen) Informationen']:
+                        unterthema = 'Informationsbezogene Auswirkungen für Verbraucher und Endnutzer'
+                    elif unterthema_raw in ['Gesundheitsschutz und Sicherheit', 'Persönliche Sicherheit', 'Kinderschutz']:
+                        unterthema = 'Persönliche Sicherheit von Verbrauchern und Endnutzern'
+                    elif unterthema_raw in ['Nichtdiskriminierung', 'Selbstbestimmung', 'Zugang zu Produkten und Dienstleistungen', 'Verantwortliche Vermarktungspraktiken']:
+                        unterthema = 'Soziale Inklusion von Verbrauchern und Endnutzern'
+
+                    data.append({
+                        'Thema': 'Verbraucher und Endnutzer',
+                        'Unterthema': unterthema,
+                        'Unter-Unterthema': unterthema_raw
+                    })
+
+                elif key.endswith('G1'):
+                    # Initialisiere start und end mit None
+                    start = None
+                    end = key.find('_G1')
+                    
+                    # Extrahieren des Unterthemas aus dem Schlüssel für E2
+                    if 'Wesentlich_' in key:
+                        start = key.find('Wesentlich_') + len('Wesentlich_')
+                    elif 'Eher_Wesentlich_' in key:
+                        start = key.find('Eher_Wesentlich_') + len('Eher_Wesentlich_')
+                    
+                    # Überprüfe, ob start einen Wert hat
+                    if start is not None:
+                        unterthema = key[start:end].replace('_', ' ')
+                        
+                        data.append({
+                            'Thema': 'Unternehmenspolitik',
+                            'Unterthema': unterthema,
+                            'Unter-Unterthema': ''
+                        })
+
         selected_points_df = pd.DataFrame(data)
-        
-        # Anzeigen des DataFrames
-        st.write(selected_points_df)
-        st.write(yes_no_selection)
+        # Speichern des DataFrame 'selected_points_df' im Session State
+        st.session_state['selected_points_df'] = selected_points_df
+        selected_points_df['Quelle'] = 'Top Down'
+        return selected_points_df
         
     
 def initialize_bewertet_column(longlist):
@@ -469,11 +579,11 @@ def merge_dataframes():
     global next_id  # Zugriff auf die globale Variable next_id
     # Abrufen der Daten von verschiedenen Quellen
     df4 = eigene_Nachhaltigkeitspunkte()
-    df_essential = Top_down_Nachhaltigkeitspunkte()
+    selected_points_df = Top_down_Nachhaltigkeitspunkte()
     selected_rows_st = stakeholder_Nachhaltigkeitspunkte()
 
     # Kombinieren der Daten in einem DataFrame
-    combined_df = pd.concat([df_essential, df4, selected_rows_st], ignore_index=True)
+    combined_df = pd.concat([selected_points_df, df4, selected_rows_st], ignore_index=True)
 
     # Entfernen von Zeilen, die nur NaN-Werte enthalten
     combined_df = combined_df.dropna(how='all')
