@@ -6,7 +6,7 @@ from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode, DataReturnMode
 from pyvis.network import Network
 
 # Datei zum Speichern des Sitzungszustands
-state_file = 'session_state.pkl'
+state_file = 'session_stateh.pkl'
 
 # Funktion zum Laden des Sitzungszustands
 def load_session_state():
@@ -29,17 +29,15 @@ def save_session_state(state):
 # Laden des Sitzungszustands aus der Datei
 loaded_state = load_session_state()
 if 'df' not in st.session_state:
-    st.session_state.df = pd.DataFrame([[
-        "", "", "", "", "", "", "", ""
-    ]], columns=[
-            "Gruppe",
-            "Bestehende Beziehung",
-            "Auswirkung auf Interessen",
-            "Level des Engagements",
-            "Stakeholdergruppe",
-            "Kommunikation",
-            "Art der Betroffenheit",
-            "Zeithorizont"
+    st.session_state.df = pd.DataFrame(columns=[
+        "Gruppe",
+        "Bestehende Beziehung",
+        "Auswirkung auf Interessen",
+        "Level des Engagements",
+        "Stakeholdergruppe",
+        "Kommunikation",
+        "Art der Betroffenheit",
+        "Zeithorizont"
     ])
 
 if 'df' in loaded_state:
@@ -80,22 +78,20 @@ def display_page():
     st.markdown("""
         Dieses Tool hilft Ihnen, Ihre Stakeholder effektiv zu verwalten und zu analysieren. Sie können relevante Informationen über verschiedene Stakeholdergruppen hinzufügen, bearbeiten und visualisieren. Die Daten helfen Ihnen, Strategien für den Umgang mit Ihren Stakeholdern zu entwickeln und zu priorisieren, basierend auf verschiedenen Kriterien wie Engagement-Level und Kommunikationshäufigkeit.          
     """)      
-    tab1, tab2, tab3 = st.tabs(["Stakeholder Überischt", "Stakeholder Ranking & Netzwerkdiagramm", "Stakeholder Umfragen Vorlage"])
+    tab1, tab2, tab3 = st.tabs(["Stakeholder Übersicht", "Stakeholder Ranking & Netzwerkdiagramm", "Stakeholder Umfragen Vorlage"])
 
     with tab1:
         # Initialize the session state for the DataFrame with an empty row if it does not exist
         if 'df' not in st.session_state:
-            st.session_state.df = pd.DataFrame([[
-                "", "", "", "", "", "", "", ""
-            ]], columns=[
-                    "Gruppe",
-                    "Bestehende Beziehung",
-                    "Auswirkung auf Interessen",
-                    "Level des Engagements",
-                    "Stakeholdergruppe",
-                    "Kommunikation",
-                    "Art der Betroffenheit",
-                    "Zeithorizont"
+            st.session_state.df = pd.DataFrame(columns=[
+                "Gruppe",
+                "Bestehende Beziehung",
+                "Auswirkung auf Interessen",
+                "Level des Engagements",
+                "Stakeholdergruppe",
+                "Kommunikation",
+                "Art der Betroffenheit",
+                "Zeithorizont"
             ])
 
         with st.sidebar:
@@ -110,34 +106,36 @@ def display_page():
             zeithorizont = st.selectbox("Zeithorizont", ['', 'Kurzfristig', 'Mittelfristig', 'Langfristig'])
             add_row = st.button('Hinzufügen')
 
+        if st.session_state.df.empty:
+            st.warning("Keine Daten vorhanden.")
+            grid_response = None
+        else:
+            gb = GridOptionsBuilder.from_dataframe(st.session_state.df)
+            gb.configure_default_column(editable=True, resizable=True, sortable=True, filterable=True)
+            gb.configure_grid_options(domLayout='autoHeight', enableRowId=True, rowId='index')
+            grid_options = gb.build()
+            grid_options['columnDefs'] = [{'checkboxSelection': True, 'headerCheckboxSelection': True, 'width': 50}] + grid_options['columnDefs']
 
-        gb = GridOptionsBuilder.from_dataframe(st.session_state.df)
-        gb.configure_default_column(editable=True, resizable=True, sortable=True, filterable=True)
-        gb.configure_grid_options(domLayout='autoHeight', enableRowId=True, rowId='index')
-        grid_options = gb.build()
-        grid_options['columnDefs'] = [{'checkboxSelection': True, 'headerCheckboxSelection': True, 'width': 50}] + grid_options['columnDefs']
+            grid_response = AgGrid(
+                st.session_state.df.reset_index(),
+                gridOptions=grid_options,
+                fit_columns_on_grid_load=True,
+                height=300,
+                width='100%',
+                update_mode=GridUpdateMode.MODEL_CHANGED,
+                allow_unsafe_jscode=True,
+                return_mode=DataReturnMode.FILTERED_AND_SORTED,
+                selection_mode='multiple',
+            )
 
-        grid_response = AgGrid(
-        st.session_state.df.reset_index(),
-        gridOptions=grid_options,
-        fit_columns_on_grid_load=True,
-        height=300,
-        width='100%',
-        update_mode=GridUpdateMode.MODEL_CHANGED,
-        allow_unsafe_jscode=True,
-        return_mode=DataReturnMode.FILTERED_AND_SORTED,
-        selection_mode='multiple',
-        )
-
-        delete_rows = st.button('Zeile löschen')
-
-        if delete_rows:
-            selected_rows = grid_response['selected_rows']
-            selected_indices = [row['index'] for row in selected_rows]
-            st.session_state.df = st.session_state.df.drop(selected_indices)
-            save_session_state({'df': st.session_state.df})
-            st.experimental_rerun()
-
+        if grid_response:
+            delete_rows = st.button('Zeile löschen')
+            if delete_rows:
+                selected_rows = grid_response['selected_rows']
+                selected_indices = [row['index'] for row in selected_rows]
+                st.session_state.df = st.session_state.df.drop(selected_indices)
+                save_session_state({'df': st.session_state.df})
+                st.experimental_rerun()
 
         new_row = {}
         if add_row:
@@ -151,56 +149,58 @@ def display_page():
                 "Art der Betroffenheit": [art_der_betroffenheit],
                 "Zeithorizont": [zeithorizont]
             })
-        
+
         if add_row:
             # Prepend the new row to the DataFrame
             st.session_state.df = pd.concat([new_row, st.session_state.df]).reset_index(drop=True)
             save_session_state({'df': st.session_state.df})
             st.experimental_rerun()
 
-
-        with tab2:
-            col1, col2 = st.columns([1.5, 1.5,])
-            with col1:
-                st.subheader("Ranking")
+    with tab2:
+        col1, col2 = st.columns([1.5, 1.5])
+        with col1:
+            st.subheader("Ranking")
+            if grid_response:
                 df_temp = pd.DataFrame(grid_response['data'])
                 df_temp['Score'] = df_temp.apply(calculate_score, axis=1)
                 st.session_state['namen_tabelle'] = df_temp.sort_values(by='Score', ascending=False).reset_index(drop=True)
                 generate_stakeholder_ranking()
-        
-            with col2:
-                # CSS to increase space between columns
-                spacing_css = """
-                <style>
-                    .reportview-container .main .block-container {
-                        margin: 10px;  # Adjust this value to increase/decrease space
-                    }
-                </style>
-                """
-                
-                # Apply the CSS
-                st.markdown(spacing_css, unsafe_allow_html=True)
-                st.subheader("Netzwerkdiagramm")
-                net = Network(height="300px", width="100%", bgcolor="white", font_color="black")
-                net.add_node("Mein Unternehmen", color="black", label="", title="")
+
+        with col2:
+            # CSS to increase space between columns
+            spacing_css = """
+            <style>
+                .reportview-container .main .block-container {
+                    margin: 10px;  # Adjust this value to increase/decrease space
+                }
+            </style>
+            """
+            
+            # Apply the CSS
+            st.markdown(spacing_css, unsafe_allow_html=True)
+            st.subheader("Netzwerkdiagramm")
+            net = Network(height="300px", width="100%", bgcolor="white", font_color="black")
+            net.add_node("Mein Unternehmen", color="black", label="", title="")
+            if 'namen_tabelle' in st.session_state:
                 for _, row in st.session_state['namen_tabelle'].iterrows():
                     size = row['Score'] / 100 * 10 + 15
                     color = get_node_color(row['Score'])
                     net.add_node(row['Gruppe'], color=color, label=row['Gruppe'], title=row['Gruppe'], size=size)
                     net.add_edge("Mein Unternehmen", row['Gruppe'])
-                net.save_graph("network.html")
-                st.components.v1.html(open("network.html", "r").read(), height=600)
+            net.save_graph("network.html")
+            st.components.v1.html(open("network.html", "r").read(), height=600)
 
-        with tab3:
-                # Pfad zur Excel-Datei
-                file_path = r"C:\Users\andre\OneDrive\Desktop\Masterarbeit_V1\Wesentlichkeitsanalyse_Stakeholder_Input.xlsx"
+    with tab3:
+        # Pfad zur Excel-Datei
+        file_path = r"C:\Users\andre\OneDrive\Desktop\Masterarbeit_V1\Wesentlichkeitsanalyse_Stakeholder_Input.xlsx"
 
-                # Fügen Sie die Download-Schaltfläche in die Streamlit-App ein
-                with open(file_path, "rb") as file:
-                    st.download_button(
-                        label="Download Excel-Datei",
-                        data=file.read(),
-                        file_name='Wesentlichkeitsanalyse_Stakeholder_Input.xlsx',
-                        mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-                    )
+        # Fügen Sie die Download-Schaltfläche in die Streamlit-App ein
+        with open(file_path, "rb") as file:
+            st.download_button(
+                label="Download Excel-Datei",
+                data=file.read(),
+                file_name='Wesentlichkeitsanalyse_Stakeholder_Input.xlsx',
+                mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            )
+
 

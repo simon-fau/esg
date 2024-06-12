@@ -477,26 +477,6 @@ def display_selected_data():
         # Speichern Sie 'selected_columns' in 'st.session_state'
         st.session_state['selected_columns'] = selected_columns
 
-        # Definieren der gridOptions
-        gridOptions = {
-            'defaultColDef': {
-                'resizable': True,
-                'width': 150,
-                'minWidth': 50
-            },
-            'columnDefs': [
-                {'headerName': 'ID', 'field': 'ID', 'width': 100, 'minWidth': 50},
-                {'headerName': 'Auswirkung', 'field': 'Auswirkung', 'flex': 1},
-                {'headerName': 'Finanziell', 'field': 'Finanziell', 'flex': 1},
-                {'headerName': 'Finanz-Score', 'field': 'Score Finanzen', 'width': 150, 'minWidth': 50},
-                {'headerName': 'Auswirkungs-Score', 'field': 'Score Auswirkung', 'width': 150, 'minWidth': 50},
-                {'headerName': 'Thema', 'field': 'Thema', 'flex': 1},
-                {'headerName': 'Unterthema', 'field': 'Unterthema', 'flex': 1},
-                {'headerName': 'Unter-Unterthema', 'field': 'Unter-Unterthema', 'flex': 1},
-                {'headerName': 'NumericalRating', 'field': 'NumericalRating', 'width': 150, 'minWidth': 50}
-            ]
-        }
-
 def bewertung():
     if 'selected_columns' in st.session_state and not st.session_state.selected_columns.empty:
         selected_columns = st.session_state['selected_columns']
@@ -562,9 +542,12 @@ def bewertung():
            
 def display_grid(longlist):
     gb = GridOptionsBuilder.from_dataframe(longlist)
-      # Set the number of rows per page to 10
     gb.configure_side_bar()
     gb.configure_selection('single', use_checkbox=True, groupSelectsChildren="Group checkbox select children", rowMultiSelectWithClick=False)
+    # Konfiguriere die Breite der ID-Spalte
+    gb.configure_column('ID', minWidth=50, maxWidth=150, width=50)  # Passen Sie die Werte entsprechend an
+    gb.configure_column('Quelle', minWidth=50, maxWidth=150, width=100)
+    gb.configure_column('Bewertet', minWidth=50, maxWidth=150, width=50)
     grid_options = gb.build()
     grid_response = AgGrid(longlist, gridOptions=grid_options, enable_enterprise_modules=True, update_mode=GridUpdateMode.MODEL_CHANGED, fit_columns_on_grid_load=True)
     st.session_state['selected_rows'] = grid_response['selected_rows']
@@ -766,8 +749,10 @@ def Scatter_chart():
 def display_page():
     tab1, tab2, tab3, tab4 = st.tabs(["Bewertung der Nachhaltigkeitspunkte", "Graphische Übersicht", "Stakeholder", "Gesamtübersicht"])
     with tab1:    
-        merge_dataframes()
-        display_selected_data()    
+        col1, col2 = st.columns([5, 1])
+        with col1:
+            merge_dataframes()
+            display_selected_data()    
         with st.expander("Bewertungen"):
             bewertung()
     with tab2:

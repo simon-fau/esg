@@ -31,7 +31,7 @@ loaded_state = load_session_state()
 st.session_state.update(loaded_state)
 
 def stakeholder_punkte():
-    if 'stakeholder_punkte_df' in st.session_state:
+    if 'stakeholder_punkte_df' in st.session_state and not st.session_state.stakeholder_punkte_df.empty:
         # Change the order of columns
         st.session_state.stakeholder_punkte_df = st.session_state.stakeholder_punkte_df[['Platzierung', 'Thema', 'Unterthema', 'Unter-Unterthema', 'NumericalRating']]
 
@@ -42,7 +42,7 @@ def stakeholder_punkte():
         grid_options = gb.build()
         AgGrid(st.session_state.stakeholder_punkte_df, gridOptions=grid_options, enable_enterprise_modules=True, update_mode=GridUpdateMode.MODEL_CHANGED)
     else:
-        st.write("Es wurden noch keine Inhalte im Excel-Upload hochgeladen. Bitte laden Sie eine Excel-Datei hoch.")
+        st.warning("Es wurden noch keine Inhalte im Excel-Upload hochgeladen. Bitte laden Sie eine Excel-Datei hoch.")
 
 def excel_upload():
     """ Diese Funktion lädt Excel-Dateien hoch und erstellt Rankings basierend auf den Bewertungen. """
