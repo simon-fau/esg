@@ -370,8 +370,33 @@ class YesNoSelection:
             **create_section("Persönliche Sicherheit von Verbrauchern und Endnutzern", persönliche_sicherheit_von_verbrauchern_und_endnutzern),
             **create_section("Soziale Inklusion von Verbrauchern und Endnutzern", soziale_inklusion_von_verbrauchern_und_endnutzern),
         }
-    
-    
+
+    def G1_Unternehmenspolitik(self):
+        topics = [
+            ("Unternehmenskultur", "Unternehmenskultur"),
+            ("Schutz von Hinweisgebern (Whistleblowers)", "Whistleblowers"),
+            ("Tierschutz", "Tierschutz"),
+            ("Politisches Engagement und Lobbytätigkeiten", "Lobbytätigkeiten"),
+            ("Management der Beziehungen zu Lieferanten, einschließlich Zahlungspraktiken", "Management"),
+            ("Vermeidung und Aufdeckung einschließlich Schulung", "Vermeidung"),
+            ("Vorkommnisse", "Vorkommnisse"),
+        ]
+
+        header_row = st.columns([4, 1, 1, 1, 1])
+        headers = ["Wesentlich", "Eher Wesentlich", "Eher nicht Wesentlich", "Nicht Wesentlich"]
+        for i, header in enumerate(headers):
+            header_row[i + 1].write(header)
+        
+        current_selection = {}
+        for topic, key in topics:
+            cols = st.columns([4, 1, 1, 1, 1])
+            cols[0].write(f"{topic}:")
+            for i, header in enumerate(headers):
+                checkbox_key = f"{header}_{key}_G1"
+                value = cols[i + 1].checkbox("Select", value=st.session_state['yes_no_selection'].get(checkbox_key, False), key=checkbox_key, label_visibility='collapsed')
+                current_selection[checkbox_key] = value
+
+        st.session_state['yes_no_selection'] = {**st.session_state['yes_no_selection'], **current_selection}
     
     def display_E1_Klimawandel(self):
         self.E1_Klimawandel()
@@ -472,6 +497,17 @@ class YesNoSelection:
             self.save_session_state()
             st.success("Auswahl erfolgreich gespeichert!")
 
+    def display_G1_Unternehmenspolitik(self):
+        self.G1_Unternehmenspolitik()
+        col1, col2 = st.columns([5, 0.8])
+        with col1:
+            pass
+        with col2:
+            button = st.button("Auswahl speichern", key = 'Button_Unternehmenspolitik')
+        if button:
+            self.save_session_state()
+            st.success("Auswahl erfolgreich gespeichert!")
+
 def display_session_state_contents():
     st.write("Aktueller Session State Inhalt:")
     st.json(st.session_state['yes_no_selection'])
@@ -508,6 +544,7 @@ def display_page():
         selection.display_S4_Verbraucher_und_Endnutzer()
     with tabs[9]:
         st.subheader("Unternehmenspolitik")
+        selection.display_G1_Unternehmenspolitik()
 
         
 

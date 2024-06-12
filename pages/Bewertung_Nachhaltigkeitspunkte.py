@@ -75,45 +75,34 @@ def eigene_Nachhaltigkeitspunkte():
     df4['Quelle'] = 'Eigene'
     return df4
 
-
 def Top_down_Nachhaltigkeitspunkte():
-    if 'yes_no_selection' not in st.session_state:
-        st.session_state['yes_no_selection'] = {
-            'Wesentlich_Klimawandel': False,
-            'Eher_wesentlich_Klimawandel': False,
-            'Eher_nicht_wesentlich_Klimawandel': False,
-            'Nicht_wesentlich_Klimawandel': False,
-            'Wesentlich_Klimawandel_2': False,
-            'Eher_Wesentlich_Klimawandel_2': False,
-            'Eher_nicht_wesentlich_2': False,
-            'Nicht_Wesentlich_Klimawandel_2': False
-        }
-
-    wesentliche_themen = {
-        'Wesentlich_Klimawandel': 'Anpassung an den Klimawandel',
-        'Eher_Wesentlich_Klimawandel': 'Anpassung an den Klimawandel',
-        'Wesentlich_Klimawandel_2': 'Klimaschutz',
-        'Eher_Wesentlich_Klimawandel_2': 'Klimaschutz'
-    }
-
-    # Erstellen eines Dataframes für die wesentlichen Themen
-    themen_liste = []
-    for key, unterthema in wesentliche_themen.items():
-        if st.session_state['yes_no_selection'][key]:
-            themen_liste.append({
-                'Thema': 'Klimawandel',
-                'Unterthema': unterthema,
-                'Unter-Unterthema': ''
-            })
-
-    if themen_liste:
-        df_themen = pd.DataFrame(themen_liste)
-        st.session_state['wesentliche_themen_df'] = df_themen
-        st.write("Wesentliche Themen Dataframe:")
-        st.dataframe(df_themen)
-    else:
-        st.write("Keine wesentlichen Themen ausgewählt.")
-
+    # Überprüfen, ob 'yes_no_selection' im session_state vorhanden ist
+    if 'yes_no_selection' in st.session_state:
+        yes_no_selection = st.session_state['yes_no_selection']
+        
+        # Erstellen eines DataFrames aus den ausgewählten Punkten
+        data = []
+        for key, value in yes_no_selection.items():
+            if value and (key.startswith('Wesentlich') or key.startswith('Eher Wesentlich')):
+                if key.endswith('E1'):
+                    # Extrahieren des Unterthemas aus dem Schlüssel
+                    parts = key.split('_')
+                    unterthema_index = parts.index('E1') - 1
+                    unterthema = parts[unterthema_index] if unterthema_index > 0 else ""
+                    
+                    data.append({
+                        'Thema': 'Klimawandel',
+                        'Unterthema': unterthema,
+                        'Unter-Unterthema': ''
+                    })
+                # Hier können weitere Bedingungen für andere Themen hinzugefügt werden
+        
+        selected_points_df = pd.DataFrame(data)
+        
+        # Anzeigen des DataFrames
+        st.write(selected_points_df)
+        
+    
 def initialize_bewertet_column(longlist):
     if 'selected_data' in st.session_state:
         longlist['Bewertet'] = longlist['ID'].apply(lambda x: 'Ja' if x in st.session_state.selected_data['ID'].values else 'Nein')
