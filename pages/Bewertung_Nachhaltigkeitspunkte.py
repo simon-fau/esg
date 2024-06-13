@@ -330,6 +330,11 @@ def delete_bewertung(longlist):
             selected_row_ids = [row['ID'] for row in st.session_state['selected_rows']]
             st.session_state.selected_data = st.session_state.selected_data[~st.session_state.selected_data['ID'].isin(selected_row_ids)]
             longlist['Bewertet'] = longlist['ID'].isin(st.session_state.selected_data['ID']).replace({True: 'Ja', False: 'Nein'})
+
+            # Überprüfen, ob selected_data leer ist, und selected_columns entsprechend aktualisieren
+            if st.session_state.selected_data.empty:
+                st.session_state['selected_columns'] = pd.DataFrame()  # Setzen Sie selected_columns auf einen leeren DataFrame
+
         else:
             st.error("Bitte wählen Sie mindestens eine Zeile aus, bevor Sie eine Bewertung löschen.")
     return longlist
@@ -353,67 +358,70 @@ def display_selected_data():
         st.session_state['selected_columns'] = selected_columns
 
 def bewertung():
-    if 'selected_columns' in st.session_state and not st.session_state.selected_columns.empty:
-        selected_columns = st.session_state['selected_columns']
+    if 'selected_columns' not in st.session_state or st.session_state.selected_columns.empty:
+        st.warning('Keine Bewertung vorhanden. Bitte fügen Sie eine Bewertung hinzu.')
+        return  # Beendet die Funktion, wenn keine Bewertung vorhanden ist
 
-        # Create a selectbox for IDs
-        selected_id = st.selectbox('ID auswählen', selected_columns['ID'].unique())
+    selected_columns = st.session_state['selected_columns']
 
-        # Filter the row with the selected ID
-        selected_row = selected_columns[selected_columns['ID'] == selected_id]
+    # Create a selectbox for IDs
+    selected_id = st.selectbox('ID auswählen', selected_columns['ID'].unique())
 
-        if not selected_row.empty:
+    # Filter the row with the selected ID
+    selected_row = selected_columns[selected_columns['ID'] == selected_id]
 
-            # Split the 'Auswirkung' string into parts by ';'
-            auswirkung_parts = selected_row['Auswirkung'].values[0].split(';')
+    if not selected_row.empty:
 
-            # Split the 'Finanziell' string into parts by ';'
-            finanziell_parts = selected_row['Finanziell'].values[0].split(';')
+        # Split the 'Auswirkung' string into parts by ';'
+        auswirkung_parts = selected_row['Auswirkung'].values[0].split(';')
 
-            # Display each part of 'Auswirkung'
-            auswirkung_mapping = {
-                1: 'Eigenschaft',
-                2: 'Art',
-                3: 'Ausmaß',
-                4: 'Umfang',
-                5: 'Behebarkeit',
-                6: 'Wahrscheinlichkeit'
-            }
+        # Split the 'Finanziell' string into parts by ';'
+        finanziell_parts = selected_row['Finanziell'].values[0].split(';')
 
-            # Display each part of 'Finanziell'
-            finanziell_mapping = {
-                1: 'Ausmaß',
-                2: 'Wahrscheinlichkeit',
-                3: 'Finanzielle Auswirkung'
-            }
+        # Display each part of 'Auswirkung'
+        auswirkung_mapping = {
+            1: 'Eigenschaft',
+            2: 'Art',
+            3: 'Ausmaß',
+            4: 'Umfang',
+            5: 'Behebarkeit',
+            6: 'Wahrscheinlichkeit'
+        }
 
-            col1, col2, col3 = st.columns([1, 1, 1])
+        # Display each part of 'Finanziell'
+        finanziell_mapping = {
+            1: 'Ausmaß',
+            2: 'Wahrscheinlichkeit',
+            3: 'Finanzielle Auswirkung'
+        }
 
-            with col1:
-                st.write("**Auswirkung**")
-            
-                for i, part in enumerate(auswirkung_parts, start=1):
-                    if i in auswirkung_mapping:
-                        st.write(f'{auswirkung_mapping[i]}:', part.strip())
-                    else:
-                        st.write(f'Auswirkung Teil {i}:', part.strip())
+        col1, col2, col3 = st.columns([1, 1, 1])
 
-                st.write('Score:', selected_row['Score Auswirkung'].values[0])
+        with col1:
+            st.write("**Auswirkung**")
+        
+            for i, part in enumerate(auswirkung_parts, start=1):
+                if i in auswirkung_mapping:
+                    st.write(f'{auswirkung_mapping[i]}:', part.strip())
+                else:
+                    st.write(f'Auswirkung Teil {i}:', part.strip())
 
-            with col2:
-                st.write("**Finanziell**")
+            st.write('Score:', selected_row['Score Auswirkung'].values[0])
 
-                for i, part in enumerate(finanziell_parts, start=1):
-                    if i in finanziell_mapping:
-                        st.write(f'{finanziell_mapping[i]}:', part.strip())
-                    else:
-                        st.write(f'Finanziell Teil {i}:', part.strip())
+        with col2:
+            st.write("**Finanziell**")
 
-                st.write('Score:', selected_row['Score Finanzen'].values[0])
-            
-            with col3:
+            for i, part in enumerate(finanziell_parts, start=1):
+                if i in finanziell_mapping:
+                    st.write(f'{finanziell_mapping[i]}:', part.strip())
+                else:
+                    st.write(f'Finanziell Teil {i}:', part.strip())
 
-                return
+            st.write('Score:', selected_row['Score Finanzen'].values[0])
+        
+        with col3:
+            # Hier können weitere Informationen oder Aktionen hinzugefügt werden
+            pass
            
 def display_grid(longlist):
     gb = GridOptionsBuilder.from_dataframe(longlist)
