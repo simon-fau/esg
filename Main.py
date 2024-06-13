@@ -35,7 +35,7 @@ selected_menu = hc.nav_bar(
 
 if selected_menu == 'Wesentlichkeitsanalyse':
     st.markdown("""<style>section[data-testid='stSidebar'][aria-expanded='true']{display: block;}</style>""", unsafe_allow_html=True)
-    st.sidebar.title("Ablauf Wesentlichkeitsanalyse")
+    st.sidebar.title("Wesentlichkeitsanalyse")
     # CSS, um die spezifische Klasse auszublenden
     hide_specific_class = """
         <style>

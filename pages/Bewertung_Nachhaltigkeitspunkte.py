@@ -5,66 +5,72 @@ from pages.Bottom_up_stakeholder import stakeholder_punkte
 import altair as alt
 import numpy as np
 
-
 def stakeholder_Nachhaltigkeitspunkte():
-    # Zugriff auf den DataFrame aus Bottom_up_stakeholder.py über session_state
+    # Initialisiere DataFrame falls nicht vorhanden
     if 'stakeholder_punkte_df' not in st.session_state:
         st.session_state.stakeholder_punkte_df = pd.DataFrame(columns=["Platzierung", "Thema", "Unterthema", "Unter-Unterthema", "NumericalRating"])
+    
+    # Erstelle eine Kopie des DataFrame
     df3 = st.session_state.stakeholder_punkte_df.copy()
     df3['Quelle'] = 'Stakeholder'
 
-    # Berechnen Sie die Größe der Klassen
-    class_size = (df3['NumericalRating'].max() - df3['NumericalRating'].min()) / 4
+    # Berechne die Größe der Klassen
+    class_size = calculate_class_size(df3)
 
-    # Fügen Sie zwei Spalten hinzu, wobei die erste Spalte halb so breit ist wie die zweite
-    col1, col2 = st.columns([1,3])
-    
-    # Fügen Sie einen Schieberegler in der ersten Spalte hinzu
+    # Erstelle die Layout-Spalten
+    col1, col2 = st.columns([1.2, 3])
     with col1:
-        options = ['Nicht Wesentlich', 'Eher nicht wesentlich', 'Eher Wesentlich', 'Wesentlich']
-        st.sidebar.markdown("---")
-        st.sidebar.text("Grenzwert für die Auswahl der Stakeholderpunkte:")
+        # Füge den Schieberegler zur ersten Spalte hinzu
+        add_slider()
     
-        # Überprüfen, ob 'slider_value' bereits im session_state gespeichert ist, wenn nicht, initialisieren Sie es mit einem Standardwert
-        if 'slider_value' not in st.session_state:
-            st.session_state.slider_value = options[0]
-    
-        # Speichern Sie den aktuellen Zustand des Schiebereglers
-        current_slider_value = st.sidebar.select_slider('', options=options, value=st.session_state.slider_value)
+    # Berechne die ausgewählten Zeilen basierend auf der Auswahl im Schieberegler
+    selected_rows_st = calculate_selected_rows(df3, class_size)
 
-        # Fügen Sie einen Button hinzu
-        if st.sidebar.button('Auswahl übernehmen'):
-            # Aktualisieren Sie 'slider_value' im session_state, wenn der Benutzer den Button drückt
-            st.session_state.slider_value = current_slider_value
-            st.experimental_rerun()
-    
-        st.markdown("""
-            <style>
-            .st-emotion-cache-183lzff,
-            .st-emotion-cache-1inwz65 {
-                font-family: "Source Sans Pro", sans-serif;
-            }
-            </style>
-            """, unsafe_allow_html=True)
-    
-    # Die zweite Spalte bleibt leer
-    with col2:
-        pass
-
-    # Berechnen Sie die Anzahl der ausgewählten Zeilen basierend auf der Auswahl
-    if st.session_state.slider_value == 'Wesentlich':
-        selected_rows_st = df3[df3['NumericalRating'] > 3 * class_size + df3['NumericalRating'].min()]
-    elif st.session_state.slider_value == 'Eher Wesentlich':
-        selected_rows_st = df3[df3['NumericalRating'] > 2 * class_size + df3['NumericalRating'].min()]
-    elif st.session_state.slider_value == 'Eher nicht wesentlich':
-        selected_rows_st = df3[df3['NumericalRating'] > class_size + df3['NumericalRating'].min()]
-    else:  # Nicht Wesentlich
-        selected_rows_st = df3[df3['NumericalRating'] > 0]
-    
-    # Speichern Sie die ausgewählten Zeilen im session_state
+    # Speichere die ausgewählten Zeilen im session_state
     st.session_state.selected_rows_st = selected_rows_st
     
     return selected_rows_st
+
+def calculate_class_size(df):
+    # Berechne die Größe der Klassen
+    return (df['NumericalRating'].max() - df['NumericalRating'].min()) / 4
+
+def add_slider():
+    options = ['Nicht Wesentlich', 'Eher nicht wesentlich', 'Eher Wesentlich', 'Wesentlich']
+    st.text("Grenzwert für die Auswahl der Stakeholderpunkte:")
+
+    # Initialisiere 'slider_value' falls nicht vorhanden
+    if 'slider_value' not in st.session_state:
+        st.session_state.slider_value = options[0]
+
+    # Speichere den aktuellen Zustand des Schiebereglers
+    current_slider_value = st.select_slider('', options=options, value=st.session_state.slider_value)
+
+    # Aktualisiere 'slider_value' im session_state bei Button-Klick
+    if st.button('Auswahl übernehmen'):
+        st.session_state.slider_value = current_slider_value
+        st.experimental_rerun()
+
+    st.markdown("""
+        <style>
+        .st-emotion-cache-183lzff,
+        .st-emotion-cache-1inwz65 {
+            font-family: "Source Sans Pro", sans-serif;
+        }
+        </style>
+        """, unsafe_allow_html=True)
+
+def calculate_selected_rows(df, class_size):
+    # Berechne die Anzahl der ausgewählten Zeilen basierend auf der Auswahl
+    if st.session_state.slider_value == 'Wesentlich':
+        return df[df['NumericalRating'] > 3 * class_size + df['NumericalRating'].min()]
+    elif st.session_state.slider_value == 'Eher Wesentlich':
+        return df[df['NumericalRating'] > 2 * class_size + df['NumericalRating'].min()]
+    elif st.session_state.slider_value == 'Eher nicht wesentlich':
+        return df[df['NumericalRating'] > class_size + df['NumericalRating'].min()]
+    else:  # Nicht Wesentlich
+        return df[df['NumericalRating'] > 0]
+
 
 def eigene_Nachhaltigkeitspunkte():
     # Zugriff auf den DataFrame aus Eigene.py über session_state
@@ -84,248 +90,107 @@ def Top_down_Nachhaltigkeitspunkte():
         data = []
         for key, value in yes_no_selection.items():
             if value and (key.startswith('Wesentlich') or key.startswith('Eher Wesentlich')):
-                if key.endswith('E1'):
-                    # Initialisiere start und end mit None
-                    start = None
-                    end = key.find('_E1')
-                    
-                    # Extrahieren des Unterthemas aus dem Schlüssel für E2
-                    if 'Wesentlich_' in key:
-                        start = key.find('Wesentlich_') + len('Wesentlich_')
-                    elif 'Eher_Wesentlich_' in key:
-                        start = key.find('Eher_Wesentlich_') + len('Eher_Wesentlich_')
-                    
-                    # Überprüfe, ob start einen Wert hat
-                    if start is not None:
-                        unterthema = key[start:end].replace('_', ' ')
-                        
-                        data.append({
-                            'Thema': 'Klimawandel',
-                            'Unterthema': unterthema,
-                            'Unter-Unterthema': ''
-                        })
-                    
-                    
-                elif key.endswith('E2'):
-                    # Initialisiere start und end mit None
-                    start = None
-                    end = key.find('_E2')
-                    
-                    # Extrahieren des Unterthemas aus dem Schlüssel für E2
-                    if 'Wesentlich_' in key:
-                        start = key.find('Wesentlich_') + len('Wesentlich_')
-                    elif 'Eher_Wesentlich_' in key:
-                        start = key.find('Eher_Wesentlich_') + len('Eher_Wesentlich_')
-                    
-                    # Überprüfe, ob start einen Wert hat
-                    if start is not None:
-                        unterthema = key[start:end].replace('_', ' ')
-                        
-                        data.append({
-                            'Thema': 'Umweltverschmutzung',
-                            'Unterthema': unterthema,
-                            'Unter-Unterthema': ''
-                        })
-                
-                elif key.endswith('E3'):
-                    # Initialisiere start und end mit None
-                    start = None
-                    end = key.find('_E3')
-                    
-                    # Extrahieren des Unterthemas aus dem Schlüssel für E2
-                    if 'Wesentlich_' in key:
-                        start = key.find('Wesentlich_') + len('Wesentlich_')
-                    elif 'Eher_Wesentlich_' in key:
-                        start = key.find('Eher_Wesentlich_') + len('Eher_Wesentlich_')
-                    
-                    # Überprüfe, ob start einen Wert hat
-                    if start is not None:
-                        unterthema = key[start:end].replace('_', ' ')
-                        
-                        data.append({
-                            'Thema': 'Meeres- und Wasserressourcen',
-                            'Unterthema': unterthema,
-                            'Unter-Unterthema': ''
-                        })
-
-                elif key.endswith('E4'):
-                    # Biodiversität und Direkte Ursachen des Biodiversitätsverlusts
-                    start = None
-                    if 'Wesentlich_' in key:
-                        start = key.find('Wesentlich_') + len('Wesentlich_')
-                    elif 'Eher_Wesentlich_' in key:
-                        start = key.find('Eher_Wesentlich_') + len('Eher_Wesentlich_')
-
-                    end = key.find('_E4')
-                    if start is not None:
-                        unterthema_raw = key[start:end].replace('_', ' ').strip()
-                        
-                        # Zuordnung des Unterthemas basierend auf dem Inhalt von unterthema_raw
-                        if unterthema_raw in ['Klimawandel', 'Landnutzungsänderungen, Süßwasser- und Meeresnutzungsänderungen', 'Direkte Ausbeutung', 'Invasive gebietsfremde Arten', 'Umweltverschmutzung', 'Sonstige']:
-                            unterthema = 'Direkte Ursachen des Biodiversitätsverlusts'
-                        elif unterthema_raw in ['Populationsgröße von Arten', 'Globales Ausrottungsrisiko von Arten']:
-                            unterthema = 'Auswirkungen auf den Zustand der Arten'
-                        elif unterthema_raw in ['Landdegradation', 'Wüstenbildung', 'Bodenversiegelung']:
-                            unterthema = 'Auswirkungen auf den Umfang und den Zustand von Ökosystemen'
-                        elif unterthema_raw in ['Auswirkungen und Abhängigkeiten von Ökosystemdienstleistungen']:
-                            unterthema = 'Auswirkungen und Abhängigkeiten von Ökosystemdienstleistungen'
-                        
-                        data.append({
-                            'Thema': 'Biodiversität',
-                            'Unterthema': unterthema,
-                            'Unter-Unterthema': unterthema_raw
-                        })
-
-                elif key.endswith('E5'):
-                    # Initialisiere start und end mit None
-                    start = None
-                    end = key.find('_E5')
-                    
-                    # Extrahieren des Unterthemas aus dem Schlüssel für E2
-                    if 'Wesentlich_' in key:
-                        start = key.find('Wesentlich_') + len('Wesentlich_')
-                    elif 'Eher_Wesentlich_' in key:
-                        start = key.find('Eher_Wesentlich_') + len('Eher_Wesentlich_')
-                    
-                    # Überprüfe, ob start einen Wert hat
-                    if start is not None:
-                        unterthema = key[start:end].replace('_', ' ')
-                        
-                        data.append({
-                            'Thema': 'Kreislaufwirtschaft',
-                            'Unterthema': unterthema,
-                            'Unter-Unterthema': ''
-                        })
-
-                elif key.endswith('S1'):
-                    # Biodiversität und Direkte Ursachen des Biodiversitätsverlusts
-                    start = None
-                    if 'Wesentlich_' in key:
-                        start = key.find('Wesentlich_') + len('Wesentlich_')
-                    elif 'Eher_Wesentlich_' in key:
-                        start = key.find('Eher_Wesentlich_') + len('Eher_Wesentlich_')
-
-                    end = key.find('_S1')
-                    if start is not None:
-                        unterthema_raw = key[start:end].replace('_', ' ').strip()
-
-                    if unterthema_raw in ['Sichere Beschäftigung', 'Arbeitszeit', 'Angemessene Entlohnung', 'Vereinigungsfreiheit, Existenz von Betriebsräten und Rechte der Arbeitnehmer auf Information, Anhörung und Mitbestimmung', 'Tarifverhandlungen, einschließlich der Quote der durch Tarifverträge abgedeckten Arbeitskräften', 'Vereinbarkeit von Beruf und Privatleben', 'Gesundheitsschutz und Sicherheit']:
-                        unterthema = 'Arbeitsbedingungen'
-                    elif unterthema_raw in ['Gleichstellung der Geschlechter und gleicher Lohn für gleiche Arbeit', 'Schulungen und Kompetenzentwicklung', 'Beschäftigung und Inklusion von Menschen mit Behinderungen', 'Maßnahmen gegen Gewalt und Belästigung am Arbeitsplatz', 'Vielfalt']:
-                        unterthema = 'Gleichbehandlung und Chancengleichheit für alle'
-                    elif unterthema_raw in ['Kinderarbeit', 'Zwangarbeit', 'Angemessene Unterbringungen', 'Datenschutz']:
-                        unterthema = 'Sonstige arbeitsbezogene Rechte'
-                    
-                    data.append({
-                        'Thema': 'Eigene Belegschaft',
-                        'Unterthema': unterthema,
-                        'Unter-Unterthema': unterthema_raw
-                    })
-
-                elif key.endswith('S2'):
-                    
-                    start = None
-                    if 'Wesentlich_' in key:
-                        start = key.find('Wesentlich_') + len('Wesentlich_')
-                    elif 'Eher_Wesentlich_' in key:
-                        start = key.find('Eher_Wesentlich_') + len('Eher_Wesentlich_')
-
-                    end = key.find('_S2')
-                    if start is not None:
-                        unterthema_raw = key[start:end].replace('_', ' ').strip()
-
-                    if unterthema_raw in ['Sichere Beschäftigung', 'Arbeitszeit', 'Angemessene Entlohnung', 'Vereinigungsfreiheit, Existenz von Betriebsräten und Rechte der Arbeitnehmer auf Information, Anhörung und Mitbestimmung', 'Tarifverhandlungen, einschließlich der Quote der durch Tarifverträge abgedeckten Arbeitskräften', 'Vereinbarkeit von Beruf und Privatleben', 'Gesundheitsschutz und Sicherheit']:
-                        unterthema = 'Arbeitsbedingungen'
-                    elif unterthema_raw in ['Gleichstellung der Geschlechter und gleicher Lohn für gleiche Arbeit', 'Schulungen und Kompetenzentwicklung', 'Beschäftigung und Inklusion von Menschen mit Behinderungen', 'Maßnahmen gegen Gewalt und Belästigung am Arbeitsplatz', 'Vielfalt']:
-                        unterthema = 'Gleichbehandlung und Chancengleichheit für alle'
-                    elif unterthema_raw in ['Kinderarbeit', 'Zwangarbeit', 'Angemessene Unterbringungen', 'Datenschutz']:
-                        unterthema = 'Sonstige arbeitsbezogene Rechte'
-                    
-                    data.append({
-                        'Thema': 'Belegschaft Lieferkette',
-                        'Unterthema': unterthema,
-                        'Unter-Unterthema': unterthema_raw
-                    })
-
-                elif key.endswith('S3'):
-                    
-                    start = None
-                    if 'Wesentlich_' in key:
-                        start = key.find('Wesentlich_') + len('Wesentlich_')
-                    elif 'Eher_Wesentlich_' in key:
-                        start = key.find('Eher_Wesentlich_') + len('Eher_Wesentlich_')
-
-                    end = key.find('_S3')
-                    if start is not None:
-                        unterthema_raw = key[start:end].replace('_', ' ').strip()
-
-                    if unterthema_raw in ['Angemessene Unterbringungen', 'Angemessene Ernährung', 'Wasser- und Sanitäreinrichtungen', 'Bodenbezogene Auswirkungen', 'Sicherheitsbezogene Auswirkungen']:
-                        unterthema = 'Wirtschaftliche, soziale und kulturelle Rechte von Gemeinschaften'
-                    elif unterthema_raw in ['Meinungsfreiheit', 'Versammlungsfreiheit', 'Auswirkungen auf Menschenrechtsverteidiger']:
-                        unterthema = 'Bürgerrechte und politische Rechte von Gemeinschaften'
-                    elif unterthema_raw in ['Freiwillige und in Kenntnis der Sachlage erteilte vorherige Zustimmung', 'Selbstbestimmung', 'Kulturelle Rechte']:
-                        unterthema = 'Rechte von indigenen Völkern'
-
-                    data.append({
-                        'Thema': 'Betroffene Gemeinschaften',
-                        'Unterthema': unterthema,
-                        'Unter-Unterthema': unterthema_raw
-                    })
-
-                elif key.endswith('S4'):
-                    # Biodiversität und Direkte Ursachen des Biodiversitätsverlusts
-                    start = None
-                    if 'Wesentlich_' in key:
-                        start = key.find('Wesentlich_') + len('Wesentlich_')
-                    elif 'Eher_Wesentlich_' in key:
-                        start = key.find('Eher_Wesentlich_') + len('Eher_Wesentlich_')
-
-                    end = key.find('_S4')
-                    if start is not None:
-                        unterthema_raw = key[start:end].replace('_', ' ').strip()
-
-                    if unterthema_raw in ['Datenschutz', 'Meinungsfreiheit', 'Zugang zu (hochwertigen) Informationen']:
-                        unterthema = 'Informationsbezogene Auswirkungen für Verbraucher und Endnutzer'
-                    elif unterthema_raw in ['Gesundheitsschutz und Sicherheit', 'Persönliche Sicherheit', 'Kinderschutz']:
-                        unterthema = 'Persönliche Sicherheit von Verbrauchern und Endnutzern'
-                    elif unterthema_raw in ['Nichtdiskriminierung', 'Selbstbestimmung', 'Zugang zu Produkten und Dienstleistungen', 'Verantwortliche Vermarktungspraktiken']:
-                        unterthema = 'Soziale Inklusion von Verbrauchern und Endnutzern'
-
-                    data.append({
-                        'Thema': 'Verbraucher und Endnutzer',
-                        'Unterthema': unterthema,
-                        'Unter-Unterthema': unterthema_raw
-                    })
-
-                elif key.endswith('G1'):
-                    # Initialisiere start und end mit None
-                    start = None
-                    end = key.find('_G1')
-                    
-                    # Extrahieren des Unterthemas aus dem Schlüssel für E2
-                    if 'Wesentlich_' in key:
-                        start = key.find('Wesentlich_') + len('Wesentlich_')
-                    elif 'Eher_Wesentlich_' in key:
-                        start = key.find('Eher_Wesentlich_') + len('Eher_Wesentlich_')
-                    
-                    # Überprüfe, ob start einen Wert hat
-                    if start is not None:
-                        unterthema = key[start:end].replace('_', ' ')
-                        
-                        data.append({
-                            'Thema': 'Unternehmenspolitik',
-                            'Unterthema': unterthema,
-                            'Unter-Unterthema': ''
-                        })
-
-        selected_points_df = pd.DataFrame(data)
-        # Speichern des DataFrame 'selected_points_df' im Session State
-        st.session_state['selected_points_df'] = selected_points_df
-        selected_points_df['Quelle'] = 'Top Down'
-        return selected_points_df
+                data.append(extract_data_from_key(key))
         
+        selected_points_df = pd.DataFrame(data)
+        selected_points_df['Quelle'] = 'Top Down'
+        
+        # Speichern des DataFrame 'selected_points_df' im session_state
+        st.session_state['selected_points_df'] = selected_points_df
+        return selected_points_df
+
+def extract_data_from_key(key):
+    # Initialisiere start und end basierend auf dem Key
+    start, end, suffix = determine_key_suffix(key)
     
+    if start is not None:
+        unterthema = key[start:end].replace('_', ' ')
+        thema, unterthema, unter_unterthema = map_key_to_theme_and_subthemes(key, unterthema)
+        return {
+            'Thema': thema,
+            'Unterthema': unterthema,
+            'Unter-Unterthema': unter_unterthema
+        }
+
+def determine_key_suffix(key):
+    suffixes = ['E1', 'E2', 'E3', 'E4', 'E5', 'S1', 'S2', 'S3', 'S4', 'G1']
+    for suffix in suffixes:
+        if key.endswith(suffix):
+            start = key.find('Wesentlich_') + len('Wesentlich_') if 'Wesentlich_' in key else key.find('Eher_Wesentlich_') + len('Eher_Wesentlich_')
+            end = key.find(f'_{suffix}')
+            return start, end, suffix
+    return None, None, None
+
+def map_key_to_theme_and_subthemes(key, unterthema_raw):
+    thema_map = {
+        'E1': 'Klimawandel',
+        'E2': 'Umweltverschmutzung',
+        'E3': 'Meeres- und Wasserressourcen',
+        'E4': 'Biodiversität',
+        'E5': 'Kreislaufwirtschaft',
+        'S1': 'Eigene Belegschaft',
+        'S2': 'Belegschaft Lieferkette',
+        'S3': 'Betroffene Gemeinschaften',
+        'S4': 'Verbraucher und Endnutzer',
+        'G1': 'Unternehmenspolitik'
+    }
+    if key.endswith('E4'):
+        return map_biodiversity_key(key, unterthema_raw)
+    elif key.endswith('S1'):
+        return map_workforce_key('Eigene Belegschaft', unterthema_raw)
+    elif key.endswith('S2'):
+        return map_workforce_key('Belegschaft Lieferkette', unterthema_raw)
+    elif key.endswith('S3'):
+        return map_community_key(unterthema_raw)
+    elif key.endswith('S4'):
+        return map_consumer_key(unterthema_raw)
+    else:
+        return thema_map[key[-2:]], unterthema_raw, ''
+
+def map_biodiversity_key(key, unterthema_raw):
+    unterthema_map = {
+        'Direkte Ursachen des Biodiversitätsverlusts': ['Klimawandel', 'Landnutzungsänderungen, Süßwasser- und Meeresnutzungsänderungen', 'Direkte Ausbeutung', 'Invasive gebietsfremde Arten', 'Umweltverschmutzung', 'Sonstige'],
+        'Auswirkungen auf den Zustand der Arten': ['Populationsgröße von Arten', 'Globales Ausrottungsrisiko von Arten'],
+        'Auswirkungen auf den Umfang und den Zustand von Ökosystemen': ['Landdegradation', 'Wüstenbildung', 'Bodenversiegelung'],
+        'Auswirkungen und Abhängigkeiten von Ökosystemdienstleistungen': ['Auswirkungen und Abhängigkeiten von Ökosystemdienstleistungen']
+    }
+    for unterthema, values in unterthema_map.items():
+        if unterthema_raw in values:
+            return 'Biodiversität', unterthema, unterthema_raw
+
+def map_workforce_key(thema, unterthema_raw):
+    unterthema_map = {
+        'Arbeitsbedingungen': ['Sichere Beschäftigung', 'Arbeitszeit', 'Angemessene Entlohnung', 'Vereinigungsfreiheit, Existenz von Betriebsräten und Rechte der Arbeitnehmer auf Information, Anhörung und Mitbestimmung', 'Tarifverhandlungen, einschließlich der Quote der durch Tarifverträge abgedeckten Arbeitskräften', 'Vereinbarkeit von Beruf und Privatleben', 'Gesundheitsschutz und Sicherheit'],
+        'Gleichbehandlung und Chancengleichheit für alle': ['Gleichstellung der Geschlechter und gleicher Lohn für gleiche Arbeit', 'Schulungen und Kompetenzentwicklung', 'Beschäftigung und Inklusion von Menschen mit Behinderungen', 'Maßnahmen gegen Gewalt und Belästigung am Arbeitsplatz', 'Vielfalt'],
+        'Sonstige arbeitsbezogene Rechte': ['Kinderarbeit', 'Zwangarbeit', 'Angemessene Unterbringungen', 'Datenschutz']
+    }
+    for unterthema, values in unterthema_map.items():
+        if unterthema_raw in values:
+            return thema, unterthema, unterthema_raw
+
+def map_community_key(unterthema_raw):
+    unterthema_map = {
+        'Wirtschaftliche, soziale und kulturelle Rechte von Gemeinschaften': ['Angemessene Unterbringungen', 'Angemessene Ernährung', 'Wasser- und Sanitäreinrichtungen', 'Bodenbezogene Auswirkungen', 'Sicherheitsbezogene Auswirkungen'],
+        'Bürgerrechte und politische Rechte von Gemeinschaften': ['Meinungsfreiheit', 'Versammlungsfreiheit', 'Auswirkungen auf Menschenrechtsverteidiger'],
+        'Rechte von indigenen Völkern': ['Freiwillige und in Kenntnis der Sachlage erteilte vorherige Zustimmung', 'Selbstbestimmung', 'Kulturelle Rechte']
+    }
+    for unterthema, values in unterthema_map.items():
+        if unterthema_raw in values:
+            return 'Betroffene Gemeinschaften', unterthema, unterthema_raw
+
+def map_consumer_key(unterthema_raw):
+    unterthema_map = {
+        'Informationsbezogene Auswirkungen für Verbraucher und Endnutzer': ['Datenschutz', 'Meinungsfreiheit', 'Zugang zu (hochwertigen) Informationen'],
+        'Persönliche Sicherheit von Verbrauchern und Endnutzern': ['Gesundheitsschutz und Sicherheit', 'Persönliche Sicherheit', 'Kinderschutz'],
+        'Soziale Inklusion von Verbrauchern und Endnutzern': ['Nichtdiskriminierung', 'Selbstbestimmung', 'Zugang zu Produkten und Dienstleistungen', 'Verantwortliche Vermarktungspraktiken']
+    }
+    for unterthema, values in unterthema_map.items():
+        if unterthema_raw in values:
+            return 'Verbraucher und Endnutzer', unterthema, unterthema_raw
+
+
 def initialize_bewertet_column(longlist):
+    # Initialisiert die 'Bewertet'-Spalte im 'longlist'-DataFrame
     if 'selected_data' in st.session_state:
         longlist['Bewertet'] = longlist['ID'].apply(lambda x: 'Ja' if x in st.session_state.selected_data['ID'].values else 'Nein')
     else:
@@ -333,7 +198,7 @@ def initialize_bewertet_column(longlist):
     return longlist
 
 def submit_bewertung(longlist, ausgewaehlte_werte):
-    if st.button("Bewertung absenden") and any(ausgewaehlte_werte.values()):
+    if st.sidebar.button("Bewertung absenden") and any(ausgewaehlte_werte.values()):
         if 'selected_rows' in st.session_state:
             new_data = pd.DataFrame(st.session_state['selected_rows'])
             if '_selectedRowNodeInfo' in new_data.columns:
@@ -544,10 +409,10 @@ def display_grid(longlist):
     gb = GridOptionsBuilder.from_dataframe(longlist)
     gb.configure_side_bar()
     gb.configure_selection('single', use_checkbox=True, groupSelectsChildren="Group checkbox select children", rowMultiSelectWithClick=False)
-    # Konfiguriere die Breite der ID-Spalte
-    gb.configure_column('ID', minWidth=50, maxWidth=150, width=50)  # Passen Sie die Werte entsprechend an
-    gb.configure_column('Quelle', minWidth=50, maxWidth=150, width=100)
-    gb.configure_column('Bewertet', minWidth=50, maxWidth=150, width=50)
+    gb.configure_column('ID', minWidth=50, maxWidth=100, width=70) 
+    gb.configure_column('Bewertet', minWidth=100, maxWidth=100, width=80)
+    gb.configure_column('Thema', minWidth=150, maxWidth=250, width=200)
+    gb.configure_column('Quelle', minWidth=50, maxWidth=150, width=140)
     grid_options = gb.build()
     grid_response = AgGrid(longlist, gridOptions=grid_options, enable_enterprise_modules=True, update_mode=GridUpdateMode.MODEL_CHANGED, fit_columns_on_grid_load=True)
     st.session_state['selected_rows'] = grid_response['selected_rows']
@@ -628,13 +493,12 @@ def merge_dataframes():
     ausmass_pos_tat = umfang_pos_tat = ausmass_pos_pot = umfang_pos_pot = behebbarkeit_pos_pot = ''
     wahrscheinlichkeit_finanziell = ausmass_finanziell = auswirkung_finanziell = ''
 
-    col1, col2, col_3_placeholder, col4 = st.columns([1, 1, 0.2, 1])
-    with col1:
-        st.subheader("Auwirkungsbewertung")
-        auswirkung_option = st.selectbox('Bitte wählen Sie die Eigenschaft der Auswirkung:', ['Negative Auswirkung','Positive Auswirkung', 'Keine Auswirkung'], index=2, key="auswirkung_option")
-        if auswirkung_option == 'Negative Auswirkung':
-            auswirkung_art_option = st.selectbox('Bitte wählen Sie die Art der Auswirkung:', ['Tatsächliche Auswirkung', 'Potenzielle Auswirkung', ''], index=2, key="auswirkung_art_option")      
-            with col2:
+    st.sidebar.markdown('---')
+    with st.sidebar:
+        with st.expander("Auwirkungsbewertung"):
+            auswirkung_option = st.selectbox('Eigenschaft der Auswirkung:', ['Negative Auswirkung','Positive Auswirkung', 'Keine Auswirkung'], index=2, key="auswirkung_option")
+            if auswirkung_option == 'Negative Auswirkung':
+                auswirkung_art_option = st.selectbox('Art der Auswirkung:', ['Tatsächliche Auswirkung', 'Potenzielle Auswirkung', ''], index=2, key="auswirkung_art_option")      
                 if auswirkung_art_option == 'Tatsächliche Auswirkung':
                     ausmass_neg_tat = st.select_slider("Ausmaß:", options=["Keine", "Minimal", "Niedrig", "Medium", "Hoch", "Sehr hoch"], key="ausmass_neg_tat")
                     umfang_neg_tat = st.select_slider("Umfang:", options=["Keine", "Lokal", "Regional", "National", "International", "Global"], key="umfang_neg_tat")
@@ -644,9 +508,8 @@ def merge_dataframes():
                     umfang_neg_pot = st.select_slider("Umfang:", options=["Keine", "Lokal", "Regional", "National", "International", "Global"], key="umfang_neg_pot")
                     behebbarkeit_neg_pot = st.select_slider("Behebbarkeit:", options=["Kein Aufwand", "Leicht zu beheben", "Mit Aufwand", "Mit hohem Aufwand", "Mit sehr hohem Aufwand", "Nicht behebbar"], key="behebbarkeit_neg_pot")
                     wahrscheinlichkeit_neg_pot = st.select_slider("Wahrscheinlichkeit:", options=["Tritt nicht ein", "Unwahrscheinlich", "Eher unwahrscheinlich", "Eher wahrscheinlich", "Wahrscheinlich", "Sicher"], key="wahrscheinlichkeit_neg_pot")
-        elif auswirkung_option == 'Positive Auswirkung':
-            auswirkung_art_option = st.selectbox('Bitte wählen Sie die Art der Auswirkung:', ['Tatsächliche Auswirkung', 'Potenzielle Auswirkung', ''], index=2, key="auswirkung_art_option_pos")
-            with col2:
+            elif auswirkung_option == 'Positive Auswirkung':
+                auswirkung_art_option = st.selectbox('Bitte wählen Sie die Art der Auswirkung:', ['Tatsächliche Auswirkung', 'Potenzielle Auswirkung', ''], index=2, key="auswirkung_art_option_pos")
                 if auswirkung_art_option == 'Tatsächliche Auswirkung':
                     ausmass_pos_tat = st.select_slider("Ausmaß:", options=["Keine", "Minimal", "Niedrig", "Medium", "Hoch", "Sehr hoch"], key="ausmass_pos_tat")
                     umfang_pos_tat = st.select_slider("Umfang:", options=["Keine", "Lokal", "Regional", "National", "International", "Global"], key="umfang_pos_tat")
@@ -654,14 +517,12 @@ def merge_dataframes():
                     ausmass_pos_pot = st.select_slider("Ausmaß:", options=["Keine", "Minimal", "Niedrig", "Medium", "Hoch", "Sehr hoch"], key="ausmass_pos_pot")
                     umfang_pos_pot = st.select_slider("Umfang:", options=["Keine", "Lokal", "Regional", "National", "International", "Global"], key="umfang_pos_pot")
                     behebbarkeit_pos_pot = st.select_slider("Behebbarkeit:", options=["Kein Aufwand", "Leicht zu beheben", "Mit Aufwand", "Mit hohem Aufwand", "Mit sehr hohem Aufwand", "Nicht behebbar"], key="behebbarkeit_pos_pot")
-    with col_3_placeholder:
-        pass
-    with col4:
-        st.subheader("Finanzielle Bewertung")
-        ausmass_finanziell = st.select_slider("Ausmaß:", options=["Keine", "Minimal", "Niedrig", "Medium", "Hoch", "Sehr hoch"], key="ausmass_finanziell")
-        wahrscheinlichkeit_finanziell = st.select_slider("Wahrscheinlichkeit:", options=["Tritt nicht ein", "Unwahrscheinlich", "Eher unwahrscheinlich", "Eher wahrscheinlich", "Wahrscheinlich", "Sicher"], key="wahrscheinlichkeit_finanziell")
-        auswirkung_finanziell = st.select_slider("Finanzielle Auswirkung:", options=["Keine", "Sehr gering", "Eher gering", "Eher hoch", "Hoch", "Sehr hoch"], key="auswirkung_finanziell")
-
+    
+        with st.expander("Finanzielle Bewertung"):
+            ausmass_finanziell = st.select_slider("Ausmaß:", options=["Keine", "Minimal", "Niedrig", "Medium", "Hoch", "Sehr hoch"], key="ausmass_finanziell")
+            wahrscheinlichkeit_finanziell = st.select_slider("Wahrscheinlichkeit:", options=["Tritt nicht ein", "Unwahrscheinlich", "Eher unwahrscheinlich", "Eher wahrscheinlich", "Wahrscheinlich", "Sicher"], key="wahrscheinlichkeit_finanziell")
+            auswirkung_finanziell = st.select_slider("Finanzielle Auswirkung:", options=["Keine", "Sehr gering", "Eher gering", "Eher hoch", "Hoch", "Sehr hoch"], key="auswirkung_finanziell")
+   
     # Store selected values
     ausgewaehlte_werte = {
         "option": option,
@@ -749,12 +610,10 @@ def Scatter_chart():
 def display_page():
     tab1, tab2, tab3, tab4 = st.tabs(["Bewertung der Nachhaltigkeitspunkte", "Graphische Übersicht", "Stakeholder", "Gesamtübersicht"])
     with tab1:    
-        col1, col2 = st.columns([5, 1])
-        with col1:
             merge_dataframes()
             display_selected_data()    
-        with st.expander("Bewertungen"):
-            bewertung()
+            with st.expander("Bewertungen"):
+                bewertung()
     with tab2:
         st.write("Graphische Übersicht")
         Scatter_chart()
