@@ -324,7 +324,11 @@ def submit_bewertung(longlist, ausgewaehlte_werte):
             st.error("Bitte wählen Sie mindestens eine Zeile aus, bevor Sie eine Bewertung absenden.")
     return longlist
 
+
 def delete_bewertung(longlist):
+    st.sidebar.markdown("---")
+    st.sidebar.write("**Bewertungen bearbeiten**")
+    # Button zum Löschen einer spezifischen Bewertung
     if st.sidebar.button("Bewertung löschen"):
         if 'selected_rows' in st.session_state and 'selected_data' in st.session_state:
             selected_row_ids = [row['ID'] for row in st.session_state['selected_rows']]
@@ -337,6 +341,13 @@ def delete_bewertung(longlist):
 
         else:
             st.error("Bitte wählen Sie mindestens eine Zeile aus, bevor Sie eine Bewertung löschen.")
+
+    # Button zum Löschen aller Bewertungen
+    if st.sidebar.button("Alle Bewertungen löschen"):
+        st.session_state.selected_data = pd.DataFrame()  # Setzen Sie selected_data auf einen leeren DataFrame
+        st.session_state['selected_columns'] = pd.DataFrame()  # Setzen Sie selected_columns auf einen leeren DataFrame
+        longlist['Bewertet'] = 'Nein'  # Setzen Sie alle Bewertungen auf 'Nein'
+
     return longlist
 
 
