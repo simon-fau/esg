@@ -324,6 +324,16 @@ def submit_bewertung(longlist, ausgewaehlte_werte):
             st.error("Bitte wählen Sie mindestens eine Zeile aus, bevor Sie eine Bewertung absenden.")
     return longlist
 
+def delete_bewertung(longlist):
+    if st.sidebar.button("Bewertung löschen"):
+        if 'selected_rows' in st.session_state and 'selected_data' in st.session_state:
+            selected_row_ids = [row['ID'] for row in st.session_state['selected_rows']]
+            st.session_state.selected_data = st.session_state.selected_data[~st.session_state.selected_data['ID'].isin(selected_row_ids)]
+            longlist['Bewertet'] = longlist['ID'].isin(st.session_state.selected_data['ID']).replace({True: 'Ja', False: 'Nein'})
+        else:
+            st.error("Bitte wählen Sie mindestens eine Zeile aus, bevor Sie eine Bewertung löschen.")
+    return longlist
+
 
 def display_selected_data():
     if 'selected_data' in st.session_state and not st.session_state.selected_data.empty:
@@ -547,6 +557,7 @@ def merge_dataframes():
 
     # Proceed with the rest of the logic
     longlist = submit_bewertung(longlist, ausgewaehlte_werte)
+    longlist = delete_bewertung(longlist)
     display_grid(longlist)
     
 
@@ -611,7 +622,8 @@ def display_page():
     tab1, tab2, tab3, tab4 = st.tabs(["Bewertung der Nachhaltigkeitspunkte", "Graphische Übersicht", "Stakeholder", "Gesamtübersicht"])
     with tab1:    
             merge_dataframes()
-            display_selected_data()    
+            display_selected_data()   
+            
             with st.expander("Bewertungen"):
                 bewertung()
     with tab2:
