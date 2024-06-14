@@ -581,7 +581,6 @@ def merge_dataframes():
     add_slider()  
     
 
-
 def Scatter_chart():
     # Überprüfen Sie, ob 'selected_data' und 'combined_df' initialisiert wurden
     if "selected_data" not in st.session_state or st.session_state.selected_data.empty or "combined_df" not in st.session_state or st.session_state.combined_df.empty:
@@ -615,32 +614,11 @@ def Scatter_chart():
         
         # Füllen Sie fehlende Werte in der 'size' Spalte mit 100
         selected_columns['size'] = selected_columns['size'].fillna(100)
-
-        # Create the non-linear background
-        x = np.linspace(0, 100, 500)
-        y = 100 - (x**2 / 100)
-
-        background_data = pd.DataFrame({'x': x, 'y': y})
-
-        background = alt.Chart(background_data).mark_area(
-            line={'color':'#d7aefb'},
-            color=alt.Gradient(
-                gradient='linear',
-                stops=[
-                    alt.GradientStop(color='#d7aefb', offset=0),
-                    alt.GradientStop(color='white', offset=1)
-                ],
-                x1=1, x2=0, y1=1, y2=0
-            )
-        ).encode(
-            x='x:Q',
-            y='y:Q'
-        ).interactive()
-
+        
         # Erstellen Sie ein Scatter-Chart mit Altair
-        points = alt.Chart(selected_columns).mark_circle().encode(
-            x=alt.X('Score Finanzen', scale=alt.Scale(domain=(0, 100)), title='Finanzielle Wesentlichkeit'),
-            y=alt.Y('Score Auswirkung', scale=alt.Scale(domain=(0, 100)), title='Auswirkungsbezogene Wesentlichkeit'),
+        chart = alt.Chart(selected_columns, width=800, height=600).mark_circle().encode(
+            x=alt.X('Score Finanzen', scale=alt.Scale(domain=(0, 1000)), title='Finanzielle Wesentlichkeit'),
+            y=alt.Y('Score Auswirkung', scale=alt.Scale(domain=(0, 1000)), title='Auswirkungsbezogene Wesentlichkeit'),
             color=alt.Color('color:N', scale=alt.Scale(
                 domain=['Environmental', 'Social', 'Governance', 'Sonstige'],
                 range=['green', 'yellow', 'blue', 'gray']
@@ -662,14 +640,10 @@ def Scatter_chart():
                 labelFontSize=10
             )),
             tooltip=required_columns
-        ).interactive()
-        
-        # Layer the scatter points over the background gradient
-        chart = alt.layer(background, points).properties(width=800, height=600)
+        )
         
         # Zeigen Sie das Diagramm in Streamlit an
         st.altair_chart(chart)
-
 
 def display_page():
     tab1, tab2, tab3, tab4 = st.tabs(["Bewertung der Nachhaltigkeitspunkte", "Graphische Übersicht", "Stakeholder", "Gesamtübersicht"])
