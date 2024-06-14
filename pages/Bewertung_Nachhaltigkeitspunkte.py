@@ -6,8 +6,6 @@ import numpy as np
 import pickle
 import os
 
-
-
 def stakeholder_Nachhaltigkeitspunkte():
     # Initialisiere DataFrame falls nicht vorhanden
     if 'stakeholder_punkte_df' not in st.session_state:
@@ -20,12 +18,6 @@ def stakeholder_Nachhaltigkeitspunkte():
     # Berechne die Größe der Klassen
     class_size = calculate_class_size(df3)
 
-    # Erstelle die Layout-Spalten
-    col1, col2 = st.columns([1.2, 3])
-    with col1:
-        # Füge den Schieberegler zur ersten Spalte hinzu
-        add_slider()
-    
     # Berechne die ausgewählten Zeilen basierend auf der Auswahl im Schieberegler
     selected_rows_st = calculate_selected_rows(df3, class_size)
 
@@ -39,23 +31,25 @@ def calculate_class_size(df):
     # Berechne die Größe der Klassen
     return (df['NumericalRating'].max() - df['NumericalRating'].min()) / 4
 
+
+# Initialize 'slider_value' in st.session_state if it doesn't exist
+options = ['Nicht Wesentlich', 'Eher nicht wesentlich', 'Eher Wesentlich', 'Wesentlich']
+if 'slider_value' not in st.session_state:
+    st.session_state.slider_value = options[0]
+
 def add_slider():
-    options = ['Nicht Wesentlich', 'Eher nicht wesentlich', 'Eher Wesentlich', 'Wesentlich']
-    st.text("Grenzwert für die Auswahl der Stakeholderpunkte:")
+    st.sidebar.markdown("---")
+    st.sidebar.write("**Grenzwert der Stakeholderpunkte:**")
 
-    # Initialisiere 'slider_value' falls nicht vorhanden
-    if 'slider_value' not in st.session_state:
-        st.session_state.slider_value = options[0]
+    # Speichere den aktuellen Zustand des Schiebereglers in der Sidebar mit einem eindeutigen Schlüssel
+    current_slider_value = st.sidebar.select_slider('', options=options, value=st.session_state.slider_value, key='stakeholder_slider')
 
-    # Speichere den aktuellen Zustand des Schiebereglers mit einem eindeutigen Schlüssel
-    current_slider_value = st.select_slider('', options=options, value=st.session_state.slider_value, key='stakeholder_slider')
-
-    # Aktualisiere 'slider_value' im session_state bei Button-Klick
-    if st.button('Auswahl übernehmen'):
+    # Aktualisiere 'slider_value' im session_state bei Button-Klick in der Sidebar
+    if st.sidebar.button('Auswahl übernehmen'):
         st.session_state.slider_value = current_slider_value
         st.experimental_rerun()
 
-    st.markdown("""
+    st.sidebar.markdown("""
         <style>
         .st-emotion-cache-183lzff,
         .st-emotion-cache-1inwz65 {
@@ -63,6 +57,7 @@ def add_slider():
         }
         </style>
         """, unsafe_allow_html=True)
+
 
 def calculate_selected_rows(df, class_size):
     # Berechne die Anzahl der ausgewählten Zeilen basierend auf der Auswahl
@@ -282,14 +277,14 @@ def submit_bewertung(longlist, ausgewaehlte_werte):
             new_data['Score Finanzen'] = np.round((
                                         ausmass_finanziell_mapping.get(ausgewaehlte_werte.get('ausmass_finanziell', 'Keine'), 1) *
                                         wahrscheinlichkeit_finanziell_mapping.get(ausgewaehlte_werte.get('wahrscheinlichkeit_finanziell', 'Keine'), 1) *
-                                        auswirkung_finanziell_mapping.get(ausgewaehlte_werte.get('auswirkung_finanziell', 'Keine'), 1) - 1) / (216 - 1) * 99 + 1
+                                        auswirkung_finanziell_mapping.get(ausgewaehlte_werte.get('auswirkung_finanziell', 'Keine'), 1) - 1) / (215) * 999 + 1
                                         , 1)
             
             # Berechnung Tatsächliche negative Auswirkungen
             tatsaechlich_negativ = np.round(((
                 ausmass_neg_tat_mapping.get(ausgewaehlte_werte.get('ausmass_neg_tat', 'Keine'), 1) *
                 umfang_neg_tat_mapping.get(ausgewaehlte_werte.get('umfang_neg_tat', 'Keine'), 1) *
-                behebbarkeit_neg_tat_mapping.get(ausgewaehlte_werte.get('behebbarkeit_neg_tat', 'Kein Aufwand'), 1) - 1) / (216 - 1) * 99 + 1
+                behebbarkeit_neg_tat_mapping.get(ausgewaehlte_werte.get('behebbarkeit_neg_tat', 'Kein Aufwand'), 1) - 1) / (215) * 999 + 1
                 ), 1)
             
             # Berechnung Potenzielle negative Auswirkungen
@@ -297,20 +292,20 @@ def submit_bewertung(longlist, ausgewaehlte_werte):
                 ausmass_neg_pot_mapping.get(ausgewaehlte_werte.get('ausmass_neg_pot', 'Keine'), 1) *
                 umfang_neg_pot_mapping.get(ausgewaehlte_werte.get('umfang_neg_pot', 'Keine'), 1) *
                 behebbarkeit_neg_pot_mapping.get(ausgewaehlte_werte.get('behebbarkeit_neg_pot', 'Kein Aufwand'), 1) *
-                wahrscheinlichkeit_neg_pot_mapping.get(ausgewaehlte_werte.get('wahrscheinlichkeit_neg_pot', 'Tritt nicht ein'), 1) - 1) / (1296 - 1) * 99 + 1
+                wahrscheinlichkeit_neg_pot_mapping.get(ausgewaehlte_werte.get('wahrscheinlichkeit_neg_pot', 'Tritt nicht ein'), 1) - 1) / (1295) * 999 + 1
                 ), 1)
             
             # Berechnung Tatsächliche positive Auswirkungen
             tatsaechlich_positiv = np.round(((
                 ausmass_pos_tat_mapping.get(ausgewaehlte_werte.get('ausmass_pos_tat', 'Keine'), 1) *
-                umfang_pos_tat_mapping.get(ausgewaehlte_werte.get('umfang_pos_tat', 'Keine'), 1) - 1) / (36 - 1) * 99 + 1
+                umfang_pos_tat_mapping.get(ausgewaehlte_werte.get('umfang_pos_tat', 'Keine'), 1) - 1) / (35) * 999 + 1
                 ), 1)
             
             # Berechnung Potenzielle positive Auswirkungen
             potentiell_positiv = np.round(((
                 ausmass_pos_pot_mapping.get(ausgewaehlte_werte.get('ausmass_pos_pot', 'Keine'), 1) *
                 umfang_pos_pot_mapping.get(ausgewaehlte_werte.get('umfang_pos_pot', 'Keine'), 1) *
-                behebbarkeit_pos_pot_mapping.get(ausgewaehlte_werte.get('behebbarkeit_pos_pot', 'Kein Aufwand'), 1) - 1) / (216 - 1) * 99 + 1
+                behebbarkeit_pos_pot_mapping.get(ausgewaehlte_werte.get('behebbarkeit_pos_pot', 'Kein Aufwand'), 1) - 1) / (215) * 999 + 1
                 ), 1)
             
             # Berechnung des Gesamtscores für die Auswirkungsbewertung
@@ -331,7 +326,7 @@ def submit_bewertung(longlist, ausgewaehlte_werte):
 
 def delete_bewertung(longlist):
     st.sidebar.markdown("---")
-    st.sidebar.write("**Bewertungen bearbeiten**")
+    st.sidebar.write("**Bewertungen löschen**")
     # Button zum Löschen einer spezifischen Bewertung
     if st.sidebar.button("Bewertung löschen"):
         if 'selected_rows' in st.session_state and 'selected_data' in st.session_state:
@@ -527,6 +522,7 @@ def merge_dataframes():
     wahrscheinlichkeit_finanziell = ausmass_finanziell = auswirkung_finanziell = ''
 
     st.sidebar.markdown('---')
+    st.sidebar.write("**Bewertungen hinzufügen**")
     with st.sidebar:
         with st.expander("Auwirkungsbewertung"):
             auswirkung_option = st.selectbox('Eigenschaft der Auswirkung:', ['Negative Auswirkung','Positive Auswirkung', 'Keine Auswirkung'], index=2, key="auswirkung_option")
@@ -582,7 +578,9 @@ def merge_dataframes():
     longlist = submit_bewertung(longlist, ausgewaehlte_werte)
     longlist = delete_bewertung(longlist)
     display_grid(longlist)
+    add_slider()  
     
+
 
 def Scatter_chart():
     # Überprüfen Sie, ob 'selected_data' und 'combined_df' initialisiert wurden
@@ -617,9 +615,30 @@ def Scatter_chart():
         
         # Füllen Sie fehlende Werte in der 'size' Spalte mit 100
         selected_columns['size'] = selected_columns['size'].fillna(100)
-        
+
+        # Create the non-linear background
+        x = np.linspace(0, 100, 500)
+        y = 100 - (x**2 / 100)
+
+        background_data = pd.DataFrame({'x': x, 'y': y})
+
+        background = alt.Chart(background_data).mark_area(
+            line={'color':'#d7aefb'},
+            color=alt.Gradient(
+                gradient='linear',
+                stops=[
+                    alt.GradientStop(color='#d7aefb', offset=0),
+                    alt.GradientStop(color='white', offset=1)
+                ],
+                x1=1, x2=0, y1=1, y2=0
+            )
+        ).encode(
+            x='x:Q',
+            y='y:Q'
+        ).interactive()
+
         # Erstellen Sie ein Scatter-Chart mit Altair
-        chart = alt.Chart(selected_columns, width=800, height=600).mark_circle().encode(
+        points = alt.Chart(selected_columns).mark_circle().encode(
             x=alt.X('Score Finanzen', scale=alt.Scale(domain=(0, 100)), title='Finanzielle Wesentlichkeit'),
             y=alt.Y('Score Auswirkung', scale=alt.Scale(domain=(0, 100)), title='Auswirkungsbezogene Wesentlichkeit'),
             color=alt.Color('color:N', scale=alt.Scale(
@@ -643,10 +662,14 @@ def Scatter_chart():
                 labelFontSize=10
             )),
             tooltip=required_columns
-        )
+        ).interactive()
+        
+        # Layer the scatter points over the background gradient
+        chart = alt.layer(background, points).properties(width=800, height=600)
         
         # Zeigen Sie das Diagramm in Streamlit an
         st.altair_chart(chart)
+
 
 def display_page():
     tab1, tab2, tab3, tab4 = st.tabs(["Bewertung der Nachhaltigkeitspunkte", "Graphische Übersicht", "Stakeholder", "Gesamtübersicht"])
@@ -664,3 +687,5 @@ def display_page():
             AgGrid(st.session_state.selected_rows_st)
     with tab4:
         st.write("Gesamtübersicht")
+
+
