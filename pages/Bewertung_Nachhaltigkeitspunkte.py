@@ -1,7 +1,6 @@
 import streamlit as st
 import pandas as pd
 from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode, DataReturnMode
-from pages.Bottom_up_stakeholder import stakeholder_punkte
 import altair as alt
 import numpy as np
 
@@ -43,8 +42,8 @@ def add_slider():
     if 'slider_value' not in st.session_state:
         st.session_state.slider_value = options[0]
 
-    # Speichere den aktuellen Zustand des Schiebereglers
-    current_slider_value = st.select_slider('', options=options, value=st.session_state.slider_value)
+    # Speichere den aktuellen Zustand des Schiebereglers mit einem eindeutigen Schlüssel
+    current_slider_value = st.select_slider('', options=options, value=st.session_state.slider_value, key='stakeholder_slider')
 
     # Aktualisiere 'slider_value' im session_state bei Button-Klick
     if st.button('Auswahl übernehmen'):
@@ -596,13 +595,13 @@ def Scatter_chart():
         # Erstellen Sie eine neue Spalte 'color', die auf dem Wert der Spalte 'Thema' basiert
         def assign_color(theme):
             if theme in ['Klimawandel', 'Umweltverschmutzung', 'Wasser- & Meeresressourcen', 'Biodiversität', 'Kreislaufwirtschaft']:
-                return 'green'
+                return 'Environmental'
             elif theme in ['Eigene Belegschaft', 'Arbeitskräfte in der Wertschöpfungskette', 'Betroffene Gemeinschaften', 'Verbraucher und Endnutzer']:
-                return 'yellow'
+                return 'Social'
             elif theme == 'Unternehmenspolitik':
-                return 'blue'
+                return 'Governance'
             else:
-                return 'gray'
+                return 'Sonstige'
 
         selected_columns['color'] = selected_columns['Thema'].apply(assign_color)
 
@@ -619,7 +618,7 @@ def Scatter_chart():
             x=alt.X('Score Finanzen', scale=alt.Scale(domain=(0, 100)), title='Finanzielle Wesentlichkeit'),
             y=alt.Y('Score Auswirkung', scale=alt.Scale(domain=(0, 100)), title='Auswirkungsbezogene Wesentlichkeit'),
             color=alt.Color('color:N', scale=alt.Scale(
-                domain=['green', 'yellow', 'blue', 'gray'],
+                domain=['Environmental', 'Social', 'Governance', 'Sonstige'],
                 range=['green', 'yellow', 'blue', 'gray']
             ), legend=alt.Legend(
                 title="Thema",
@@ -630,19 +629,27 @@ def Scatter_chart():
                 labelFontSize=10,
                 values=['Environmental', 'Social', 'Governance', 'Sonstige']
             )),
-            size=alt.Size('size', scale=alt.Scale(range=[100, 1000]), legend=None),  # Keine Legende für die Größe der Punkte
+            size=alt.Size('size:Q', scale=alt.Scale(range=[100, 1000]), legend=alt.Legend(
+                title="Stakeholder Importance",
+                orient="right",
+                titleColor='black',
+                labelColor='black',
+                titleFontSize=12,
+                labelFontSize=10
+            )),
             tooltip=required_columns
         )
         
         # Zeigen Sie das Diagramm in Streamlit an
         st.altair_chart(chart)
 
+
+
 def display_page():
     tab1, tab2, tab3, tab4 = st.tabs(["Bewertung der Nachhaltigkeitspunkte", "Graphische Übersicht", "Stakeholder", "Gesamtübersicht"])
     with tab1:    
             merge_dataframes()
             display_selected_data()   
-            
             with st.expander("Bewertungen"):
                 bewertung()
     with tab2:

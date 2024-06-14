@@ -108,7 +108,7 @@ class YesNoSelection:
     def E4_Biodiversität(self):
         direkte_Ursachen_Biodiversitätsverlust = [
             ("Klimawandel", "Klimawandel"),
-            ("Landnutzungsänderungen, Süßwasser- und Meeresnutzungsänderungen", "Landnutzungsänderungen,_Süßwasser-_und_Meeresnutzungsänderungen"),
+            ("Land-, Süßwasser- und Meeresnutzungsänderungen", "Land-,_Süßwasser-_und_Meeresnutzungsänderungen"),
             ("Direkte Ausbeutung", "Direkte_Ausbeutung"),
             ("Invasive gebietsfremde Arten", "Invasive_gebietsfremde_Arten"),
             ("Umweltverschmutzung", "Umweltverschmutzung"),
@@ -540,7 +540,7 @@ def display_page():
         st.subheader("Betroffene Gemeinschaften")
         selection.display_S3_Betroffene_Gemeinschaften()
     with tabs[8]:
-        st.subheader("Verbraucher und End-nutzer")
+        st.subheader("Verbraucher und Endnutzer")
         selection.display_S4_Verbraucher_und_Endnutzer()
     with tabs[9]:
         st.subheader("Unternehmenspolitik")
