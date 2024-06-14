@@ -46,7 +46,10 @@ def stakeholder_punkte():
         # Button zum Löschen der Inhalte
         if st.button("Inhalte löschen"):
             # Entfernt den DataFrame aus dem session state
-            del st.session_state['stakeholder_punkte_df']
+            if 'stakeholder_punkte_df' in st.session_state:
+                del st.session_state['stakeholder_punkte_df']
+                # Speichert den geänderten Zustand in der Datei
+                save_session_state(st.session_state)
             st.experimental_rerun()  # Aktualisiert die Seite, um die Änderung widerzuspiegeln
     else:
         st.warning("Es wurden noch keine Inhalte im Excel-Upload hochgeladen. Bitte laden Sie eine Excel-Datei hoch.")

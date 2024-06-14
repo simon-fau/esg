@@ -514,7 +514,7 @@ def display_session_state_contents():
 
 def display_page():
     selection = YesNoSelection()
-    tabs = st.tabs(["Klimawandel", "Umweltverschmutzung", "Meeres- und Wasserressourcen", "Biodiversität", "Kreislaufwirtschaft", "Eigene Belegschaft", "Belegschaft Lieferkette", "Betroffene Gemeinschaften", "Verbraucher und End-nutzer", "Unternehmenspolitik"])
+    tabs = st.tabs(["Klimawandel", "Umweltverschmutzung", "Meeres- und Wasserressourcen", "Biodiversität", "Kreislaufwirtschaft", "Eigene Belegschaft", "Belegschaft Lieferkette", "Betroffene Gemeinschaften", "Verbraucher und Endnutzer", "Unternehmenspolitik"])
     with tabs[0]:
         st.subheader("Klimawandel")
         selection.display_E1_Klimawandel()

@@ -3,6 +3,10 @@ import pandas as pd
 from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode, DataReturnMode
 import altair as alt
 import numpy as np
+import pickle
+import os
+
+
 
 def stakeholder_Nachhaltigkeitspunkte():
     # Initialisiere DataFrame falls nicht vorhanden
@@ -27,6 +31,7 @@ def stakeholder_Nachhaltigkeitspunkte():
 
     # Speichere die ausgewählten Zeilen im session_state
     st.session_state.selected_rows_st = selected_rows_st
+
     
     return selected_rows_st
 
@@ -596,7 +601,7 @@ def Scatter_chart():
         def assign_color(theme):
             if theme in ['Klimawandel', 'Umweltverschmutzung', 'Wasser- & Meeresressourcen', 'Biodiversität', 'Kreislaufwirtschaft']:
                 return 'Environmental'
-            elif theme in ['Eigene Belegschaft', 'Arbeitskräfte in der Wertschöpfungskette', 'Betroffene Gemeinschaften', 'Verbraucher und Endnutzer']:
+            elif theme in ['Eigene Belegschaft', 'Belegschaft Lieferkette', 'Betroffene Gemeinschaften', 'Verbraucher und Endnutzer']:
                 return 'Social'
             elif theme == 'Unternehmenspolitik':
                 return 'Governance'
@@ -642,8 +647,6 @@ def Scatter_chart():
         
         # Zeigen Sie das Diagramm in Streamlit an
         st.altair_chart(chart)
-
-
 
 def display_page():
     tab1, tab2, tab3, tab4 = st.tabs(["Bewertung der Nachhaltigkeitspunkte", "Graphische Übersicht", "Stakeholder", "Gesamtübersicht"])
