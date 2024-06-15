@@ -181,7 +181,7 @@ def eigene_punkte():
     st.caption("ℹ️ Sie müssen diesen Button nur drücken, wenn Sie Inhalte direkt in die Tabelle geschrieben haben. Achten Sie darauf, dass Sie die Inhalte mit Enter bestätigen.")
 
     # Button zum Übertragen der Inhalte in die Excel-Datei
-    if st.button('Inhalte zur Excel hinzufügen'):
+    if st.button('Excel aktualisieren'):
         transfer_data_to_excel(st.session_state.df2)
 
 
@@ -192,16 +192,15 @@ def transfer_data_to_excel(dataframe):
 
     # Laden der Kopie der Excel-Datei
     workbook = load_workbook(temp_excel_path)
-    sheet = workbook['Eigene']
+    sheet = workbook['Intern']
 
     first_empty_row = 2
 
     # Übertragen der Daten in die Excel-Datei
     for index, row in dataframe.iterrows():
-        sheet[f'A{first_empty_row}'] = "Eigene"
-        sheet[f'B{first_empty_row}'] = row['Thema']
-        sheet[f'C{first_empty_row}'] = row['Unterthema']
-        sheet[f'D{first_empty_row}'] = row['Unter-Unterthema']
+        sheet[f'A{first_empty_row}'] = row['Thema']
+        sheet[f'B{first_empty_row}'] = row['Unterthema']
+        sheet[f'C{first_empty_row}'] = row['Unter-Unterthema']
         first_empty_row += 1
 
     # Speichern der bearbeiteten Kopie der Excel-Datei
