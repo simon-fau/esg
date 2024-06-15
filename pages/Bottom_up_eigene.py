@@ -3,9 +3,13 @@ import pandas as pd
 import pickle
 import os
 from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode, DataReturnMode
+from openpyxl import load_workbook
+import shutil
+import io
 
 # Datei zum Speichern des Sitzungszustands
-state_file = 'session_state.pkl'
+state_file = 'session_statekizz.pkl'
+template_path = r'C:\Users\andre\OneDrive\Dokumente\Stakeholder_Input_Vorlage_V1.xlsx'
 
 # Funktion zum Laden des Sitzungszustands
 def load_session_state():
@@ -36,6 +40,7 @@ if 'df2' in loaded_state:
 def eigene_punkte():
     with st.sidebar:
         st.markdown("---")
+        st.write("**Inhalte hinzufügen**")
         thema = st.selectbox('Thema auswählen',
         options=[
             'Klimawandel', 
@@ -150,14 +155,16 @@ def eigene_punkte():
         selection_mode='multiple'
     )
 
-    add_empty_row = st.button('Leere Zeile hinzufügen', key='add_empty_row')
+    st.sidebar.markdown("---")
+    st.sidebar.write("**Inhalte bearbeiten**")
+    add_empty_row = st.sidebar.button('Leere Zeile hinzufügen', key='add_empty_row')
     if add_empty_row:
         empty_row = {"Thema": "", "Unterthema": "", "Unter-Unterthema": ""}
         st.session_state.df2 = st.session_state.df2._append(empty_row, ignore_index=True)
         save_session_state({'df2': st.session_state.df2})
         st.experimental_rerun()
 
-    delete_rows = st.button('Ausgewählte Zeilen löschen', key='delete_rows')
+    delete_rows = st.sidebar.button('Ausgewählte Zeilen löschen', key='delete_rows')
     if delete_rows:
         selected_rows = grid_response['selected_rows']
         selected_indices = [row['index'] for row in selected_rows]
@@ -169,55 +176,55 @@ def eigene_punkte():
     if save_changes:
         st.session_state.df2 = grid_response['data'].set_index('index')
         save_session_state({'df2': st.session_state.df2})
+    
+    # Informationsnachricht unter dem Button
+    st.caption("ℹ️ Sie müssen diesen Button nur drücken, wenn Sie Inhalte direkt in die Tabelle geschrieben haben. Achten Sie darauf, dass Sie die Inhalte mit Enter bestätigen.")
+
+    # Button zum Übertragen der Inhalte in die Excel-Datei
+    if st.button('Inhalte zur Excel hinzufügen'):
+        transfer_data_to_excel(st.session_state.df2)
+
+
+def transfer_data_to_excel(dataframe):
+    # Kopie der Template-Datei erstellen
+    temp_excel_path = 'Stakeholder_Input_Vorlage_V1_Copy.xlsx'
+    shutil.copyfile(template_path, temp_excel_path)
+
+    # Laden der Kopie der Excel-Datei
+    workbook = load_workbook(temp_excel_path)
+    sheet = workbook['Eigene']
+
+    first_empty_row = 2
+
+    # Übertragen der Daten in die Excel-Datei
+    for index, row in dataframe.iterrows():
+        sheet[f'A{first_empty_row}'] = "Eigene"
+        sheet[f'B{first_empty_row}'] = row['Thema']
+        sheet[f'C{first_empty_row}'] = row['Unterthema']
+        sheet[f'D{first_empty_row}'] = row['Unter-Unterthema']
+        first_empty_row += 1
+
+    # Speichern der bearbeiteten Kopie der Excel-Datei
+    workbook.save(temp_excel_path)
+    st.success('Inhalte erfolgreich zur Excel-Datei hinzugefügt.')
+
+def download_excel():
+    # Pfad zur kopierten und bearbeiteten Excel-Datei
+    temp_excel_path = 'Stakeholder_Input_Vorlage_V1_Copy.xlsx'
+    workbook = load_workbook(temp_excel_path)
+    with io.BytesIO() as virtual_workbook:
+        workbook.save(virtual_workbook)
+        virtual_workbook.seek(0)
+        return virtual_workbook.read()
 
 def display_page():
     eigene_punkte()
-
-
-
-
-
-
-
-
-
-
-
-
-        
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    
-
-
+    # Download-Button für die Excel-Datei
+    if st.download_button(label="Excel-Datei herunterladen",
+                          data=download_excel(),
+                          file_name="Stakeholder_Input.xlsx",
+                          mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"):
+        st.success("Download gestartet!")
 
 
 
