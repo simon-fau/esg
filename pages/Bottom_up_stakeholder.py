@@ -55,7 +55,7 @@ def stakeholder_punkte():
         st.warning("Es wurden noch keine Inhalte im Excel-Upload hochgeladen. Bitte laden Sie eine Excel-Datei hoch.")
 
 def excel_upload():
-    """ Diese Funktion lädt Excel-Dateien hoch und erstellt Rankings basierend auf den Bewertungen. """
+    """ Diese Funktion lädt Excel-Dateien hoch, untersucht spezifische Blätter und erstellt Rankings basierend auf den Bewertungen. """
     def get_numerical_rating(value):
         ratings = {
             'Wesentlich': 3,
@@ -76,8 +76,15 @@ def excel_upload():
 
     uploaded_files = st.file_uploader("Excel-Dateien hochladen", accept_multiple_files=True, type=['xlsx'])
     if uploaded_files:
-        df_list = [pd.read_excel(file, sheet_name=1, engine='openpyxl') for file in uploaded_files if file]
-        combined_df = pd.concat(df_list)
+        df_list = []
+        for file in uploaded_files:
+            for sheet_name in ['Top_Down', 'Intern', 'Extern']:
+                try:
+                    df = pd.read_excel(file, sheet_name=sheet_name, engine='openpyxl', usecols=['Thema', 'Unterthema', 'Unter-Unterthema', 'Bewertung'])
+                    df_list.append(df)
+                except ValueError:
+                    st.warning(f"Blatt '{sheet_name}' nicht in {file.name} gefunden.")
+        combined_df = pd.concat(df_list, ignore_index=True)
         st.session_state.ranking_df = aggregate_rankings(combined_df)
         save_session_state({'ranking_df': st.session_state.ranking_df})
         st.write("Aktuelles Ranking basierend auf hochgeladenen Dateien:")
