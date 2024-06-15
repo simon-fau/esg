@@ -155,16 +155,16 @@ def eigene_punkte():
         selection_mode='multiple'
     )
 
-    st.sidebar.markdown("---")
-    st.sidebar.write("**Inhalte bearbeiten**")
-    add_empty_row = st.sidebar.button('Leere Zeile hinzufügen', key='add_empty_row')
+    
+    
+    add_empty_row = st.button('➕ Leere Zeile hinzufügen', key='add_empty_row')
     if add_empty_row:
         empty_row = {"Thema": "", "Unterthema": "", "Unter-Unterthema": ""}
-        st.session_state.df2 = st.session_state.df2._append(empty_row, ignore_index=True)
+        st.session_state.df2 = st.session_state.df2.append(empty_row, ignore_index=True)
         save_session_state({'df2': st.session_state.df2})
         st.experimental_rerun()
-
-    delete_rows = st.sidebar.button('Ausgewählte Zeilen löschen', key='delete_rows')
+    
+    delete_rows = st.button('🗑️ Ausgewählte Zeilen löschen', key='delete_rows')
     if delete_rows:
         selected_rows = grid_response['selected_rows']
         selected_indices = [row['index'] for row in selected_rows]
@@ -172,7 +172,7 @@ def eigene_punkte():
         save_session_state({'df2': st.session_state.df2})
         st.experimental_rerun()
 
-    save_changes = st.button('Änderungen speichern', key='save_changes')
+    save_changes = st.button('💾 Änderungen speichern', key='save_changes')
     if save_changes:
         st.session_state.df2 = grid_response['data'].set_index('index')
         save_session_state({'df2': st.session_state.df2})
@@ -181,7 +181,9 @@ def eigene_punkte():
     st.caption("ℹ️ Sie müssen diesen Button nur drücken, wenn Sie Inhalte direkt in die Tabelle geschrieben haben. Achten Sie darauf, dass Sie die Inhalte mit Enter bestätigen.")
 
     # Button zum Übertragen der Inhalte in die Excel-Datei
-    if st.button('Excel aktualisieren'):
+    st.sidebar.markdown("---")
+    st.sidebar.write("**Excel-Datei für Stakeholderumfrage**")
+    if st.sidebar.button('Excel aktualisieren'):
         transfer_data_to_excel(st.session_state.df2)
 
 
@@ -205,7 +207,7 @@ def transfer_data_to_excel(dataframe):
 
     # Speichern der bearbeiteten Kopie der Excel-Datei
     workbook.save(temp_excel_path)
-    st.success('Inhalte erfolgreich zur Excel-Datei hinzugefügt.')
+    st.sidebar.success('Inhalte erfolgreich zur Excel-Datei hinzugefügt.')
 
 def download_excel():
     # Pfad zur kopierten und bearbeiteten Excel-Datei
@@ -219,11 +221,11 @@ def download_excel():
 def display_page():
     eigene_punkte()
     # Download-Button für die Excel-Datei
-    if st.download_button(label="Excel-Datei herunterladen",
+    if st.sidebar.download_button(label="Excel-Datei herunterladen",
                           data=download_excel(),
                           file_name="Stakeholder_Input.xlsx",
                           mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"):
-        st.success("Download gestartet!")
+        st.sidebar.success("Download gestartet!")
 
 
 
