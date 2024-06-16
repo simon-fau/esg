@@ -13,7 +13,6 @@ def stakeholder_Nachhaltigkeitspunkte():
     
     # Erstelle eine Kopie des DataFrame
     df3 = st.session_state.stakeholder_punkte_df.copy()
-   
 
     # Berechne die Größe der Klassen
     class_size = calculate_class_size(df3)
@@ -23,14 +22,12 @@ def stakeholder_Nachhaltigkeitspunkte():
 
     # Speichere die ausgewählten Zeilen im session_state
     st.session_state.selected_rows_st = selected_rows_st
-
     
     return selected_rows_st
 
 def calculate_class_size(df):
     # Berechne die Größe der Klassen
     return (df['NumericalRating'].max() - df['NumericalRating'].min()) / 4
-
 
 # Initialize 'slider_value' in st.session_state if it doesn't exist
 options = ['Nicht Wesentlich', 'Eher nicht wesentlich', 'Eher Wesentlich', 'Wesentlich']
@@ -70,16 +67,6 @@ def calculate_selected_rows(df, class_size):
     else:  # Nicht Wesentlich
         return df[df['NumericalRating'] > 0]
 
-
-def eigene_Nachhaltigkeitspunkte():
-    # Zugriff auf den DataFrame aus Eigene.py über session_state
-    if 'df2' not in st.session_state:
-        st.session_state.df2 = pd.DataFrame(columns=["Thema", "Unterthema", "Unter-Unterthema"])
-    # Erstellen Sie eine Kopie von df2
-    df4 = st.session_state.df2.copy()
-    df4['Quelle'] = 'Intern'
-    return df4
-
 def Top_down_Nachhaltigkeitspunkte():
     # Überprüfen, ob 'yes_no_selection' im session_state vorhanden ist
     if 'yes_no_selection' in st.session_state:
@@ -92,7 +79,7 @@ def Top_down_Nachhaltigkeitspunkte():
                 data.append(extract_data_from_key(key))
         
         selected_points_df = pd.DataFrame(data)
-        selected_points_df['Quelle'] = 'Top-Down'
+        selected_points_df['Quelle'] = 'Top-Down Bewertung'
         
         # Speichern des DataFrame 'selected_points_df' im session_state
         st.session_state['selected_points_df'] = selected_points_df
@@ -440,7 +427,6 @@ def display_grid(longlist):
     gb.configure_column('ID', minWidth=50, maxWidth=100, width=70) 
     gb.configure_column('Bewertet', minWidth=100, maxWidth=100, width=80)
     gb.configure_column('Thema', minWidth=150, maxWidth=250, width=200)
-    gb.configure_column('Quelle', minWidth=50, maxWidth=150, width=140)
     grid_options = gb.build()
     grid_response = AgGrid(longlist, gridOptions=grid_options, enable_enterprise_modules=True, update_mode=GridUpdateMode.MODEL_CHANGED, fit_columns_on_grid_load=True)
     st.session_state['selected_rows'] = grid_response['selected_rows']
@@ -454,12 +440,12 @@ next_id = 1
 def merge_dataframes():
     global next_id  # Zugriff auf die globale Variable next_id
     # Abrufen der Daten von verschiedenen Quellen
-    df4 = eigene_Nachhaltigkeitspunkte()
+   
     selected_points_df = Top_down_Nachhaltigkeitspunkte()
     selected_rows_st = stakeholder_Nachhaltigkeitspunkte()
 
     # Kombinieren der Daten in einem DataFrame
-    combined_df = pd.concat([selected_points_df, df4, selected_rows_st], ignore_index=True)
+    combined_df = pd.concat([selected_points_df, selected_rows_st], ignore_index=True)
 
     # Entfernen von Zeilen, die nur NaN-Werte enthalten
     combined_df = combined_df.dropna(how='all')
@@ -504,13 +490,13 @@ def merge_dataframes():
     # Erstellen eines session_state von combined_df
     st.session_state.combined_df = combined_df
 
-    #Erstellung einer Kopie von combined_df ohne NumericalRating zur Darstellung der Longlist mit lediglich relevanten Spalten
-    combined_df_without_numerical_rating = st.session_state.combined_df.drop(columns='NumericalRating')
+    # Erstellung einer Kopie von combined_df ohne NumericalRating und Quelle zur Darstellung der Longlist mit lediglich relevanten Spalten
+    combined_df_without_numerical_rating_and_source = st.session_state.combined_df.drop(columns=['NumericalRating', 'Quelle'])
     # Speichern Sie die neue DataFrame in 'st.session_state'
-    st.session_state['combined_df_without_numerical_rating'] = combined_df_without_numerical_rating
+    st.session_state['combined_df_without_numerical_rating_and_source'] = combined_df_without_numerical_rating_and_source
 
     # Erstellen eines neuen DataFrame 'longlist', um Probleme mit der Zuordnung von 'selected_rows' zu vermeiden
-    longlist = pd.DataFrame(combined_df_without_numerical_rating)
+    longlist = pd.DataFrame(combined_df_without_numerical_rating_and_source)
 
     # Initialisieren der 'Bewertet'-Spalte in 'longlist'
     longlist = initialize_bewertet_column(longlist)
@@ -580,21 +566,15 @@ def merge_dataframes():
     display_grid(longlist)
     add_slider()  
     
-
 def Scatter_chart():
-    # Überprüfen Sie, ob 'selected_data' und 'combined_df' initialisiert wurden
     if "selected_data" not in st.session_state or st.session_state.selected_data.empty or "combined_df" not in st.session_state or st.session_state.combined_df.empty:
         return
 
-    # Stellen Sie sicher, dass 'selected_data' ein DataFrame mit den benötigten Spalten ist
     required_columns = ['ID', 'Score Finanzen', 'Score Auswirkung', 'Thema', 'Unterthema', 'Unter-Unterthema']
     if all(column in st.session_state.selected_data.columns for column in required_columns):
         selected_columns = st.session_state.selected_data[required_columns]
+        selected_columns = pd.merge(selected_columns, st.session_state.combined_df[['ID', 'NumericalRating', 'Quelle']], on='ID', how='inner')
 
-        # Innerer Join zwischen selected_columns und combined_df auf der Basis der 'ID'
-        selected_columns = pd.merge(selected_columns, st.session_state.combined_df[['ID', 'NumericalRating']], on='ID', how='inner')
-
-        # Erstellen Sie eine neue Spalte 'color', die auf dem Wert der Spalte 'Thema' basiert
         def assign_color(theme):
             if theme in ['Klimawandel', 'Umweltverschmutzung', 'Wasser- & Meeresressourcen', 'Biodiversität', 'Kreislaufwirtschaft']:
                 return 'Environmental'
@@ -607,15 +587,14 @@ def Scatter_chart():
 
         selected_columns['color'] = selected_columns['Thema'].apply(assign_color)
 
-        # Normalisieren Sie die 'NumericalRating' Werte auf den Bereich [100, 600] und speichern Sie sie in der neuen Spalte 'size'
         min_rating = st.session_state.combined_df['NumericalRating'].min()
         max_rating = st.session_state.combined_df['NumericalRating'].max()
         selected_columns['size'] = ((selected_columns['NumericalRating'] - min_rating) / (max_rating - min_rating)) * (1000 - 100) + 100
-        
-        # Füllen Sie fehlende Werte in der 'size' Spalte mit 100
         selected_columns['size'] = selected_columns['size'].fillna(100)
-        
-        # Erstellen Sie ein Scatter-Chart mit Altair
+
+        # Neue Spalte für die Umrandung basierend auf der Quelle
+        selected_columns['outline'] = selected_columns['Quelle'].apply(lambda x: 'Top-Down' if x == 'Top-Down Bewertung' else 'Stakeholder')
+
         chart = alt.Chart(selected_columns, width=800, height=600).mark_circle().encode(
             x=alt.X('Score Finanzen', scale=alt.Scale(domain=(0, 1000)), title='Finanzielle Wesentlichkeit'),
             y=alt.Y('Score Auswirkung', scale=alt.Scale(domain=(0, 1000)), title='Auswirkungsbezogene Wesentlichkeit'),
@@ -639,10 +618,24 @@ def Scatter_chart():
                 titleFontSize=12,
                 labelFontSize=10
             )),
+            stroke=alt.condition(
+                alt.datum.outline == 'Top-Down',
+                alt.value('black'),
+                alt.value(None)
+            ),
             tooltip=required_columns
+        ).properties(
+            width=800,
+            height=600
+        ).configure_legend(
+            strokeColor=None,
+            fillColor='white',
+            cornerRadius=5,
+            padding=10,
+            titleFont='Helvetica',
+            labelFont='Helvetica'
         )
-        
-        # Zeigen Sie das Diagramm in Streamlit an
+
         st.altair_chart(chart)
 
 def display_page():

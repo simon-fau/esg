@@ -22,12 +22,12 @@ class YesNoSelection:
             st.session_state['yes_no_selection'] = options
 
     def save_session_state(self):
-        with open('ab.pkl', 'wb') as f:
+        with open('session_statesw.pkl', 'wb') as f:
             pickle.dump(st.session_state['yes_no_selection'], f)
 
     def load_session_state(self):
-        if os.path.exists('ab.pkl'):
-            with open('ab.pkl', 'rb') as f:
+        if os.path.exists('session_statesw.pkl'):
+            with open('session_statesw.pkl', 'rb') as f:
                 st.session_state['yes_no_selection'] = pickle.load(f)
 
     def E1_Klimawandel(self):
@@ -342,7 +342,7 @@ class YesNoSelection:
 
         soziale_inklusion_von_verbrauchern_und_endnutzern = [
             ("Nichtdiskriminierung", "Nichtdiskriminierung"),
-            ("Zugang zu Produkten und/oder Dienstleistungen", "Zugang_zu_Produkten_und/oder_Dienstleistungen"),
+            ("Zugang zu Produkten und Dienstleistungen", "Zugang_zu_Produkten_und_Dienstleistungen"),
             ("Verantwortliche Vermarktungspraktiken", "Verantwortliche_Vermarktungspraktiken"),
         ]
 

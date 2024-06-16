@@ -8,7 +8,7 @@ import shutil
 import io
 
 # Datei zum Speichern des Sitzungszustands
-state_file = 'session_statekizz.pkl'
+state_file = 'session_states.pkl'
 template_path = r'C:\Users\andre\OneDrive\Dokumente\Stakeholder_Input_Vorlage_V1.xlsx'
 
 # Funktion zum Laden des Sitzungszustands
