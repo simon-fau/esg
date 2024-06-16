@@ -342,7 +342,7 @@ class YesNoSelection:
 
         soziale_inklusion_von_verbrauchern_und_endnutzern = [
             ("Nichtdiskriminierung", "Nichtdiskriminierung"),
-            ("Zugang zu Produkten und Dienstleistungen", "Zugang_zu_Produkten_und_Dienstleistungen"),
+            ("Zugang zu Produkten und/oder Dienstleistungen", "Zugang_zu_Produkten_und/oder_Dienstleistungen"),
             ("Verantwortliche Vermarktungspraktiken", "Verantwortliche_Vermarktungspraktiken"),
         ]
 

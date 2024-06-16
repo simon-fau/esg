@@ -9,11 +9,11 @@ import os
 def stakeholder_Nachhaltigkeitspunkte():
     # Initialisiere DataFrame falls nicht vorhanden
     if 'stakeholder_punkte_df' not in st.session_state:
-        st.session_state.stakeholder_punkte_df = pd.DataFrame(columns=["Platzierung", "Thema", "Unterthema", "Unter-Unterthema", "NumericalRating"])
+        st.session_state.stakeholder_punkte_df = pd.DataFrame(columns=["Platzierung", "Thema", "Unterthema", "Unter-Unterthema", "NumericalRating", "Quelle"])	
     
     # Erstelle eine Kopie des DataFrame
     df3 = st.session_state.stakeholder_punkte_df.copy()
-    df3['Quelle'] = 'Stakeholder'
+   
 
     # Berechne die Größe der Klassen
     class_size = calculate_class_size(df3)
@@ -77,7 +77,7 @@ def eigene_Nachhaltigkeitspunkte():
         st.session_state.df2 = pd.DataFrame(columns=["Thema", "Unterthema", "Unter-Unterthema"])
     # Erstellen Sie eine Kopie von df2
     df4 = st.session_state.df2.copy()
-    df4['Quelle'] = 'Eigene'
+    df4['Quelle'] = 'Intern'
     return df4
 
 def Top_down_Nachhaltigkeitspunkte():
@@ -92,7 +92,7 @@ def Top_down_Nachhaltigkeitspunkte():
                 data.append(extract_data_from_key(key))
         
         selected_points_df = pd.DataFrame(data)
-        selected_points_df['Quelle'] = 'Top Down'
+        selected_points_df['Quelle'] = 'Top-Down'
         
         # Speichern des DataFrame 'selected_points_df' im session_state
         st.session_state['selected_points_df'] = selected_points_df
