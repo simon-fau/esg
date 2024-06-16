@@ -654,5 +654,3 @@ def display_page():
             AgGrid(st.session_state.selected_rows_st)
     with tab4:
         st.write("Gesamtübersicht")
-
-

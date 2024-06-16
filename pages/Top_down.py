@@ -547,6 +547,3 @@ def display_page():
         selection.display_G1_Unternehmenspolitik()
 
         
-
-
-
