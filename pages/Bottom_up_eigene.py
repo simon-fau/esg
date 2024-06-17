@@ -226,10 +226,3 @@ def display_page():
                           file_name="Stakeholder_Input.xlsx",
                           mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"):
         st.sidebar.success("Download gestartet!")
-
-
-
-
-
-
-
