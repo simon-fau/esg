@@ -48,17 +48,17 @@ def Tabelle():
 
 # DataFrame erstellen
     df = pd.DataFrame(data)
-    if "Antworten" not in st.session_state:
-        st.session_state["Antworten"] = [""] * len(df)
-    df["Antworten"] = st.session_state["Antworten"]  # Spalte für Antworten hinzufügen
+    if "Antwort" not in st.session_state:
+        st.session_state["Antwort"] = [""] * len(df)
+    df["Antwort"] = st.session_state["Antwort"]  # Spalte für Antworten hinzufügen
     return df
 
 def add_entries(df):
     # Tabelle anzeigen
     for i in range(len(df)):
-        antwort = st.text_area(f"{df['Referenz'][i]} - {df['Beschreibung'][i]}", 
-                               key=f"answer_mdr_{i}", value=st.session_state["Antworten"][i])
-        st.session_state["Antworten"][i] = antwort
+        antworten = st.text_area(f"{df['Referenz'][i]} - {df['Beschreibung'][i]}", 
+                               key=f"answer{i}", value=st.session_state["Antwort"][i])
+        st.session_state["Antwort"][i] = antworten
 
 def display_page():
     df = Tabelle()
@@ -71,7 +71,7 @@ def display_page():
     
     with tab2:
         st.title("Übersicht")
-        df["Antworten"] = st.session_state["Antworten"]
+        df["Antwort"] = st.session_state["Antwort"]
         st.table(df)
 
 

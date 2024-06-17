@@ -592,9 +592,6 @@ def Scatter_chart():
         selected_columns['size'] = ((selected_columns['NumericalRating'] - min_rating) / (max_rating - min_rating)) * (1000 - 100) + 100
         selected_columns['size'] = selected_columns['size'].fillna(100)
 
-        # Neue Spalte für die Umrandung basierend auf der Quelle
-        selected_columns['outline'] = selected_columns['Quelle'].apply(lambda x: 'Top-Down' if x == 'Top-Down Bewertung' else 'Stakeholder')
-
         chart = alt.Chart(selected_columns, width=800, height=600).mark_circle().encode(
             x=alt.X('Score Finanzen', scale=alt.Scale(domain=(0, 1000)), title='Finanzielle Wesentlichkeit'),
             y=alt.Y('Score Auswirkung', scale=alt.Scale(domain=(0, 1000)), title='Auswirkungsbezogene Wesentlichkeit'),
@@ -618,11 +615,6 @@ def Scatter_chart():
                 titleFontSize=12,
                 labelFontSize=10
             )),
-            stroke=alt.condition(
-                alt.datum.outline == 'Top-Down',
-                alt.value('black'),
-                alt.value(None)
-            ),
             tooltip=required_columns
         ).properties(
             width=800,
