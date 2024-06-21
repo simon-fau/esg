@@ -2,8 +2,7 @@ import streamlit as st
 import pandas as pd
 import pickle
 import os
-from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode, DataReturnMode
-from pyvis.network import Network
+from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
 
 # Datei zum Speichern des Sitzungszustands
 state_file = 'session_state_bottom_up_stakeholder.pkl'
@@ -43,13 +42,13 @@ def add_slider():
     st.write("**Grenzwert der Stakeholderpunkte:**")
     col1, col2 = st.columns([1, 4])
     with col1:
-
         # Speichere den aktuellen Zustand des Schiebereglers in der Sidebar mit einem eindeutigen Schlüssel
         current_slider_value = st.select_slider('', options=options, value=st.session_state.slider_value, key='stakeholder_zslider')
    
         # Aktualisiere 'slider_value' im session_state bei Button-Klick in der Sidebar
         if st.button('Auswahl übernehmen'):
             st.session_state.slider_value = current_slider_value
+            save_session_state({'slider_value': st.session_state.slider_value})
             st.experimental_rerun()
             
         st.sidebar.markdown("""
@@ -181,12 +180,4 @@ def display_page():
     with tab2:
         add_slider()
         stakeholder_punkte()
-
-
-
-
-
-
-
-
-
+ 
