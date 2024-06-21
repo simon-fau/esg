@@ -3,38 +3,8 @@ import pandas as pd
 from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
 import altair as alt
 
-def create_shortlist():
-    # Initialize session state
-    if 'selected_columns' not in st.session_state:
-        st.session_state['selected_columns'] = []
 
-    # Title of the app
-    st.title("Display Selected Columns from Session State")
 
-    # Check if 'selected_columns' exists in the session state
-    if 'selected_columns' in st.session_state and len(st.session_state['selected_columns']) > 0:
-        selected_columns = st.session_state['selected_columns']
-        
-        # Prepare the data for AgGrid
-        if isinstance(selected_columns, list):
-            selected_columns_df = pd.DataFrame(selected_columns)
-        else:
-            selected_columns_df = selected_columns
-
-        # Ensure necessary columns are present
-        columns_to_display = ['ID', 'Thema', 'Unterthema', 'Unter-Unterthema', 'Score Finanzen', 'Score Auswirkung']
-        selected_columns_df = selected_columns_df[columns_to_display]
-
-        # Configure the grid
-        gb = GridOptionsBuilder.from_dataframe(selected_columns_df)
-        gb.configure_side_bar()
-        gb.configure_selection('single', use_checkbox=True, groupSelectsChildren="Group checkbox select children", rowMultiSelectWithClick=False)
-        grid_options = gb.build()
-        
-        # Display the grid
-        AgGrid(selected_columns_df, gridOptions=grid_options, enable_enterprise_modules=True, update_mode=GridUpdateMode.MODEL_CHANGED, fit_columns_on_grid_load=True)
-    else:
-        st.write("No selected columns found in session state.")
 
 def Scatter_Chart(intersection_value, stakeholder_importance_value):
     st.title("Scatter Chart")
@@ -115,7 +85,7 @@ def Scatter_Chart(intersection_value, stakeholder_importance_value):
             y='y:Q'
         )
 
-        chart = scatter + area + line
+        chart = area + scatter + line
 
         st.altair_chart(chart)
 
@@ -154,8 +124,8 @@ def filter_table(intersection_value, stakeholder_importance_value):
 
 def display_page():
     # Slider for intersection value
-    intersection_value = st.sidebar.slider("Grenzwert für Relevanz angeben", min_value=0, max_value=1000, value=100, step=10, key="intersection_slider")
-    stakeholder_importance_value = st.sidebar.slider("grenzwert für Stakeholder Relevanz angeben", min_value=100, max_value=1000, value=500, step=50, key="stakeholder_importance_slider")
-    create_shortlist()
+    intersection_value = st.sidebar.slider("Grenzwert für die Relevanz angeben", min_value=0, max_value=1000, value=100, step=10, key="intersection_slider")
+    stakeholder_importance_value = st.sidebar.slider("Grenzwert für Stakeholder Relevanz angeben", min_value=100, max_value=1000, value=500, step=50, key="stakeholder_importance_slider")
+
     Scatter_Chart(intersection_value, stakeholder_importance_value)
     filter_table(intersection_value, stakeholder_importance_value)
