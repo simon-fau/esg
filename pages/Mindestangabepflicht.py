@@ -4,7 +4,7 @@ import pickle
 import os
 
 # Datei zum Speichern des Sitzungszustands
-state_file = 'mdr_session_state.pkl.pkl'
+state_file = 'session_state_mdr.pkl'
 
 # Funktion zum Laden des Sitzungszustands
 def load_session_state():

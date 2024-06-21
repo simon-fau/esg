@@ -22,12 +22,12 @@ class YesNoSelection:
             st.session_state['yes_no_selection'] = options
 
     def save_session_state(self):
-        with open('session_statesw.pkl', 'wb') as f:
+        with open('session_states_top_down.pkl', 'wb') as f:
             pickle.dump(st.session_state['yes_no_selection'], f)
 
     def load_session_state(self):
-        if os.path.exists('session_statesw.pkl'):
-            with open('session_statesw.pkl', 'rb') as f:
+        if os.path.exists('session_states_top_down.pkl'):
+            with open('session_states_top_down.pkl', 'rb') as f:
                 st.session_state['yes_no_selection'] = pickle.load(f)
 
     def E1_Klimawandel(self):

@@ -6,7 +6,7 @@ from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode, DataReturnMode
 from pyvis.network import Network
 
 # Datei zum Speichern des Sitzungszustands
-state_file = 'state.pkl'
+state_file = 'session_state_stakeholder.pkl'
 
 # Funktion zum Laden des Sitzungszustands
 def load_session_state():

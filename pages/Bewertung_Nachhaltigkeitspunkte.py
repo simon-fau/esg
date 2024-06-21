@@ -8,13 +8,13 @@ import os
 
 # Funktion zum Laden des Zustands
 def load_state():
-    if os.path.exists('state.pkl'):
-        with open('state.pkl', 'rb') as f:
+    if os.path.exists('session_state_bewertung_nachhaltigkeitspunkte.pkl'):
+        with open('session_state_bewertung_nachhaltigkeitspunkte.pkl', 'rb') as f:
             st.session_state.update(pickle.load(f))
 
 # Funktion zum Speichern des Zustands
 def save_state():
-    with open('state.pkl', 'wb') as f:
+    with open('session_state_bewertung_nachhaltigkeitspunkte.pkl', 'wb') as f:
         pickle.dump(dict(st.session_state), f)
 
 # Zustand laden beim Start
@@ -38,6 +38,15 @@ def stakeholder_Nachhaltigkeitspunkte():
     st.session_state.selected_rows_st = selected_rows_st
     
     return selected_rows_st
+
+def eigene_Nachhaltigkeitspunkte():
+    # Zugriff auf den DataFrame aus Eigene.py über session_state
+    if 'df2' not in st.session_state:
+        st.session_state.df2 = pd.DataFrame(columns=["Thema", "Unterthema", "Unter-Unterthema"])
+    # Erstellen Sie eine Kopie von df2
+    df4 = st.session_state.df2.copy()
+    df4['Quelle'] = 'Eigene'
+    return df4
 
 def calculate_class_size(df):
     # Berechne die Größe der Klassen
@@ -328,25 +337,22 @@ def submit_bewertung(longlist, ausgewaehlte_werte):
 def delete_bewertung(longlist):
     st.sidebar.markdown("---")
     st.sidebar.write("**Bewertungen löschen**")
-    # Button zum Löschen einer spezifischen Bewertung
-    if st.sidebar.button("Bewertung löschen"):
-        if 'selected_rows' in st.session_state and 'selected_data' in st.session_state:
-            selected_row_ids = [row['ID'] for row in st.session_state['selected_rows']]
-            st.session_state.selected_data = st.session_state.selected_data[~st.session_state.selected_data['ID'].isin(selected_row_ids)]
-            longlist['Bewertet'] = longlist['ID'].isin(st.session_state.selected_data['ID']).replace({True: 'Ja', False: 'Nein'})
+    
+    if 'selected_data' in st.session_state:
+        selected_data_ids = st.session_state.selected_data['ID'] if 'ID' in st.session_state.selected_data.columns else []
 
-            # Überprüfen, ob selected_data leer ist, und selected_columns entsprechend aktualisieren
-            if st.session_state.selected_data.empty:
-                st.session_state['selected_columns'] = pd.DataFrame()  # Setzen Sie selected_columns auf einen leeren DataFrame
+        # Button zum Löschen einer spezifischen Bewertung
+        if st.sidebar.button("Bewertung löschen"):
+            if 'selected_rows' in st.session_state:
+                selected_row_ids = [row['ID'] for row in st.session_state['selected_rows']]
+                st.session_state.selected_data = st.session_state.selected_data[~st.session_state.selected_data['ID'].isin(selected_row_ids)]
+                longlist['Bewertet'] = longlist['ID'].isin(st.session_state.selected_data['ID']).replace({True: 'Ja', False: 'Nein'})
 
-        else:
-            st.error("Bitte wählen Sie mindestens eine Zeile aus, bevor Sie eine Bewertung löschen.")
+                if st.session_state.selected_data.empty:
+                    st.session_state['selected_columns'] = pd.DataFrame()
 
-    # Button zum Löschen aller Bewertungen
-    if st.sidebar.button("Alle Bewertungen löschen"):
-        st.session_state.selected_data = pd.DataFrame()  # Setzen Sie selected_data auf einen leeren DataFrame
-        st.session_state['selected_columns'] = pd.DataFrame()  # Setzen Sie selected_columns auf einen leeren DataFrame
-        longlist['Bewertet'] = 'Nein'  # Setzen Sie alle Bewertungen auf 'Nein'
+            else:
+                st.error("Bitte wählen Sie mindestens eine Zeile aus, bevor Sie eine Bewertung löschen.")
 
     return longlist
 
@@ -444,9 +450,9 @@ def display_grid(longlist):
     gb = GridOptionsBuilder.from_dataframe(longlist)
     gb.configure_side_bar()
     gb.configure_selection('single', use_checkbox=True, groupSelectsChildren="Group checkbox select children", rowMultiSelectWithClick=False)
-    gb.configure_column('ID', minWidth=50, maxWidth=100, width=70) 
-    gb.configure_column('Bewertet', minWidth=100, maxWidth=100, width=80)
-    gb.configure_column('Thema', minWidth=150, maxWidth=250, width=200)
+    gb.configure_column('ID', width=70) 
+    gb.configure_column('Bewertet',  width=80)
+    gb.configure_column('Thema',  width=200)
     grid_options = gb.build()
     grid_response = AgGrid(longlist, gridOptions=grid_options, enable_enterprise_modules=True, update_mode=GridUpdateMode.MODEL_CHANGED, fit_columns_on_grid_load=True)
     st.session_state['selected_rows'] = grid_response['selected_rows']
@@ -463,9 +469,10 @@ def merge_dataframes():
    
     selected_points_df = Top_down_Nachhaltigkeitspunkte()
     selected_rows_st = stakeholder_Nachhaltigkeitspunkte()
+    df4 = eigene_Nachhaltigkeitspunkte()
 
     # Kombinieren der Daten in einem DataFrame
-    combined_df = pd.concat([selected_points_df, selected_rows_st], ignore_index=True)
+    combined_df = pd.concat([selected_points_df, df4, selected_rows_st], ignore_index=True)
 
     # Entfernen von Zeilen, die nur NaN-Werte enthalten
     combined_df = combined_df.dropna(how='all')
@@ -590,7 +597,7 @@ def merge_dataframes():
     longlist = delete_bewertung(longlist)
     display_grid(longlist)
     add_slider()  
-    
+
     
 def Scatter_chart():
     if "selected_data" not in st.session_state or st.session_state.selected_data.empty or "combined_df" not in st.session_state or st.session_state.combined_df.empty:

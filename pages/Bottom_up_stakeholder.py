@@ -14,7 +14,7 @@ def load_session_state():
         return {}
 
 # Datei zum Speichern des Sitzungszustands
-state_file = 'state.pkl'
+state_file = 'session_state_bottom_up_stakeholder.pkl'
 
 # Funktion zum Laden des Sitzungszustands
 def load_session_state():
