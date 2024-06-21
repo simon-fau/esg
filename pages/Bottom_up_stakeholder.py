@@ -5,8 +5,16 @@ import os
 from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode, DataReturnMode
 from pyvis.network import Network
 
+# Funktion zum Laden des Sitzungszustands
+def load_session_state():
+    if os.path.exists(state_file):
+        with open(state_file, 'rb') as f:
+            return pickle.load(f)
+    else:
+        return {}
+
 # Datei zum Speichern des Sitzungszustands
-state_file = 'session_states.pkl'
+state_file = 'state.pkl'
 
 # Funktion zum Laden des Sitzungszustands
 def load_session_state():

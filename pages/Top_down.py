@@ -545,5 +545,3 @@ def display_page():
     with tabs[9]:
         st.subheader("Unternehmenspolitik")
         selection.display_G1_Unternehmenspolitik()
-
-        

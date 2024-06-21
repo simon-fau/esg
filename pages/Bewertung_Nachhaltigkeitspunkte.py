@@ -6,6 +6,20 @@ import numpy as np
 import pickle
 import os
 
+# Funktion zum Laden des Zustands
+def load_state():
+    if os.path.exists('state.pkl'):
+        with open('state.pkl', 'rb') as f:
+            st.session_state.update(pickle.load(f))
+
+# Funktion zum Speichern des Zustands
+def save_state():
+    with open('state.pkl', 'wb') as f:
+        pickle.dump(dict(st.session_state), f)
+
+# Zustand laden beim Start
+load_state()
+
 def stakeholder_Nachhaltigkeitspunkte():
     # Initialisiere DataFrame falls nicht vorhanden
     if 'stakeholder_punkte_df' not in st.session_state:
@@ -354,6 +368,7 @@ def display_selected_data():
         # Speichern Sie 'selected_columns' in 'st.session_state'
         st.session_state['selected_columns'] = selected_columns
 
+
 def bewertung():
     if 'selected_columns' not in st.session_state or st.session_state.selected_columns.empty:
         st.warning('Keine Bewertung vorhanden. Bitte fügen Sie eine Bewertung hinzu.')
@@ -368,6 +383,8 @@ def bewertung():
     selected_row = selected_columns[selected_columns['ID'] == selected_id]
 
     if not selected_row.empty:
+        # Speichern der ausgewählten Bewertung im Session State
+        st.session_state['selected_evaluation'] = selected_row
 
         # Split the 'Auswirkung' string into parts by ';'
         auswirkung_parts = selected_row['Auswirkung'].values[0].split(';')
@@ -419,6 +436,9 @@ def bewertung():
         with col3:
             # Hier können weitere Informationen oder Aktionen hinzugefügt werden
             pass
+
+    # Zustand speichern nach jeder Änderung
+    save_state()
            
 def display_grid(longlist):
     gb = GridOptionsBuilder.from_dataframe(longlist)
@@ -489,17 +509,22 @@ def merge_dataframes():
     
     # Erstellen eines session_state von combined_df
     st.session_state.combined_df = combined_df
+    save_state()
 
     # Erstellung einer Kopie von combined_df ohne NumericalRating und Quelle zur Darstellung der Longlist mit lediglich relevanten Spalten
     combined_df_without_numerical_rating_and_source = st.session_state.combined_df.drop(columns=['NumericalRating', 'Quelle'])
     # Speichern Sie die neue DataFrame in 'st.session_state'
     st.session_state['combined_df_without_numerical_rating_and_source'] = combined_df_without_numerical_rating_and_source
+    save_state()
 
     # Erstellen eines neuen DataFrame 'longlist', um Probleme mit der Zuordnung von 'selected_rows' zu vermeiden
     longlist = pd.DataFrame(combined_df_without_numerical_rating_and_source)
 
     # Initialisieren der 'Bewertet'-Spalte in 'longlist'
     longlist = initialize_bewertet_column(longlist)
+
+    st.session_state['longlist'] = longlist
+    save_state()
 
     # Initialize all required variables for ausgewaehlte_werte
     option = auswirkung_option = auswirkung_art_option = ausmass_neg_tat = umfang_neg_tat = behebbarkeit_neg_tat = ''
@@ -565,6 +590,7 @@ def merge_dataframes():
     longlist = delete_bewertung(longlist)
     display_grid(longlist)
     add_slider()  
+    
     
 def Scatter_chart():
     if "selected_data" not in st.session_state or st.session_state.selected_data.empty or "combined_df" not in st.session_state or st.session_state.combined_df.empty:

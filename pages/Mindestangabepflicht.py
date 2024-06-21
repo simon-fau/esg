@@ -1,5 +1,22 @@
 import streamlit as st
 import pandas as pd
+import pickle
+import os
+
+# Datei zum Speichern des Sitzungszustands
+state_file = 'mdr_session_state.pkl.pkl'
+
+# Funktion zum Laden des Sitzungszustands
+def load_session_state():
+    if os.path.exists(state_file):
+        with open(state_file, 'rb') as f:
+            return pickle.load(f)
+    else:
+        return {}
+
+# Laden des Sitzungszustands aus der Datei
+loaded_state = load_session_state()
+st.session_state.update(loaded_state)
 
 def create_mdr_table():
     # Daten für die Tabelle erstellen

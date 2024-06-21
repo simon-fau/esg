@@ -6,7 +6,7 @@ from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode, DataReturnMode
 from pyvis.network import Network
 
 # Datei zum Speichern des Sitzungszustands
-state_file = 'session_states.pkl'
+state_file = 'state.pkl'
 
 # Funktion zum Laden des Sitzungszustands
 def load_session_state():
@@ -76,9 +76,9 @@ def calculate_score(row):
 def display_page():
     st.header("Stakeholder-Management")
     st.markdown("""
-        Dieses Tool hilft Ihnen, Ihre Stakeholder effektiv zu verwalten und zu analysieren. Sie können relevante Informationen über verschiedene Stakeholdergruppen hinzufügen, bearbeiten und visualisieren. Die Daten helfen Ihnen, Strategien für den Umgang mit Ihren Stakeholdern zu entwickeln und zu priorisieren, basierend auf verschiedenen Kriterien wie Engagement-Level und Kommunikationshäufigkeit.          
+        Hier können Sie ihre Stakeholder effektiv verwalten und analysieren. Sie können relevante Informationen über verschiedene Stakeholdergruppen hinzufügen, bearbeiten und visualisieren. Die Daten helfen Ihnen, Strategien für den Umgang mit Ihren Stakeholdern zu entwickeln und zu priorisieren, basierend auf verschiedenen Kriterien wie Engagement-Level und Kommunikationshäufigkeit.          
     """)      
-    tab1, tab2, tab3 = st.tabs(["Stakeholder Übersicht", "Stakeholder Ranking & Netzwerkdiagramm", "Stakeholder Umfragen Vorlage"])
+    tab1, tab2 = st.tabs(["Stakeholder Übersicht", "Stakeholder Ranking & Netzwerkdiagramm"])
 
     with tab1:
         # Initialize the session state for the DataFrame with an empty row if it does not exist
@@ -190,17 +190,6 @@ def display_page():
             net.save_graph("network.html")
             st.components.v1.html(open("network.html", "r").read(), height=600)
 
-    with tab3:
-        # Pfad zur Excel-Datei
-        file_path = r"C:\Users\andre\OneDrive\Desktop\Masterarbeit_V1\Wesentlichkeitsanalyse_Stakeholder_Input.xlsx"
-
-        # Fügen Sie die Download-Schaltfläche in die Streamlit-App ein
-        with open(file_path, "rb") as file:
-            st.download_button(
-                label="Download Excel-Datei",
-                data=file.read(),
-                file_name='Wesentlichkeitsanalyse_Stakeholder_Input.xlsx',
-                mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-            )
+   
 
 

@@ -8,7 +8,7 @@ import shutil
 import io
 
 # Datei zum Speichern des Sitzungszustands
-state_file = 'session_states.pkl'
+state_file = 'state.pkl'
 template_path = r'C:\Users\andre\OneDrive\Dokumente\Stakeholder_Input_Vorlage_V1.xlsx'
 
 # Funktion zum Laden des Sitzungszustands
@@ -219,6 +219,10 @@ def download_excel():
         return virtual_workbook.read()
 
 def display_page():
+    st.header("Interne Nachhaltigkeitspunkte")
+    st.markdown("""
+        Hier können Sie unternehmensspezifische Nachhaltigkeitspunkte hinzufügen und verwalten. Nutzen Sie die Dropdown-Menüs und Textfelder in der Sidebar oder tragen Sie Inhalte direkt in die Tabelle ein. Achten Sie darauf, die Inhalte mit Enter zu bestätigen und den Speicher-Button zu drücken. Aktualisieren Sie anschließend die Excel-Datei, laden Sie sie herunter und leiten Sie diese an Ihre Stakeholder weiter.
+    """)
     eigene_punkte()
     # Download-Button für die Excel-Datei
     if st.sidebar.download_button(label="Excel-Datei herunterladen",

@@ -1,5 +1,22 @@
 import streamlit as st
 import pandas as pd
+import pickle
+import os
+
+# Datei zum Speichern des Sitzungszustands
+state_file = 'aa_session_state.pkl'
+
+# Funktion zum Laden des Sitzungszustands
+def load_session_state():
+    if os.path.exists(state_file):
+        with open(state_file, 'rb') as f:
+            return pickle.load(f)
+    else:
+        return {}
+
+# Laden des Sitzungszustands aus der Datei
+loaded_state = load_session_state()
+st.session_state.update(loaded_state)
 
 def Tabelle():
     # Daten für die Tabelle erstellen
@@ -62,7 +79,7 @@ def add_entries(df):
 
 def display_page():
     df = Tabelle()
-    st.title("Mindestangaben ESRS MDR")
+    st.title("Allgemeine Angaben")
     
     tab1, tab2 = st.tabs(["Inhalte hinzufügen", "Übersicht"])
     
