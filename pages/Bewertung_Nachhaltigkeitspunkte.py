@@ -22,17 +22,11 @@ load_state()
 
 def stakeholder_Nachhaltigkeitspunkte():
     # Initialisiere DataFrame falls nicht vorhanden
-    if 'stakeholder_punkte_df' not in st.session_state:
-        st.session_state.stakeholder_punkte_df = pd.DataFrame(columns=["Platzierung", "Thema", "Unterthema", "Unter-Unterthema", "NumericalRating", "Quelle"])	
+    if 'stakeholder_punkte_filtered' not in st.session_state:
+        st.session_state.stakeholder_punkte_filtered = pd.DataFrame(columns=["Platzierung", "Thema", "Unterthema", "Unter-Unterthema", "NumericalRating", "Quelle"])	
     
     # Erstelle eine Kopie des DataFrame
-    df3 = st.session_state.stakeholder_punkte_df.copy()
-
-    # Berechne die Größe der Klassen
-    class_size = calculate_class_size(df3)
-
-    # Berechne die ausgewählten Zeilen basierend auf der Auswahl im Schieberegler
-    selected_rows_st = calculate_selected_rows(df3, class_size)
+    selected_rows_st = st.session_state.stakeholder_punkte_filtered.copy()
 
     # Speichere die ausgewählten Zeilen im session_state
     st.session_state.selected_rows_st = selected_rows_st
@@ -48,47 +42,7 @@ def eigene_Nachhaltigkeitspunkte():
     df4['Quelle'] = 'Eigene'
     return df4
 
-def calculate_class_size(df):
-    # Berechne die Größe der Klassen
-    return (df['NumericalRating'].max() - df['NumericalRating'].min()) / 4
 
-# Initialize 'slider_value' in st.session_state if it doesn't exist
-options = ['Nicht Wesentlich', 'Eher nicht wesentlich', 'Eher Wesentlich', 'Wesentlich']
-if 'slider_value' not in st.session_state:
-    st.session_state.slider_value = options[0]
-
-def add_slider():
-    st.sidebar.markdown("---")
-    st.sidebar.write("**Grenzwert der Stakeholderpunkte:**")
-
-    # Speichere den aktuellen Zustand des Schiebereglers in der Sidebar mit einem eindeutigen Schlüssel
-    current_slider_value = st.sidebar.select_slider('', options=options, value=st.session_state.slider_value, key='stakeholder_slider')
-
-    # Aktualisiere 'slider_value' im session_state bei Button-Klick in der Sidebar
-    if st.sidebar.button('Auswahl übernehmen'):
-        st.session_state.slider_value = current_slider_value
-        st.experimental_rerun()
-        
-    st.sidebar.markdown("""
-        <style>
-        .st-emotion-cache-183lzff,
-        .st-emotion-cache-1inwz65 {
-            font-family: "Source Sans Pro", sans-serif;
-        }
-        </style>
-        """, unsafe_allow_html=True)
-
-
-def calculate_selected_rows(df, class_size):
-    # Berechne die Anzahl der ausgewählten Zeilen basierend auf der Auswahl
-    if st.session_state.slider_value == 'Wesentlich':
-        return df[df['NumericalRating'] > 3 * class_size + df['NumericalRating'].min()]
-    elif st.session_state.slider_value == 'Eher Wesentlich':
-        return df[df['NumericalRating'] > 2 * class_size + df['NumericalRating'].min()]
-    elif st.session_state.slider_value == 'Eher nicht wesentlich':
-        return df[df['NumericalRating'] > class_size + df['NumericalRating'].min()]
-    else:  # Nicht Wesentlich
-        return df[df['NumericalRating'] > 0]
 
 def Top_down_Nachhaltigkeitspunkte():
     # Überprüfen, ob 'yes_no_selection' im session_state vorhanden ist
@@ -613,7 +567,7 @@ def merge_dataframes():
     longlist = submit_bewertung(longlist, ausgewaehlte_werte)
     longlist = delete_bewertung(longlist)
     display_grid(longlist)
-    add_slider()  
+   
 
     
 def Scatter_chart():
