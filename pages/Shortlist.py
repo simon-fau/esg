@@ -109,14 +109,23 @@ def Scatter_Chart():
             y='y:Q'
         )
 
-        chart = scatter + line
+       
+        # Area to the left of the line
+        area = alt.Chart(pd.DataFrame({
+            'x': [0, 0, intersection_value],
+            'y': [0, intersection_value, 0]
+        })).mark_area(opacity=0.3, color='lightcoral').encode(
+            x='x:Q',
+            y='y:Q'
+        )
+
+        chart = scatter + area + line
 
         st.altair_chart(chart)
 
 def display_page():
     create_shortlist()
     Scatter_Chart()
-
 
 
 
