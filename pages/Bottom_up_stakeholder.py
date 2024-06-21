@@ -40,25 +40,29 @@ if 'slider_value' not in st.session_state:
     st.session_state.slider_value = options[0]
 
 def add_slider():
-    st.sidebar.markdown("---")
-    st.sidebar.write("**Grenzwert der Stakeholderpunkte:**")
+    st.write("**Grenzwert der Stakeholderpunkte:**")
+    col1, col2 = st.columns([1, 4])
+    with col1:
 
-    # Speichere den aktuellen Zustand des Schiebereglers in der Sidebar mit einem eindeutigen Schlüssel
-    current_slider_value = st.sidebar.select_slider('', options=options, value=st.session_state.slider_value, key='stakeholder_zslider')
-
-    # Aktualisiere 'slider_value' im session_state bei Button-Klick in der Sidebar
-    if st.sidebar.button('Auswahl übernehmen'):
-        st.session_state.slider_value = current_slider_value
-        st.experimental_rerun()
-        
-    st.sidebar.markdown("""
-        <style>
-        .st-emotion-cache-183lzff,
-        .st-emotion-cache-1inwz65 {
-            font-family: "Source Sans Pro", sans-serif;
-        }
-        </style>
-        """, unsafe_allow_html=True)
+        # Speichere den aktuellen Zustand des Schiebereglers in der Sidebar mit einem eindeutigen Schlüssel
+        current_slider_value = st.select_slider('', options=options, value=st.session_state.slider_value, key='stakeholder_zslider')
+   
+        # Aktualisiere 'slider_value' im session_state bei Button-Klick in der Sidebar
+        if st.button('Auswahl übernehmen'):
+            st.session_state.slider_value = current_slider_value
+            st.experimental_rerun()
+            
+        st.sidebar.markdown("""
+            <style>
+            .st-emotion-cache-183lzff,
+            .st-emotion-cache-1inwz65 {
+                font-family: "Source Sans Pro", sans-serif;
+            }
+            </style>
+            """, unsafe_allow_html=True)
+    
+    with col2:
+        pass
 
 def calculate_selected_rows(df, class_size):
     # Berechne die Anzahl der ausgewählten Zeilen basierend auf der Auswahl
@@ -170,11 +174,12 @@ def display_page():
     st.markdown("""
         Dieses Tool hilft Ihnen, Ihre Stakeholder effektiv zu verwalten und zu analysieren. Sie können relevante Informationen über verschiedene Stakeholdergruppen hinzufügen, bearbeiten und visualisieren. Die Daten helfen Ihnen, Strategien für den Umgang mit Ihren Stakeholdern zu entwickeln und zu priorisieren, basierend auf verschiedenen Kriterien wie Engagement-Level und Kommunikationshäufigkeit.
     """)
-    add_slider()
+    
     tab1, tab2 = st.tabs(["Auswahl", "Stakeholder Nachhaltigkeitspunkte"])
     with tab1:
         excel_upload()
     with tab2:
+        add_slider()
         stakeholder_punkte()
 
 

@@ -42,8 +42,6 @@ def eigene_Nachhaltigkeitspunkte():
     df4['Quelle'] = 'Eigene'
     return df4
 
-
-
 def Top_down_Nachhaltigkeitspunkte():
     # Überprüfen, ob 'yes_no_selection' im session_state vorhanden ist
     if 'yes_no_selection' in st.session_state:
@@ -295,8 +293,6 @@ def submit_bewertung(longlist, ausgewaehlte_werte):
         st.success("Bewertung abgesendet")
     return longlist
 
-import pandas as pd
-import streamlit as st
 
 def delete_bewertung(longlist):
     st.sidebar.markdown("---")
@@ -345,13 +341,20 @@ def display_selected_data():
         # Speichern Sie 'selected_columns' in 'st.session_state'
         st.session_state['selected_columns'] = selected_columns
 
-
+# Zeigt Bertungen nur an, wenn diese auch in der Longlist vorhanden sind
 def bewertung():
-    if 'selected_columns' not in st.session_state or st.session_state.selected_columns.empty:
+    if 'selected_columns' not in st.session_state or st.session_state['selected_columns'].empty:
         st.warning('Keine Bewertung vorhanden. Bitte fügen Sie eine Bewertung hinzu.')
         return  # Beendet die Funktion, wenn keine Bewertung vorhanden ist
 
+    if 'longlist' not in st.session_state:
+        st.warning('Keine Longlist vorhanden. Bitte fügen Sie eine Longlist hinzu.')
+        return  # Beendet die Funktion, wenn keine Longlist vorhanden ist
+
+    longlist_ids = st.session_state['longlist']['ID'].unique()
     selected_columns = st.session_state['selected_columns']
+    selected_columns = selected_columns[selected_columns['ID'].isin(longlist_ids)]
+    st.session_state['selected_columns'] = selected_columns
 
     # Create a selectbox for IDs
     selected_id = st.selectbox('ID auswählen', selected_columns['ID'].unique())
@@ -390,33 +393,29 @@ def bewertung():
 
         with col1:
             st.write("**Auswirkung**")
-        
             for i, part in enumerate(auswirkung_parts, start=1):
                 if i in auswirkung_mapping:
                     st.write(f'{auswirkung_mapping[i]}:', part.strip())
                 else:
                     st.write(f'Auswirkung Teil {i}:', part.strip())
-
             st.write('Score:', selected_row['Score Auswirkung'].values[0])
 
         with col2:
             st.write("**Finanziell**")
-
             for i, part in enumerate(finanziell_parts, start=1):
                 if i in finanziell_mapping:
                     st.write(f'{finanziell_mapping[i]}:', part.strip())
                 else:
                     st.write(f'Finanziell Teil {i}:', part.strip())
-
             st.write('Score:', selected_row['Score Finanzen'].values[0])
-        
+
         with col3:
             # Hier können weitere Informationen oder Aktionen hinzugefügt werden
             pass
 
     # Zustand speichern nach jeder Änderung
     save_state()
-           
+
 def display_grid(longlist):
     gb = GridOptionsBuilder.from_dataframe(longlist)
     gb.configure_side_bar()
@@ -635,7 +634,7 @@ def Scatter_chart():
         st.altair_chart(chart)
 
 def display_page():
-    tab1, tab2, tab3, tab4 = st.tabs(["Bewertung der Nachhaltigkeitspunkte (Longlist)", "Graphische Übersicht", "In Bewertung aufgenommene ST", "Gesamtübersicht"])
+    tab1, tab2 = st.tabs(["Bewertung der Nachhaltigkeitspunkte (Longlist)", "Graphische Übersicht"])
     with tab1:    
             merge_dataframes()
             display_selected_data()   
@@ -645,8 +644,3 @@ def display_page():
         st.write("Graphische Übersicht")
         Scatter_chart()
          
-    with tab3:
-        with st.expander("In Bewertung aufgenommene Stakeholderpunkte"):
-            AgGrid(st.session_state.selected_rows_st)
-    with tab4:
-        st.write("Gesamtübersicht")
