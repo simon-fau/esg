@@ -4,7 +4,6 @@ from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
 import altair as alt
 
 def create_shortlist():
-
     # Initialize session state
     if 'selected_columns' not in st.session_state:
         st.session_state['selected_columns'] = []
@@ -37,7 +36,7 @@ def create_shortlist():
     else:
         st.write("No selected columns found in session state.")
 
-def Scatter_Chart():
+def Scatter_Chart(intersection_value):
     st.title("Scatter Chart")
 
     if 'selected_columns' in st.session_state and len(st.session_state['selected_columns']) > 0:
@@ -69,9 +68,6 @@ def Scatter_Chart():
         max_rating = st.session_state.combined_df['NumericalRating'].max()
         selected_columns['size'] = ((selected_columns['NumericalRating'] - min_rating) / (max_rating - min_rating)) * (1000 - 100) + 100
         selected_columns['size'] = selected_columns['size'].fillna(100)
-
-        # Sidebar slider for adjusting the line intersection point
-        intersection_value = st.sidebar.slider("Adjust Line Intersection Value", min_value=0, max_value=1000, value=100, step=10)
 
         # Base scatter chart
         scatter = alt.Chart(selected_columns, width=800, height=600).mark_circle().encode(
@@ -123,13 +119,42 @@ def Scatter_Chart():
 
         st.altair_chart(chart)
 
+def filter_table(intersection_value):
+    st.title("Filtered Table")
+
+    if 'selected_columns' in st.session_state and len(st.session_state['selected_columns']) > 0:
+        selected_columns = st.session_state['selected_columns']
+        
+        # Prepare the data
+        if isinstance(selected_columns, list):
+            selected_columns_df = pd.DataFrame(selected_columns)
+        else:
+            selected_columns_df = selected_columns
+        
+        # Filter the data based on the sum of 'Score Finanzen' and 'Score Auswirkung' being greater than intersection_value
+        filtered_df = selected_columns_df[
+            (selected_columns_df['Score Finanzen'] + selected_columns_df['Score Auswirkung'] > intersection_value)
+        ]
+        
+        # Ensure necessary columns are present
+        columns_to_display = ['ID', 'Thema', 'Unterthema', 'Unter-Unterthema', 'Score Finanzen', 'Score Auswirkung']
+        filtered_df = filtered_df[columns_to_display]
+
+        # Configure the grid
+        gb = GridOptionsBuilder.from_dataframe(filtered_df)
+        gb.configure_side_bar()
+        gb.configure_selection('single', use_checkbox=True, groupSelectsChildren="Group checkbox select children", rowMultiSelectWithClick=False)
+        grid_options = gb.build()
+        
+        # Display the grid
+        AgGrid(filtered_df, gridOptions=grid_options, enable_enterprise_modules=True, update_mode=GridUpdateMode.MODEL_CHANGED, fit_columns_on_grid_load=True)
+    else:
+        st.write("No selected columns found in session state.")
+
 def display_page():
+    # Slider for intersection value
+    intersection_value = st.sidebar.slider("Adjust Line Intersection Value", min_value=0, max_value=1000, value=100, step=10, key="intersection_slider")
     create_shortlist()
-    Scatter_Chart()
-
-
-
-
-
-
+    Scatter_Chart(intersection_value)
+    filter_table(intersection_value)
 
