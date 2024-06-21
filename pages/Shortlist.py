@@ -36,7 +36,7 @@ def create_shortlist():
     else:
         st.write("No selected columns found in session state.")
 
-def Scatter_Chart(intersection_value):
+def Scatter_Chart(intersection_value, stakeholder_importance_value):
     st.title("Scatter Chart")
 
     if 'selected_columns' in st.session_state and len(st.session_state['selected_columns']) > 0:
@@ -119,7 +119,7 @@ def Scatter_Chart(intersection_value):
 
         st.altair_chart(chart)
 
-def filter_table(intersection_value):
+def filter_table(intersection_value, stakeholder_importance_value):
     st.title("Filtered Table")
 
     if 'selected_columns' in st.session_state and len(st.session_state['selected_columns']) > 0:
@@ -133,7 +133,8 @@ def filter_table(intersection_value):
         
         # Filter the data based on the sum of 'Score Finanzen' and 'Score Auswirkung' being greater than intersection_value
         filtered_df = selected_columns_df[
-            (selected_columns_df['Score Finanzen'] + selected_columns_df['Score Auswirkung'] > intersection_value)
+            (selected_columns_df['Score Finanzen'] + selected_columns_df['Score Auswirkung'] > intersection_value) |
+            (selected_columns_df['size'] > stakeholder_importance_value)
         ]
         
         # Ensure necessary columns are present
@@ -153,8 +154,8 @@ def filter_table(intersection_value):
 
 def display_page():
     # Slider for intersection value
-    intersection_value = st.sidebar.slider("Adjust Line Intersection Value", min_value=0, max_value=1000, value=100, step=10, key="intersection_slider")
+    intersection_value = st.sidebar.slider("Grenzwert für Relevanz angeben", min_value=0, max_value=1000, value=100, step=10, key="intersection_slider")
+    stakeholder_importance_value = st.sidebar.slider("grenzwert für Stakeholder Relevanz angeben", min_value=100, max_value=1000, value=500, step=50, key="stakeholder_importance_slider")
     create_shortlist()
-    Scatter_Chart(intersection_value)
-    filter_table(intersection_value)
-
+    Scatter_Chart(intersection_value, stakeholder_importance_value)
+    filter_table(intersection_value, stakeholder_importance_value)
