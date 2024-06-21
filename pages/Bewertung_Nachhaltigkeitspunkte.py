@@ -68,7 +68,7 @@ def add_slider():
     if st.sidebar.button('Auswahl übernehmen'):
         st.session_state.slider_value = current_slider_value
         st.experimental_rerun()
-
+        
     st.sidebar.markdown("""
         <style>
         .st-emotion-cache-183lzff,
@@ -207,132 +207,142 @@ def initialize_bewertet_column(longlist):
     return longlist
 
 def submit_bewertung(longlist, ausgewaehlte_werte):
-    if st.sidebar.button("Bewertung absenden") and any(ausgewaehlte_werte.values()):
-        if 'selected_rows' in st.session_state:
-            new_data = pd.DataFrame(st.session_state['selected_rows'])
-            if '_selectedRowNodeInfo' in new_data.columns:
-                new_data.drop('_selectedRowNodeInfo', axis=1, inplace=True)
+    if st.sidebar.button("Bewertung absenden"):
+        # Überprüfen, ob ausgewaehlte_werte mindestens einen gültigen Wert enthält
+        if not any(ausgewaehlte_werte.values()):
+            st.error("Bitte wählen Sie eine Checkbox in der Liste aus.")
+            return longlist
 
-            # Zuordnung der Slider-Auswahlen zu numerischen Werten für die finanzielle Bewertung
-            ausmass_finanziell_mapping = {
-                "Keine": 1, "Minimal": 2, "Niedrig": 3, "Medium": 4, "Hoch": 5, "Sehr hoch": 6
-            }
-            wahrscheinlichkeit_finanziell_mapping = {
-                "Tritt nicht ein": 1, "Unwahrscheinlich": 2, "Eher unwahrscheinlich": 3, "Eher wahrscheinlich": 4, "Wahrscheinlich": 5, "Sicher": 6
-            }
-            auswirkung_finanziell_mapping = {
-                "Keine": 1, "Sehr gering": 2, "Eher gering": 3, "Eher Hoch": 4, "Hoch": 5, "Sehr hoch": 6
-            }
-            # Zuordnung der Slider-Auswahlen zu numerischen Werten für die Auswirkungsbewertung
-            ausmass_neg_tat_mapping = {
-                "Keine": 1, "Minimal": 2, "Niedrig": 3, "Medium": 4, "Hoch": 5, "Sehr hoch": 6
-            }
-            umfang_neg_tat_mapping = {
-                "Keine": 1, "Lokal": 2, "Regional": 3, "National": 4, "International": 5, "Global": 6
-            }
-            behebbarkeit_neg_tat_mapping = {
-                "Kein Aufwand": 1, "Leicht zu beheben": 2, "Mit Aufwand": 3, "Mit hohem Aufwand": 4, "Mit sehr hohem Aufwand": 5, "Nicht behebbar": 6
-            }
-            ausmass_neg_pot_mapping = {
-                "Keine": 1, "Minimal": 2, "Niedrig": 3, "Medium": 4, "Hoch": 5, "Sehr hoch": 6
-            }
-            umfang_neg_pot_mapping = {
-                "Keine": 1, "Lokal": 2, "Regional": 3, "National": 4, "International": 5, "Global": 6
-            }
-            behebbarkeit_neg_pot_mapping = {
-                "Kein Aufwand": 1, "Leicht zu beheben": 2, "Mit Aufwand": 3, "Mit hohem Aufwand": 4, "Mit sehr hohem Aufwand": 5, "Nicht behebbar": 6
-            }
-            wahrscheinlichkeit_neg_pot_mapping = {
-                "Tritt nicht ein": 1, "Unwahrscheinlich": 2, "Eher unwahrscheinlich": 3, "Eher wahrscheinlich": 4, "Wahrscheinlich": 5, "Sicher": 6
-            }
-            ausmass_pos_tat_mapping = {
-                "Keine": 1, "Minimal": 2, "Niedrig": 3, "Medium": 4, "Hoch": 5, "Sehr hoch": 6
-            }
-            umfang_pos_tat_mapping = {
-                "Keine": 1, "Lokal": 2, "Regional": 3, "National": 4, "International": 5, "Global": 6
-            }
-            ausmass_pos_pot_mapping = {
-                "Keine": 1, "Minimal": 2, "Niedrig": 3, "Medium": 4, "Hoch": 5, "Sehr hoch": 6
-            }
-            umfang_pos_pot_mapping = {
-                "Keine": 1, "Lokal": 2, "Regional": 3, "National": 4, "International": 5, "Global": 6
-            }
-            behebbarkeit_pos_pot_mapping = {
-                "Kein Aufwand": 1, "Leicht zu beheben": 2, "Mit Aufwand": 3, "Mit hohem Aufwand": 4, "Mit sehr hohem Aufwand": 5, "Nicht behebbar": 6
-            }
-            
-            # Kombinieren der Bewertungen zu einer String-Beschreibung
-            auswirkung_string = ' ; '.join(part for part in [
-                ausgewaehlte_werte.get('auswirkung_option', ''),
-                ausgewaehlte_werte.get('auswirkung_art_option', ''),
-                ausgewaehlte_werte.get('ausmass_neg_tat', '') if ausgewaehlte_werte.get('ausmass_neg_tat') else '',
-                ausgewaehlte_werte.get('umfang_neg_tat', '') if ausgewaehlte_werte.get('umfang_neg_tat') else '',
-                ausgewaehlte_werte.get('behebbarkeit_neg_tat', '') if ausgewaehlte_werte.get('behebbarkeit_neg_tat') else '',
-                ausgewaehlte_werte.get('ausmass_neg_pot', '') if ausgewaehlte_werte.get('ausmass_neg_pot') else '',
-                ausgewaehlte_werte.get('umfang_neg_pot', '') if ausgewaehlte_werte.get('umfang_neg_pot') else '',
-                ausgewaehlte_werte.get('behebbarkeit_neg_pot', '') if ausgewaehlte_werte.get('behebbarkeit_neg_pot') else '',
-                ausgewaehlte_werte.get('wahrscheinlichkeit_neg_pot', '') if ausgewaehlte_werte.get('wahrscheinlichkeit_neg_pot') else '',
-                ausgewaehlte_werte.get('ausmass_pos_tat', '') if ausgewaehlte_werte.get('ausmass_pos_tat') else '',
-                ausgewaehlte_werte.get('umfang_pos_tat', '') if ausgewaehlte_werte.get('umfang_pos_tat') else '',
-                ausgewaehlte_werte.get('ausmass_pos_pot', '') if ausgewaehlte_werte.get('ausmass_pos_pot') else '',
-                ausgewaehlte_werte.get('umfang_pos_pot', '') if ausgewaehlte_werte.get('umfang_pos_pot') else '',
-                ausgewaehlte_werte.get('behebbarkeit_pos_pot', '') if ausgewaehlte_werte.get('behebbarkeit_pos_pot') else ''
-            ] if part)
-
-            new_data['Auswirkung'] = auswirkung_string
-            finanziell_string = f"{ausgewaehlte_werte.get('ausmass_finanziell', '')} ; {ausgewaehlte_werte.get('wahrscheinlichkeit_finanziell', '')} ; {ausgewaehlte_werte.get('auswirkung_finanziell', '')}"
-            new_data['Finanziell'] = finanziell_string
-            
-            # Berechnung des Scores für finanzielle Bewertungen normalized_score = ((produkt - min_produkt) / (max_produkt - min_produkt)) * 99 + 1
-            new_data['Score Finanzen'] = np.round((
-                                        ausmass_finanziell_mapping.get(ausgewaehlte_werte.get('ausmass_finanziell', 'Keine'), 1) *
-                                        wahrscheinlichkeit_finanziell_mapping.get(ausgewaehlte_werte.get('wahrscheinlichkeit_finanziell', 'Keine'), 1) *
-                                        auswirkung_finanziell_mapping.get(ausgewaehlte_werte.get('auswirkung_finanziell', 'Keine'), 1) - 1) / (215) * 999 + 1
-                                        , 1)
-            
-            # Berechnung Tatsächliche negative Auswirkungen
-            tatsaechlich_negativ = np.round(((
-                ausmass_neg_tat_mapping.get(ausgewaehlte_werte.get('ausmass_neg_tat', 'Keine'), 1) *
-                umfang_neg_tat_mapping.get(ausgewaehlte_werte.get('umfang_neg_tat', 'Keine'), 1) *
-                behebbarkeit_neg_tat_mapping.get(ausgewaehlte_werte.get('behebbarkeit_neg_tat', 'Kein Aufwand'), 1) - 1) / (215) * 999 + 1
-                ), 1)
-            
-            # Berechnung Potenzielle negative Auswirkungen
-            potentiell_negativ = np.round(((
-                ausmass_neg_pot_mapping.get(ausgewaehlte_werte.get('ausmass_neg_pot', 'Keine'), 1) *
-                umfang_neg_pot_mapping.get(ausgewaehlte_werte.get('umfang_neg_pot', 'Keine'), 1) *
-                behebbarkeit_neg_pot_mapping.get(ausgewaehlte_werte.get('behebbarkeit_neg_pot', 'Kein Aufwand'), 1) *
-                wahrscheinlichkeit_neg_pot_mapping.get(ausgewaehlte_werte.get('wahrscheinlichkeit_neg_pot', 'Tritt nicht ein'), 1) - 1) / (1295) * 999 + 1
-                ), 1)
-            
-            # Berechnung Tatsächliche positive Auswirkungen
-            tatsaechlich_positiv = np.round(((
-                ausmass_pos_tat_mapping.get(ausgewaehlte_werte.get('ausmass_pos_tat', 'Keine'), 1) *
-                umfang_pos_tat_mapping.get(ausgewaehlte_werte.get('umfang_pos_tat', 'Keine'), 1) - 1) / (35) * 999 + 1
-                ), 1)
-            
-            # Berechnung Potenzielle positive Auswirkungen
-            potentiell_positiv = np.round(((
-                ausmass_pos_pot_mapping.get(ausgewaehlte_werte.get('ausmass_pos_pot', 'Keine'), 1) *
-                umfang_pos_pot_mapping.get(ausgewaehlte_werte.get('umfang_pos_pot', 'Keine'), 1) *
-                behebbarkeit_pos_pot_mapping.get(ausgewaehlte_werte.get('behebbarkeit_pos_pot', 'Kein Aufwand'), 1) - 1) / (215) * 999 + 1
-                ), 1)
-            
-            # Berechnung des Gesamtscores für die Auswirkungsbewertung
-            new_data['Score Auswirkung'] = tatsaechlich_negativ * tatsaechlich_positiv * potentiell_negativ * potentiell_positiv
-
-            # Aktualisieren oder Erstellen des `selected_data` DataFrames im Session State
-            if 'selected_data' in st.session_state:
-                st.session_state.selected_data = pd.concat([st.session_state.selected_data, new_data], ignore_index=True)
-                st.session_state.selected_data.drop_duplicates(subset='ID', keep='last', inplace=True)
-            else:
-                st.session_state.selected_data = new_data
-            
-            longlist['Bewertet'] = longlist['ID'].isin(st.session_state.selected_data['ID']).replace({True: 'Ja', False: 'Nein'})
-        else:
+        # Überprüfen, ob ausgewählte Zeilen im Session State vorhanden sind
+        if 'selected_rows' not in st.session_state or not st.session_state['selected_rows']:
             st.error("Bitte wählen Sie mindestens eine Zeile aus, bevor Sie eine Bewertung absenden.")
+            return longlist
+
+        new_data = pd.DataFrame(st.session_state['selected_rows'])
+        if '_selectedRowNodeInfo' in new_data.columns:
+            new_data.drop('_selectedRowNodeInfo', axis=1, inplace=True)
+
+        # Zuordnung der Slider-Auswahlen zu numerischen Werten für die finanzielle Bewertung
+        ausmass_finanziell_mapping = {
+            "Keine": 1, "Minimal": 2, "Niedrig": 3, "Medium": 4, "Hoch": 5, "Sehr hoch": 6
+        }
+        wahrscheinlichkeit_finanziell_mapping = {
+            "Tritt nicht ein": 1, "Unwahrscheinlich": 2, "Eher unwahrscheinlich": 3, "Eher wahrscheinlich": 4, "Wahrscheinlich": 5, "Sicher": 6
+        }
+        auswirkung_finanziell_mapping = {
+            "Keine": 1, "Sehr gering": 2, "Eher gering": 3, "Eher Hoch": 4, "Hoch": 5, "Sehr hoch": 6
+        }
+        # Zuordnung der Slider-Auswahlen zu numerischen Werten für die Auswirkungsbewertung
+        ausmass_neg_tat_mapping = {
+            "Keine": 1, "Minimal": 2, "Niedrig": 3, "Medium": 4, "Hoch": 5, "Sehr hoch": 6
+        }
+        umfang_neg_tat_mapping = {
+            "Keine": 1, "Lokal": 2, "Regional": 3, "National": 4, "International": 5, "Global": 6
+        }
+        behebbarkeit_neg_tat_mapping = {
+            "Kein Aufwand": 1, "Leicht zu beheben": 2, "Mit Aufwand": 3, "Mit hohem Aufwand": 4, "Mit sehr hohem Aufwand": 5, "Nicht behebbar": 6
+        }
+        ausmass_neg_pot_mapping = {
+            "Keine": 1, "Minimal": 2, "Niedrig": 3, "Medium": 4, "Hoch": 5, "Sehr hoch": 6
+        }
+        umfang_neg_pot_mapping = {
+            "Keine": 1, "Lokal": 2, "Regional": 3, "National": 4, "International": 5, "Global": 6
+        }
+        behebbarkeit_neg_pot_mapping = {
+            "Kein Aufwand": 1, "Leicht zu beheben": 2, "Mit Aufwand": 3, "Mit hohem Aufwand": 4, "Mit sehr hohem Aufwand": 5, "Nicht behebbar": 6
+        }
+        wahrscheinlichkeit_neg_pot_mapping = {
+            "Tritt nicht ein": 1, "Unwahrscheinlich": 2, "Eher unwahrscheinlich": 3, "Eher wahrscheinlich": 4, "Wahrscheinlich": 5, "Sicher": 6
+        }
+        ausmass_pos_tat_mapping = {
+            "Keine": 1, "Minimal": 2, "Niedrig": 3, "Medium": 4, "Hoch": 5, "Sehr hoch": 6
+        }
+        umfang_pos_tat_mapping = {
+            "Keine": 1, "Lokal": 2, "Regional": 3, "National": 4, "International": 5, "Global": 6
+        }
+        ausmass_pos_pot_mapping = {
+            "Keine": 1, "Minimal": 2, "Niedrig": 3, "Medium": 4, "Hoch": 5, "Sehr hoch": 6
+        }
+        umfang_pos_pot_mapping = {
+            "Keine": 1, "Lokal": 2, "Regional": 3, "National": 4, "International": 5, "Global": 6
+        }
+        behebbarkeit_pos_pot_mapping = {
+            "Kein Aufwand": 1, "Leicht zu beheben": 2, "Mit Aufwand": 3, "Mit hohem Aufwand": 4, "Mit sehr hohem Aufwand": 5, "Nicht behebbar": 6
+        }
+
+        # Kombinieren der Bewertungen zu einer String-Beschreibung
+        auswirkung_string = ' ; '.join(part for part in [
+            ausgewaehlte_werte.get('auswirkung_option', ''),
+            ausgewaehlte_werte.get('auswirkung_art_option', ''),
+            ausgewaehlte_werte.get('ausmass_neg_tat', '') if ausgewaehlte_werte.get('ausmass_neg_tat') else '',
+            ausgewaehlte_werte.get('umfang_neg_tat', '') if ausgewaehlte_werte.get('umfang_neg_tat') else '',
+            ausgewaehlte_werte.get('behebbarkeit_neg_tat', '') if ausgewaehlte_werte.get('behebbarkeit_neg_tat') else '',
+            ausgewaehlte_werte.get('ausmass_neg_pot', '') if ausgewaehlte_werte.get('ausmass_neg_pot') else '',
+            ausgewaehlte_werte.get('umfang_neg_pot', '') if ausgewaehlte_werte.get('umfang_neg_pot') else '',
+            ausgewaehlte_werte.get('behebbarkeit_neg_pot', '') if ausgewaehlte_werte.get('behebbarkeit_neg_pot') else '',
+            ausgewaehlte_werte.get('wahrscheinlichkeit_neg_pot', '') if ausgewaehlte_werte.get('wahrscheinlichkeit_neg_pot') else '',
+            ausgewaehlte_werte.get('ausmass_pos_tat', '') if ausgewaehlte_werte.get('ausmass_pos_tat') else '',
+            ausgewaehlte_werte.get('umfang_pos_tat', '') if ausgewaehlte_werte.get('umfang_pos_tat') else '',
+            ausgewaehlte_werte.get('ausmass_pos_pot', '') if ausgewaehlte_werte.get('ausmass_pos_pot') else '',
+            ausgewaehlte_werte.get('umfang_pos_pot', '') if ausgewaehlte_werte.get('umfang_pos_pot') else '',
+            ausgewaehlte_werte.get('behebbarkeit_pos_pot', '') if ausgewaehlte_werte.get('behebbarkeit_pos_pot') else ''
+        ] if part)
+
+        new_data['Auswirkung'] = auswirkung_string
+        finanziell_string = f"{ausgewaehlte_werte.get('ausmass_finanziell', '')} ; {ausgewaehlte_werte.get('wahrscheinlichkeit_finanziell', '')} ; {ausgewaehlte_werte.get('auswirkung_finanziell', '')}"
+        new_data['Finanziell'] = finanziell_string
+
+        # Berechnung des Scores für finanzielle Bewertungen
+        new_data['Score Finanzen'] = np.round((
+            ausmass_finanziell_mapping.get(ausgewaehlte_werte.get('ausmass_finanziell', 'Keine'), 1) *
+            wahrscheinlichkeit_finanziell_mapping.get(ausgewaehlte_werte.get('wahrscheinlichkeit_finanziell', 'Keine'), 1) *
+            auswirkung_finanziell_mapping.get(ausgewaehlte_werte.get('auswirkung_finanziell', 'Keine'), 1) - 1) / (215) * 999 + 1
+            , 1)
+
+        # Berechnung Tatsächliche negative Auswirkungen
+        tatsaechlich_negativ = np.round(((
+            ausmass_neg_tat_mapping.get(ausgewaehlte_werte.get('ausmass_neg_tat', 'Keine'), 1) *
+            umfang_neg_tat_mapping.get(ausgewaehlte_werte.get('umfang_neg_tat', 'Keine'), 1) *
+            behebbarkeit_neg_tat_mapping.get(ausgewaehlte_werte.get('behebbarkeit_neg_tat', 'Kein Aufwand'), 1) - 1) / (215) * 999 + 1
+            ), 1)
+
+        # Berechnung Potenzielle negative Auswirkungen
+        potentiell_negativ = np.round(((
+            ausmass_neg_pot_mapping.get(ausgewaehlte_werte.get('ausmass_neg_pot', 'Keine'), 1) *
+            umfang_neg_pot_mapping.get(ausgewaehlte_werte.get('umfang_neg_pot', 'Keine'), 1) *
+            behebbarkeit_neg_pot_mapping.get(ausgewaehlte_werte.get('behebbarkeit_neg_pot', 'Kein Aufwand'), 1) *
+            wahrscheinlichkeit_neg_pot_mapping.get(ausgewaehlte_werte.get('wahrscheinlichkeit_neg_pot', 'Tritt nicht ein'), 1) - 1) / (1295) * 999 + 1
+            ), 1)
+
+        # Berechnung Tatsächliche positive Auswirkungen
+        tatsaechlich_positiv = np.round(((
+            ausmass_pos_tat_mapping.get(ausgewaehlte_werte.get('ausmass_pos_tat', 'Keine'), 1) *
+            umfang_pos_tat_mapping.get(ausgewaehlte_werte.get('umfang_pos_tat', 'Keine'), 1) - 1) / (35) * 999 + 1
+            ), 1)
+
+        # Berechnung Potenzielle positive Auswirkungen
+        potentiell_positiv = np.round(((
+            ausmass_pos_pot_mapping.get(ausgewaehlte_werte.get('ausmass_pos_pot', 'Keine'), 1) *
+            umfang_pos_pot_mapping.get(ausgewaehlte_werte.get('umfang_pos_pot', 'Keine'), 1) *
+            behebbarkeit_pos_pot_mapping.get(ausgewaehlte_werte.get('behebbarkeit_pos_pot', 'Kein Aufwand'), 1) - 1) / (215) * 999 + 1
+            ), 1)
+
+        # Berechnung des Gesamtscores für die Auswirkungsbewertung
+        new_data['Score Auswirkung'] = tatsaechlich_negativ * tatsaechlich_positiv * potentiell_negativ * potentiell_positiv
+
+        # Aktualisieren oder Erstellen des `selected_data` DataFrames im Session State
+        if 'selected_data' in st.session_state:
+            st.session_state.selected_data = pd.concat([st.session_state.selected_data, new_data], ignore_index=True)
+            st.session_state.selected_data.drop_duplicates(subset='ID', keep='last', inplace=True)
+        else:
+            st.session_state.selected_data = new_data
+
+        longlist['Bewertet'] = longlist['ID'].isin(st.session_state.selected_data['ID']).replace({True: 'Ja', False: 'Nein'})
+        st.success("Bewertung abgesendet")
     return longlist
 
+import pandas as pd
+import streamlit as st
 
 def delete_bewertung(longlist):
     st.sidebar.markdown("---")
@@ -343,18 +353,25 @@ def delete_bewertung(longlist):
 
         # Button zum Löschen einer spezifischen Bewertung
         if st.sidebar.button("Bewertung löschen"):
-            if 'selected_rows' in st.session_state:
+            if 'selected_rows' in st.session_state and st.session_state['selected_rows']:
                 selected_row_ids = [row['ID'] for row in st.session_state['selected_rows']]
-                st.session_state.selected_data = st.session_state.selected_data[~st.session_state.selected_data['ID'].isin(selected_row_ids)]
-                longlist['Bewertet'] = longlist['ID'].isin(st.session_state.selected_data['ID']).replace({True: 'Ja', False: 'Nein'})
+                rows_to_delete = st.session_state.selected_data[st.session_state.selected_data['ID'].isin(selected_row_ids)]
+                
+                if rows_to_delete.empty or all(longlist[longlist['ID'].isin(selected_row_ids)]['Bewertet'] == 'Nein'):
+                    st.error("Keine Bewertung zum Löschen vorhanden.")
+                else:
+                    st.session_state.selected_data = st.session_state.selected_data[~st.session_state.selected_data['ID'].isin(selected_row_ids)]
+                    longlist['Bewertet'] = longlist['ID'].isin(st.session_state.selected_data['ID']).replace({True: 'Ja', False: 'Nein'})
+                    
+                    if st.session_state.selected_data.empty:
+                        st.session_state['selected_columns'] = pd.DataFrame()
 
-                if st.session_state.selected_data.empty:
-                    st.session_state['selected_columns'] = pd.DataFrame()
-
+                    st.success("Bewertung erfolgreich gelöscht.")
             else:
                 st.error("Bitte wählen Sie mindestens eine Zeile aus, bevor Sie eine Bewertung löschen.")
 
     return longlist
+
 
 
 def display_selected_data():
@@ -664,7 +681,7 @@ def Scatter_chart():
         st.altair_chart(chart)
 
 def display_page():
-    tab1, tab2, tab3, tab4 = st.tabs(["Bewertung der Nachhaltigkeitspunkte", "Graphische Übersicht", "Stakeholder", "Gesamtübersicht"])
+    tab1, tab2, tab3, tab4 = st.tabs(["Bewertung der Nachhaltigkeitspunkte (Longlist)", "Graphische Übersicht", "In Bewertung aufgenommene ST", "Gesamtübersicht"])
     with tab1:    
             merge_dataframes()
             display_selected_data()   

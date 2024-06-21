@@ -106,8 +106,13 @@ def excel_upload():
                 new_df = new_df[new_df['NumericalRating'] >= 1]
 
                 if 'stakeholder_punkte_df' in st.session_state:
-                    st.session_state.stakeholder_punkte_df = pd.merge(st.session_state.stakeholder_punkte_df, new_df, on=['Thema', 'Unterthema', 'Unter-Unterthema', 'Quelle'], how='outer')
-                    st.session_state.stakeholder_punkte_df['NumericalRating'] = st.session_state.stakeholder_punkte_df['NumericalRating_x'].add(st.session_state.stakeholder_punkte_df['NumericalRating_y'], fill_value=0)
+                    st.session_state.stakeholder_punkte_df = pd.merge(
+                        st.session_state.stakeholder_punkte_df, new_df, 
+                        on=['Thema', 'Unterthema', 'Unter-Unterthema', 'Quelle'], how='outer'
+                    )
+                    st.session_state.stakeholder_punkte_df['NumericalRating'] = st.session_state.stakeholder_punkte_df['NumericalRating_x'].add(
+                        st.session_state.stakeholder_punkte_df['NumericalRating_y'], fill_value=0
+                    )
                     st.session_state.stakeholder_punkte_df.drop(columns=['NumericalRating_x', 'NumericalRating_y'], inplace=True)
                 else:
                     st.session_state.stakeholder_punkte_df = new_df
@@ -116,7 +121,8 @@ def excel_upload():
                 st.session_state.stakeholder_punkte_df['Platzierung'] = st.session_state.stakeholder_punkte_df['NumericalRating'].rank(method='min', ascending=False).astype(int)
 
                 save_session_state({'stakeholder_punkte_df': st.session_state.stakeholder_punkte_df})
-                st.experimental_rerun()
+                st.success("Stakeholder Punkte erfolgreich übernommen")
+                
 
 def display_page():
     st.header("Stakeholder-Management")
