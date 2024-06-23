@@ -155,7 +155,6 @@ def eigene_punkte():
         selection_mode='multiple'
     )
 
-    
     add_empty_row = st.button('➕ Leere Zeile hinzufügen', key='add_empty_row')
     if add_empty_row:
         empty_row = {"Thema": "", "Unterthema": "", "Unter-Unterthema": ""}
