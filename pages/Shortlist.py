@@ -171,7 +171,7 @@ def transfer_data_to_excel(dataframe):
     sheet = workbook['Shortlist']
 
     # Setze die Lasche auf die gewünschte Tabelle
-    sheet.title = 'Gewünschte Lasche'
+    sheet.title = 'Shortlist'
 
     first_empty_row = 2
 
@@ -196,6 +196,7 @@ def download_excel():
         return virtual_workbook.read()
     
 def Excel_button():
+    st.sidebar.markdown("---")
     if st.sidebar.button('Excel aktualisieren'):
         transfer_data_to_excel(st.session_state.filtered_df)
     
