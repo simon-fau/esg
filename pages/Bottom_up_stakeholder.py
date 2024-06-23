@@ -38,6 +38,10 @@ options = ['Nicht Wesentlich', 'Eher nicht wesentlich', 'Eher Wesentlich', 'Wese
 if 'slider_value' not in st.session_state:
     st.session_state.slider_value = options[0]
 
+# Initialize 'stakeholder_punkte_df' in st.session_state if it doesn't exist
+if 'stakeholder_punkte_df' not in st.session_state:
+    st.session_state.stakeholder_punkte_df = pd.DataFrame(columns=['Platzierung', 'Thema', 'Unterthema', 'Unter-Unterthema', 'NumericalRating', 'Quelle'])
+
 def add_slider():
     st.write("**Grenzwert der Stakeholderpunkte:**")
     col1, col2 = st.columns([1, 4])
@@ -166,7 +170,6 @@ def excel_upload():
                
                 save_session_state({'stakeholder_punkte_df': st.session_state.stakeholder_punkte_df})
                 st.success("Stakeholder Punkte erfolgreich übernommen")
-                
 
 def display_page():
     st.header("Stakeholder-Management")
@@ -180,4 +183,4 @@ def display_page():
     with tab2:
         add_slider()
         stakeholder_punkte()
- 
+
