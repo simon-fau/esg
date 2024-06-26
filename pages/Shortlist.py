@@ -141,14 +141,17 @@ def filter_table(intersection_value, stakeholder_importance_value):
         columns_to_display = ['ID', 'Thema', 'Unterthema', 'Unter-Unterthema', 'Score Finanzen', 'Score Auswirkung']
         filtered_df = st.session_state.filtered_df[columns_to_display]
 
-        # Configure the grid
-        gb = GridOptionsBuilder.from_dataframe(filtered_df)
-        gb.configure_side_bar()
-        gb.configure_selection('single', use_checkbox=False, groupSelectsChildren="Group checkbox select children", rowMultiSelectWithClick=False)
-        grid_options = gb.build()
-        
-        # Display the grid
-        AgGrid(filtered_df, gridOptions=grid_options, enable_enterprise_modules=True, update_mode=GridUpdateMode.MODEL_CHANGED, fit_columns_on_grid_load=True)
+        if filtered_df.empty:
+            st.warning("Keine Inhalte verfügbar")
+        else:
+            # Configure the grid
+            gb = GridOptionsBuilder.from_dataframe(filtered_df)
+            gb.configure_side_bar()
+            gb.configure_selection('single', use_checkbox=False, groupSelectsChildren="Group checkbox select children", rowMultiSelectWithClick=False)
+            grid_options = gb.build()
+            
+            # Display the grid
+            AgGrid(filtered_df, gridOptions=grid_options, enable_enterprise_modules=True, update_mode=GridUpdateMode.MODEL_CHANGED, fit_columns_on_grid_load=True)
 
     else:
         st.warning("Keine Inhalte vorhanden")
@@ -158,7 +161,7 @@ def display_slider():
     # Slider for intersection value
     st.sidebar.slider("Grenzwert für die Relevanz angeben", min_value=0, max_value=1000, value=st.session_state['intersection_value'], step=10, key="intersection_slider")
     st.sidebar.slider("Grenzwert für Stakeholder Relevanz angeben", min_value=100, max_value=1000, value=st.session_state['stakeholder_importance_value'], step=50, key="stakeholder_importance_slider")
-
+ 
 template_path = r'C:\Users\andre\OneDrive\Dokumente\Ausführung.xlsx'
 
 def transfer_data_to_excel(dataframe):

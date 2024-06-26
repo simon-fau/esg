@@ -105,6 +105,20 @@ def stakeholder_punkte():
     else:
         st.warning("Es wurden noch keine Inhalte im Excel-Upload hochgeladen. Bitte laden Sie eine Excel-Datei hoch.")
 
+def extract_company_name(file):
+    # Extrahiere den Firmennamen aus der 'Einführung' Tabelle, Zelle B7
+    try:
+        df = pd.read_excel(file, sheet_name='Einführung', engine='openpyxl', usecols="B")
+        if df.shape[0] > 6:
+            company_name = df.iloc[6, 0]
+            return company_name
+        else:
+            st.warning(f"Firmennamen in {file.name} nicht gefunden oder außerhalb des zulässigen Bereichs.")
+            return None
+    except Exception as e:
+        st.error(f"Fehler beim Extrahieren des Firmennamens: {e}")
+        return None
+
 def excel_upload():
     def get_numerical_rating(value):
         ratings = {
@@ -171,6 +185,20 @@ def excel_upload():
                 save_session_state({'stakeholder_punkte_df': st.session_state.stakeholder_punkte_df})
                 st.success("Stakeholder Punkte erfolgreich übernommen")
 
+                # Extract company names and update the session state
+                company_names = []
+                for file in uploaded_files:
+                    company_name = extract_company_name(file)
+                    if company_name:
+                        company_names.append(company_name)
+                
+                if company_names:
+                    if 'company_names' in st.session_state:
+                        st.session_state.company_names = st.session_state.company_names.append(pd.DataFrame(company_names, columns=["Company Name"]), ignore_index=True)
+                    else:
+                        st.session_state.company_names = pd.DataFrame(company_names, columns=["Company Name"])
+                    save_session_state({'company_names': st.session_state.company_names})
+
 def display_page():
     st.header("Stakeholder-Management")
     st.markdown("""
@@ -180,7 +208,13 @@ def display_page():
     tab1, tab2 = st.tabs(["Auswahl", "Stakeholder Nachhaltigkeitspunkte"])
     with tab1:
         excel_upload()
+        if 'company_names' in st.session_state:
+            st.sidebar.markdown("---")
+            st.sidebar.markdown("**Bereits hochgeladene Dateien von:**")
+            for index, row in st.session_state.company_names.iterrows():
+                st.sidebar.markdown(f"- {row['Company Name']}")
+        else:
+            st.sidebar.warning("Es wurden noch keine Unternehmensnamen extrahiert.")
     with tab2:
         add_slider()
         stakeholder_punkte()
-
