@@ -78,6 +78,7 @@ def calculate_selected_rows(df, class_size):
     else:  # Nicht Wesentlich
         return df[df['NumericalRating'] > 0]
 
+
 def stakeholder_punkte():
     # Berechne die Größe der Klassen
     class_size = calculate_class_size(st.session_state.stakeholder_punkte_df)
@@ -89,21 +90,44 @@ def stakeholder_punkte():
     st.session_state.stakeholder_punkte_filtered = stakeholder_punkte_filtered
 
     if 'stakeholder_punkte_filtered' in st.session_state and not st.session_state.stakeholder_punkte_filtered.empty:
-        st.session_state.stakeholder_punkte_filtered = st.session_state.stakeholder_punkte_filtered[['Platzierung', 'Thema', 'Unterthema', 'Unter-Unterthema', 'NumericalRating', 'Quelle']]
-        gb = GridOptionsBuilder.from_dataframe(st.session_state.stakeholder_punkte_filtered)
+        # Reset index to ensure it is accessible but not displayed in AgGrid
+        st.session_state.stakeholder_punkte_filtered.reset_index(inplace=True)
+        
+        # Move the index to a new column '_index' for internal use
+        st.session_state.stakeholder_punkte_filtered.rename(columns={'index': '_index'}, inplace=True)
+        
+        # Konfiguration der AgGrid
+        gb = GridOptionsBuilder.from_dataframe(st.session_state.stakeholder_punkte_filtered.drop(columns=['_index']))
         gb.configure_pagination(paginationAutoPageSize=True, paginationPageSize=10)
         gb.configure_selection('multiple', use_checkbox=True, groupSelectsChildren="Group checkbox select children", rowMultiSelectWithClick=True)
         gb.configure_side_bar()
         grid_options = gb.build()
-        AgGrid(st.session_state.stakeholder_punkte_filtered, gridOptions=grid_options, enable_enterprise_modules=True, update_mode=GridUpdateMode.MODEL_CHANGED)
 
-        if st.button("Inhalte löschen"):
-            if 'stakeholder_punkte_filtered' in st.session_state:
-                del st.session_state['stakeholder_punkte_filtered']
-                save_session_state(st.session_state)
-            st.experimental_rerun()
+        # Anzeige der AgGrid
+        grid_response = AgGrid(
+            st.session_state.stakeholder_punkte_filtered.drop(columns=['_index']),
+            gridOptions=grid_options,
+            enable_enterprise_modules=True,
+            update_mode=GridUpdateMode.MODEL_CHANGED
+        )
+
+        selected = grid_response['selected_rows']
+
+        if st.button("Inhalt löschen"):
+            if selected:
+                # Extracting the indices of the selected rows using the internal '_index' column
+                selected_indices = [st.session_state.stakeholder_punkte_filtered.iloc[row['_selectedRowNodeInfo']['nodeRowIndex']]['_index'] for row in selected]
+                # Dropping the selected rows from the original DataFrame
+                st.session_state.stakeholder_punkte_df.drop(selected_indices, inplace=True)
+                st.session_state.stakeholder_punkte_filtered = calculate_selected_rows(st.session_state.stakeholder_punkte_df, class_size)
+                save_session_state({'stakeholder_punkte_df': st.session_state.stakeholder_punkte_df})
+                st.experimental_rerun()
+            else:
+                st.warning("Keine Zeilen ausgewählt.")
     else:
         st.warning("Es wurden noch keine Inhalte im Excel-Upload hochgeladen. Bitte laden Sie eine Excel-Datei hoch.")
+
+
 
 def extract_company_name(file):
     # Extrahiere den Firmennamen aus der 'Einführung' Tabelle, Zelle B7
@@ -130,7 +154,7 @@ def excel_upload():
         return ratings.get(value, 0)
 
     def aggregate_rankings(df):
-        df['NumericalRating'] = df['Bewertung'].apply(get_numerical_rating)
+        df['NumericalRating'] = df['Bewertung'].apply(get_numerical_rating).astype(int)
         df.fillna({'Thema': 'Unbekannt', 'Unterthema': 'Unbekannt', 'Unter-Unterthema': ''}, inplace=True)
         ranking = df.groupby(['Thema', 'Unterthema', 'Unter-Unterthema', 'Quelle']).agg({'NumericalRating': 'sum'}).reset_index()
         ranking.sort_values(by='NumericalRating', ascending=False, inplace=True)
@@ -140,11 +164,15 @@ def excel_upload():
     uploaded_files = st.file_uploader("Excel-Dateien hochladen", accept_multiple_files=True, type=['xlsx'])
     if uploaded_files:
         df_list = []
+        company_names = {}
         for file in uploaded_files:
+            company_name = extract_company_name(file)
+            if company_name:
+                company_names[file.name] = company_name
             for sheet_name in ['Top-Down', 'Intern', 'Extern']:
                 try:
                     df = pd.read_excel(file, sheet_name=sheet_name, engine='openpyxl', usecols=['Thema', 'Unterthema', 'Unter-Unterthema', 'Bewertung'])
-                    df['Quelle'] = sheet_name
+                    df['Quelle'] = company_name if sheet_name == 'Extern' else sheet_name
                     df_list.append(df)
                 except ValueError:
                     st.warning(f"Blatt '{sheet_name}' nicht in {file.name} gefunden.")
@@ -174,7 +202,7 @@ def excel_upload():
                     )
                     st.session_state.stakeholder_punkte_df['NumericalRating'] = st.session_state.stakeholder_punkte_df['NumericalRating_x'].add(
                         st.session_state.stakeholder_punkte_df['NumericalRating_y'], fill_value=0
-                    )
+                    ).astype(int)
                     st.session_state.stakeholder_punkte_df.drop(columns=['NumericalRating_x', 'NumericalRating_y'], inplace=True)
                 else:
                     st.session_state.stakeholder_punkte_df = new_df
@@ -186,17 +214,12 @@ def excel_upload():
                 st.success("Stakeholder Punkte erfolgreich übernommen")
 
                 # Extract company names and update the session state
-                company_names = []
-                for file in uploaded_files:
-                    company_name = extract_company_name(file)
-                    if company_name:
-                        company_names.append(company_name)
-                
                 if company_names:
+                    company_names_df = pd.DataFrame(company_names.items(), columns=["File Name", "Company Name"])
                     if 'company_names' in st.session_state:
-                        st.session_state.company_names = st.session_state.company_names.append(pd.DataFrame(company_names, columns=["Company Name"]), ignore_index=True)
+                        st.session_state.company_names = pd.concat([st.session_state.company_names, company_names_df], ignore_index=True)
                     else:
-                        st.session_state.company_names = pd.DataFrame(company_names, columns=["Company Name"])
+                        st.session_state.company_names = company_names_df
                     save_session_state({'company_names': st.session_state.company_names})
 
 def display_page():
@@ -218,3 +241,5 @@ def display_page():
     with tab2:
         add_slider()
         stakeholder_punkte()
+
+
