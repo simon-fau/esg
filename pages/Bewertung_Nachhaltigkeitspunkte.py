@@ -6,19 +6,14 @@ import numpy as np
 import pickle
 import os
 
-# Funktion zum Laden des Zustands
-def load_state():
-    if os.path.exists('session_state_bewertung_nachhaltigkeitspunkte.pkl'):
-        with open('session_state_bewertung_nachhaltigkeitspunkte.pkl', 'rb') as f:
-            st.session_state.update(pickle.load(f))
+
 
 # Funktion zum Speichern des Zustands
 def save_state():
-    with open('session_state_bewertung_nachhaltigkeitspunkte.pkl', 'wb') as f:
+    with open('a.pkl', 'wb') as f:
         pickle.dump(dict(st.session_state), f)
 
-# Zustand laden beim Start
-load_state()
+
 
 def stakeholder_Nachhaltigkeitspunkte():
     # Initialisiere DataFrame falls nicht vorhanden
