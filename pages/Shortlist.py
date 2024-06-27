@@ -200,11 +200,11 @@ def download_excel():
     
 def Excel_button():
     st.sidebar.markdown("---")
-    if st.sidebar.button('Excel aktualisieren'):
+    if st.sidebar.button('🔃 Excel aktualisieren'):
         transfer_data_to_excel(st.session_state.filtered_df)
     
      # Download-Button für die Excel-Datei
-    if st.sidebar.download_button(label="Excel-Datei herunterladen",
+    if st.sidebar.download_button(label="⬇️ Excel-Datei herunterladen",
                           data=download_excel(),
                           file_name="Ergebnis.xlsx",
                           mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"):

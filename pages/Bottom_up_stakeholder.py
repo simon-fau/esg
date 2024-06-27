@@ -75,27 +75,28 @@ def extract_company_name(file):
 
 # UI components
 def add_slider():
-    st.write("**Grenzwert der Stakeholderpunkte:**")
-    col1, col2 = st.columns([1, 4])
-    with col1:
-        current_slider_value = st.select_slider('', options=OPTIONS, value=st.session_state.slider_value, key='stakeholder_zslider')
-        if st.button('Auswahl übernehmen'):
-            st.session_state.slider_value = current_slider_value
-            save_session_state({'slider_value': st.session_state.slider_value})
-            st.experimental_rerun()
+    with st.expander("**Grenzwert der Stakeholderpunkte:**", expanded=False):
+    
+        col1, col2 = st.columns([1, 4])
+        with col1:
+            current_slider_value = st.select_slider('', options=OPTIONS, value=st.session_state.slider_value, key='stakeholder_zslider')
+            if st.button('Auswahl übernehmen'):
+                st.session_state.slider_value = current_slider_value
+                save_session_state({'slider_value': st.session_state.slider_value})
+                st.experimental_rerun()
 
-    st.sidebar.markdown("""
-        <style>
-        .st-emotion-cache-183lzff,
-        .st-emotion-cache-1inwz65 {
-            font-family: "Source Sans Pro", sans-serif;
-        }
-        </style>
-        """, unsafe_allow_html=True)
+        st.sidebar.markdown("""
+            <style>
+            .st-emotion-cache-183lzff,
+            .st-emotion-cache-1inwz65 {
+                font-family: "Source Sans Pro", sans-serif;
+            }
+            </style>
+            """, unsafe_allow_html=True)
 
 def display_aggrid(df):
     gb = GridOptionsBuilder.from_dataframe(df)
-    gb.configure_pagination(paginationAutoPageSize=True, paginationPageSize=10)
+    gb.configure_pagination(paginationAutoPageSize=False, paginationPageSize=15)  # Set paginationPageSize to 15
     gb.configure_selection('multiple', use_checkbox=True, groupSelectsChildren="Group checkbox select children", rowMultiSelectWithClick=True)
     gb.configure_side_bar()
     grid_options = gb.build()
@@ -193,8 +194,7 @@ def display_sidebar():
         st.sidebar.markdown("**Bereits hochgeladene Dateien von:**")
         for index, row in st.session_state.company_names.iterrows():
             st.sidebar.markdown(f"- {row['Company Name']}")
-    else:
-        st.sidebar.warning("Es wurden noch keine Unternehmensnamen extrahiert.")
+    
 
 def display_page():
     st.header("Stakeholder-Management")

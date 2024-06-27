@@ -13,8 +13,6 @@ def save_state():
     with open('a.pkl', 'wb') as f:
         pickle.dump(dict(st.session_state), f)
 
-
-
 def stakeholder_Nachhaltigkeitspunkte():
     # Initialisiere DataFrame falls nicht vorhanden
     if 'stakeholder_punkte_filtered' not in st.session_state:
@@ -154,7 +152,7 @@ def initialize_bewertet_column(longlist):
     return longlist
 
 def submit_bewertung(longlist, ausgewaehlte_werte):
-    if st.sidebar.button("Bewertung absenden"):
+    if st.sidebar.button("📤 Bewertung absenden"):
         # Überprüfen, ob ausgewaehlte_werte mindestens einen gültigen Wert enthält
         if not any(ausgewaehlte_werte.values()):
             st.error("Bitte wählen Sie eine Checkbox in der Liste aus.")
@@ -297,7 +295,7 @@ def delete_bewertung(longlist):
         selected_data_ids = st.session_state.selected_data['ID'] if 'ID' in st.session_state.selected_data.columns else []
 
         # Button zum Löschen einer spezifischen Bewertung
-        if st.sidebar.button("Bewertung löschen"):
+        if st.sidebar.button("🗑️ Bewertung löschen"):
             if 'selected_rows' in st.session_state and st.session_state['selected_rows']:
                 selected_row_ids = [row['ID'] for row in st.session_state['selected_rows']]
                 rows_to_delete = st.session_state.selected_data[st.session_state.selected_data['ID'].isin(selected_row_ids)]

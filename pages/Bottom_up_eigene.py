@@ -121,7 +121,7 @@ def eigene_punkte():
 
         unterthema = st.selectbox('Unterthema auswählen', options=unterthema_options, index=0, key='unterthema')
         unter_unterthema = st.text_input('Unter-Unterthema eingeben', key='unter_unterthema')    
-        add_row = st.button('Hinzufügen', key='add_row')
+        add_row = st.button('➕ Hinzufügen', key='add_row')
 
         if add_row:
             empty_row_index = st.session_state.df2[(st.session_state.df2["Thema"] == "") & (st.session_state.df2["Unterthema"] == "") & (st.session_state.df2["Unter-Unterthema"] == "")].first_valid_index()
@@ -181,7 +181,7 @@ def eigene_punkte():
     # Button zum Übertragen der Inhalte in die Excel-Datei
     st.sidebar.markdown("---")
     st.sidebar.write("**Excel-Datei für Stakeholderumfrage**")
-    if st.sidebar.button('Excel aktualisieren'):
+    if st.sidebar.button('🔃 Excel aktualisieren'):
         transfer_data_to_excel(st.session_state.df2)
 
 
@@ -223,7 +223,7 @@ def display_page():
     """)
     eigene_punkte()
     # Download-Button für die Excel-Datei
-    if st.sidebar.download_button(label="Excel-Datei herunterladen",
+    if st.sidebar.download_button(label="⬇️ Excel-Datei herunterladen",
                           data=download_excel(),
                           file_name="Stakeholder_Input.xlsx",
                           mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"):

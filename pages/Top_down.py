@@ -78,9 +78,12 @@ class YesNoSelection:
 
     # Zeigt einen Speicher-Button an und speichert den Zustand, wenn dieser gedrückt wird
     def display_save_button(self, section_name):
-        col1, col2 = st.columns([5, 0.8])
+        col1, col2 = st.columns([4, 1])
         with col2:
-            if st.button(f"Auswahl speichern", key=f'Button_{section_name}'):
+            st.write("") # Platzhalter
+            st.write("")    
+            st.write("")
+            if st.button(f"💾 Auswahl speichern", key=f'Button_{section_name}'):
                 self.save_session_state()
                 st.success("Auswahl erfolgreich gespeichert!")
 
