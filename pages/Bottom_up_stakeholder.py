@@ -113,21 +113,31 @@ def stakeholder_punkte():
 
         selected = grid_response['selected_rows']
 
-        if st.button("Inhalt löschen"):
-            if selected:
-                # Extracting the indices of the selected rows using the internal '_index' column
-                selected_indices = [st.session_state.stakeholder_punkte_filtered.iloc[row['_selectedRowNodeInfo']['nodeRowIndex']]['_index'] for row in selected]
-                # Dropping the selected rows from the original DataFrame
-                st.session_state.stakeholder_punkte_df.drop(selected_indices, inplace=True)
-                st.session_state.stakeholder_punkte_filtered = calculate_selected_rows(st.session_state.stakeholder_punkte_df, class_size)
-                save_session_state({'stakeholder_punkte_df': st.session_state.stakeholder_punkte_df})
+        col1, col2 = st.columns(2)
+        with col1:
+            if st.button("Inhalt löschen"):
+                if selected:
+                    # Extracting the indices of the selected rows using the internal '_index' column
+                    selected_indices = [st.session_state.stakeholder_punkte_filtered.iloc[row['_selectedRowNodeInfo']['nodeRowIndex']]['_index'] for row in selected]
+                    # Dropping the selected rows from the original DataFrame
+                    st.session_state.stakeholder_punkte_df.drop(selected_indices, inplace=True)
+                    st.session_state.stakeholder_punkte_filtered = calculate_selected_rows(st.session_state.stakeholder_punkte_df, class_size)
+                    save_session_state({'stakeholder_punkte_df': st.session_state.stakeholder_punkte_df})
+                    st.experimental_rerun()
+                else:
+                    st.warning("Keine Zeilen ausgewählt.")
+
+        with col2:
+            if st.button("Alle Inhalte löschen"):
+                # Löschen aller Zeilen und Unternehmensnamen
+                st.session_state.stakeholder_punkte_df = st.session_state.stakeholder_punkte_df.iloc[0:0]
+                st.session_state.stakeholder_punkte_filtered = st.session_state.stakeholder_punkte_df
+                if 'company_names' in st.session_state:
+                    del st.session_state['company_names']
+                save_session_state({'stakeholder_punkte_df': st.session_state.stakeholder_punkte_df, 'company_names': st.session_state.get('company_names', pd.DataFrame())})
                 st.experimental_rerun()
-            else:
-                st.warning("Keine Zeilen ausgewählt.")
     else:
         st.warning("Es wurden noch keine Inhalte im Excel-Upload hochgeladen. Bitte laden Sie eine Excel-Datei hoch.")
-
-
 
 def extract_company_name(file):
     # Extrahiere den Firmennamen aus der 'Einführung' Tabelle, Zelle B7
@@ -241,5 +251,3 @@ def display_page():
     with tab2:
         add_slider()
         stakeholder_punkte()
-
-
