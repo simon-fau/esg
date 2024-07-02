@@ -94,10 +94,11 @@ def add_slider():
             </style>
             """, unsafe_allow_html=True)
 
-def display_aggrid(df):
+def display_aggrid(df, with_checkboxes=False):
     gb = GridOptionsBuilder.from_dataframe(df)
-    gb.configure_pagination(paginationAutoPageSize=False, paginationPageSize=15)  # Set paginationPageSize to 15
-    gb.configure_selection('multiple', use_checkbox=True, groupSelectsChildren="Group checkbox select children", rowMultiSelectWithClick=True)
+    gb.configure_pagination(paginationAutoPageSize=False, paginationPageSize=15)
+    if with_checkboxes:
+        gb.configure_selection('multiple', use_checkbox=True, groupSelectsChildren="Group checkbox select children", rowMultiSelectWithClick=True)
     gb.configure_side_bar()
     grid_options = gb.build()
     return AgGrid(df, gridOptions=grid_options, enable_enterprise_modules=True, update_mode=GridUpdateMode.MODEL_CHANGED)
@@ -110,7 +111,7 @@ def stakeholder_punkte():
     if not stakeholder_punkte_filtered.empty:
         stakeholder_punkte_filtered.reset_index(inplace=True)
         stakeholder_punkte_filtered.rename(columns={'index': '_index'}, inplace=True)
-        grid_response = display_aggrid(stakeholder_punkte_filtered.drop(columns=['_index']))
+        grid_response = display_aggrid(stakeholder_punkte_filtered.drop(columns=['_index']), with_checkboxes=True)
         selected = grid_response['selected_rows']
 
         col1, col2 = st.columns(2)
@@ -153,8 +154,10 @@ def excel_upload():
             combined_df = pd.concat(df_list, ignore_index=True)
             st.session_state.ranking_df = aggregate_rankings(combined_df)
             save_session_state({'ranking_df': st.session_state.ranking_df})
-            st.write("Aktuelles Ranking basierend auf hochgeladenen Dateien:")
-            response = display_aggrid(st.session_state.ranking_df)
+            st.write("")
+            st.write("")
+            st.write("Vorschau der hochgeladenen Daten:")
+            response = display_aggrid(st.session_state.ranking_df, with_checkboxes=False)
             st.session_state.grid_response = response
             save_session_state({'grid_response': st.session_state.grid_response})
 

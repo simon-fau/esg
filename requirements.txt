@@ -7,3 +7,7 @@ sentence_transformers
 matplotlib
 altair
 st_aggrid
+os
+numpy
+
+
