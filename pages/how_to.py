@@ -7,10 +7,19 @@ def allgemeine_informationen():
     st.write("")
     st.write("")
     st.write("")
-
+    st.write("")
+    st.write("")
+    st.write("")
+    st.write("")
+    
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:  
         st.image('ESRS_Übersicht.png', caption='Übersicht der ESRS Standards')
+        st.write("")
+        st.write("")
+        st.write("")
+        st.write("")
+        st.write("")
 
     # Rechte Spalte für die Textinhalte
     with st.expander("Was sind die ESRS?", expanded=False):
