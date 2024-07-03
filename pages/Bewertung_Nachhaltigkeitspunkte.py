@@ -6,8 +6,6 @@ import numpy as np
 import pickle
 import os
 
-
-
 # Funktion zum Speichern des Zustands
 def save_state():
     with open('a.pkl', 'wb') as f:

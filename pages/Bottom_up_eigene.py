@@ -9,7 +9,7 @@ import io
 
 # Datei zum Speichern des Sitzungszustands
 state_file = 'session_state_bottom_up_eigene.pkl'
-template_path = r'C:\Users\andre\OneDrive\Dokumente\Stakeholder_Input_Vorlage_V1.xlsx'
+template_path = r'C:\Users\andre\OneDrive\Desktop\Masterarbeit_V1\Templates\Stakeholder_Input_Vorlage_V1.xlsx'
 
 # Funktion zum Laden des Sitzungszustands
 def load_session_state():
@@ -158,7 +158,7 @@ def eigene_punkte():
     add_empty_row = st.button('➕ Leere Zeile hinzufügen', key='add_empty_row')
     if add_empty_row:
         empty_row = {"Thema": "", "Unterthema": "", "Unter-Unterthema": ""}
-        st.session_state.df2 = st.session_state.df2.append(empty_row, ignore_index=True)
+        st.session_state.df2 = st.session_state.df2._append(empty_row, ignore_index=True)
         save_session_state({'df2': st.session_state.df2})
         st.experimental_rerun()
     
@@ -170,14 +170,18 @@ def eigene_punkte():
         save_session_state({'df2': st.session_state.df2})
         st.experimental_rerun()
 
-    save_changes = st.button('💾 Änderungen speichern', key='save_changes')
-    if save_changes:
-        st.session_state.df2 = grid_response['data'].set_index('index')
-        save_session_state({'df2': st.session_state.df2})
-    
-    # Informationsnachricht unter dem Button
-    st.caption("ℹ️ Sie müssen diesen Button nur drücken, wenn Sie Inhalte direkt in die Tabelle geschrieben haben. Achten Sie darauf, dass Sie die Inhalte mit Enter bestätigen.")
+    col1, col2 = st.columns([6, 1])
+    with col1:
+        button_col, caption_col = st.columns([2.5, 11], gap="small")
+        with button_col:
+            save_changes = st.button('💾 Änderungen speichern', key='save_changes')
+        with caption_col:
+            # Informationsnachricht unter dem Button
+            st.caption("ℹ️ Sie müssen diesen Button nur drücken, wenn Sie Inhalte direkt in die Tabelle geschrieben haben. Achten Sie darauf, dass Sie die Inhalte mit Enter bestätigen.")
 
+        if save_changes:
+            st.session_state.df2 = grid_response['data'].set_index('index')
+            save_session_state({'df2': st.session_state.df2})
     # Button zum Übertragen der Inhalte in die Excel-Datei
     st.sidebar.markdown("---")
     st.sidebar.write("**Excel-Datei für Stakeholderumfrage**")
@@ -205,7 +209,7 @@ def transfer_data_to_excel(dataframe):
 
     # Speichern der bearbeiteten Kopie der Excel-Datei
     workbook.save(temp_excel_path)
-    st.sidebar.success('Inhalte erfolgreich zur Excel-Datei hinzugefügt.')
+    st.success('Inhalte erfolgreich zur Excel-Datei hinzugefügt.')
 
 def download_excel():
     # Pfad zur kopierten und bearbeiteten Excel-Datei
@@ -227,4 +231,4 @@ def display_page():
                           data=download_excel(),
                           file_name="Stakeholder_Input.xlsx",
                           mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"):
-        st.sidebar.success("Download gestartet!")
+        st.success("Download gestartet!")

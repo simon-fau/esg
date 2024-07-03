@@ -31,7 +31,7 @@ if 'filtered_df' not in st.session_state:
     st.session_state['filtered_df'] = pd.DataFrame()  # Initialize as an empty DataFrame
 
 def Chart(intersection_value, stakeholder_importance_value):
-    st.title("Graphische Übersicht")
+    st.header("Graphische Übersicht")
 
     if 'selected_columns' in st.session_state and len(st.session_state['selected_columns']) > 0:
         selected_columns = st.session_state['selected_columns']
@@ -120,7 +120,7 @@ def Chart(intersection_value, stakeholder_importance_value):
         st.warning("Keine Daten ausgewählt.")
 
 def filter_table(intersection_value, stakeholder_importance_value):
-    st.title("Shortlist")
+    st.header("Shortlist")
 
     if 'selected_columns' in st.session_state and len(st.session_state['selected_columns']) > 0:
         selected_columns = st.session_state['selected_columns']
@@ -162,7 +162,7 @@ def display_slider():
     st.sidebar.slider("Grenzwert für die Relevanz angeben", min_value=0, max_value=1000, value=st.session_state['intersection_value'], step=10, key="intersection_slider")
     st.sidebar.slider("Grenzwert für Stakeholder Relevanz angeben", min_value=100, max_value=1000, value=st.session_state['stakeholder_importance_value'], step=50, key="stakeholder_importance_slider")
  
-template_path = r'C:\Users\andre\OneDrive\Dokumente\Ausführung.xlsx'
+template_path = r'C:\Users\andre\OneDrive\Desktop\Masterarbeit_V1\Templates\Ausführung.xlsx'
 
 def transfer_data_to_excel(dataframe):
     # Kopie der Template-Datei erstellen
@@ -187,7 +187,7 @@ def transfer_data_to_excel(dataframe):
 
     # Speichern der bearbeiteten Kopie der Excel-Datei
     workbook.save(temp_excel_path)
-    st.sidebar.success('Inhalte erfolgreich zur Excel-Datei hinzugefügt.')
+    st.success('Inhalte erfolgreich zur Excel-Datei hinzugefügt.')
 
 def download_excel():
     # Pfad zur kopierten und bearbeiteten Excel-Datei
@@ -200,6 +200,7 @@ def download_excel():
     
 def Excel_button():
     st.sidebar.markdown("---")
+    st.sidebar.write("Aktualisieren Sie die Excel-Datei, sofern es Änderungen an der Shortlist gab.")
     if st.sidebar.button('🔃 Excel aktualisieren'):
         transfer_data_to_excel(st.session_state.filtered_df)
     
@@ -208,7 +209,7 @@ def Excel_button():
                           data=download_excel(),
                           file_name="Ergebnis.xlsx",
                           mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"):
-        st.sidebar.success("Download gestartet!")
+        st.success("Download gestartet!")
 
 def display_page():
     display_slider()

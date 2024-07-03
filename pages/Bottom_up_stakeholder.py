@@ -114,23 +114,22 @@ def stakeholder_punkte():
         grid_response = display_aggrid(stakeholder_punkte_filtered.drop(columns=['_index']), with_checkboxes=True)
         selected = grid_response['selected_rows']
 
-        col1, col2 = st.columns(2)
-        with col1:
-            if st.button("Inhalt löschen"):
-                if selected:
-                    selected_indices = [stakeholder_punkte_filtered.iloc[row['_selectedRowNodeInfo']['nodeRowIndex']]['_index'] for row in selected]
-                    st.session_state.stakeholder_punkte_df.drop(selected_indices, inplace=True)
-                    save_session_state({'stakeholder_punkte_df': st.session_state.stakeholder_punkte_df})
-                    st.experimental_rerun()
-                else:
-                    st.warning("Keine Zeilen ausgewählt.")
-        with col2:
-            if st.button("Alle Inhalte löschen"):
-                st.session_state.stakeholder_punkte_df = st.session_state.stakeholder_punkte_df.iloc[0:0]
-                if 'company_names' in st.session_state:
-                    del st.session_state['company_names']
-                save_session_state({'stakeholder_punkte_df': st.session_state.stakeholder_punkte_df, 'company_names': pd.DataFrame()})
+        
+        if st.button("🗑️ Inhalt löschen"):
+            if selected:
+                selected_indices = [stakeholder_punkte_filtered.iloc[row['_selectedRowNodeInfo']['nodeRowIndex']]['_index'] for row in selected]
+                st.session_state.stakeholder_punkte_df.drop(selected_indices, inplace=True)
+                save_session_state({'stakeholder_punkte_df': st.session_state.stakeholder_punkte_df})
                 st.experimental_rerun()
+            else:
+                st.warning("Keine Zeilen ausgewählt.")
+    
+        if st.button("🗑️ Alle Inhalte löschen"):
+            st.session_state.stakeholder_punkte_df = st.session_state.stakeholder_punkte_df.iloc[0:0]
+            if 'company_names' in st.session_state:
+                del st.session_state['company_names']
+            save_session_state({'stakeholder_punkte_df': st.session_state.stakeholder_punkte_df, 'company_names': pd.DataFrame()})
+            st.experimental_rerun()
     else:
         st.warning("Es wurden noch keine Inhalte im Excel-Upload hochgeladen. Bitte laden Sie eine Excel-Datei hoch.")
 

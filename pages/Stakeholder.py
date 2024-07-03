@@ -59,12 +59,17 @@ def generate_stakeholder_ranking():
     if not score_table.empty:
         score_table['Ranking'] = range(1, len(score_table) + 1)
         score_table = score_table.sort_values(by='Score', ascending=False).reset_index(drop=True)
+        # Speichern des Rankings im session state
+        st.session_state['ranking_table'] = score_table
+        # Speichern des aktualisierten Session States mit save_session_state
+        save_session_state({'ranking_table': score_table})
         st.dataframe(score_table[['Ranking', 'Gruppe', 'Score']], 
                      column_config={"Score": st.column_config.ProgressColumn(min_value=0, max_value=100, format="%f")}, 
                      hide_index=True, 
                      width=800)
     else:
         st.write("Keine Stakeholder-Daten vorhanden.")
+
 
 # Funktion zum Abrufen der Knotenfarbe basierend auf dem Score
 def get_node_color(score):
