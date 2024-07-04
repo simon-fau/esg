@@ -88,8 +88,8 @@
                   
 
                   // parsing and collecting nodes and edges from the python
-                  nodes = new vis.DataSet([{"color": "black", "font": {"color": "black"}, "id": "Mein Unternehmen", "label": "Mein Unternehmen", "shape": "dot", "title": ""}, {"color": "red", "font": {"color": "black"}, "id": "gtft", "label": "gtft", "shape": "dot", "size": 15.0, "title": "gtft"}]);
-                  edges = new vis.DataSet([{"from": "Mein Unternehmen", "to": "gtft"}]);
+                  nodes = new vis.DataSet([{"color": "black", "font": {"color": "black"}, "id": "Mein Unternehmen", "label": "Mein Unternehmen", "shape": "dot", "title": ""}, {"color": "green", "font": {"color": "black"}, "id": "Mitarbeiter", "label": "Mitarbeiter", "shape": "dot", "size": 25.0, "title": "Mitarbeiter"}, {"color": "orange", "font": {"color": "black"}, "id": "Bewohner", "label": "Bewohner", "shape": "dot", "size": 20.0, "title": "Bewohner"}]);
+                  edges = new vis.DataSet([{"from": "Mein Unternehmen", "to": "Mitarbeiter"}, {"from": "Mein Unternehmen", "to": "Bewohner"}]);
 
                   nodeColors = {};
                   allNodes = nodes.get({ returnType: "Object" });

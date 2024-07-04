@@ -14,7 +14,7 @@ else:
 
 # Setzen der Seitenkonfiguration
 st.set_page_config(
-    page_title="ESRS-Tool",
+    page_title="ESG-Tool",
     page_icon=os.path.join(os.path.dirname(__file__)),
     layout="wide",
     initial_sidebar_state="collapsed"

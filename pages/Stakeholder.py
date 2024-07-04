@@ -192,6 +192,3 @@ def display_page():
             display_stakeholder_ranking_and_network()
         else:
             st.write("Keine Stakeholder-Daten vorhanden.")
-
-
-
