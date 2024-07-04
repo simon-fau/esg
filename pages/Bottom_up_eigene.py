@@ -9,7 +9,8 @@ import io
 
 # Datei zum Speichern des Sitzungszustands
 state_file = 'session_state_bottom_up_eigene.pkl'
-template_path = r'C:\Users\andre\OneDrive\Desktop\Masterarbeit_V1\Templates\Stakeholder_Input_Vorlage_V1.xlsx'
+# Pfad zur Excel-Vorlage
+template_path = os.path.join(os.path.dirname(__file__), 'Templates', 'Stakeholder_Input_Vorlage_V1.xlsx')
 
 # Funktion zum Laden des Sitzungszustands
 def load_session_state():
