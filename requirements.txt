@@ -7,4 +7,3 @@ sentence_transformers
 matplotlib
 altair
 streamlit-aggrid
-numpy
