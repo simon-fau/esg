@@ -162,7 +162,7 @@ def display_slider():
     st.sidebar.slider("Grenzwert für die Relevanz angeben", min_value=0, max_value=1000, value=st.session_state['intersection_value'], step=10, key="intersection_slider")
     st.sidebar.slider("Grenzwert für Stakeholder Relevanz angeben", min_value=100, max_value=1000, value=st.session_state['stakeholder_importance_value'], step=50, key="stakeholder_importance_slider")
  
-template_path = r'C:\Users\andre\OneDrive\Desktop\Masterarbeit_V1\Templates\Ausführung.xlsx'
+template_path = os.path.join(os.path.dirname(__file__), 'Templates', 'Ausführung.xlsx')
 
 def transfer_data_to_excel(dataframe):
     # Kopie der Template-Datei erstellen
