@@ -28,6 +28,7 @@ class YesNoSelection:
             pickle.dump(st.session_state['yes_no_selection'], f)
 
     # Lädt den Zustand der Auswahloptionen aus einer Pickle-Datei
+    @st.cache_data
     def load_session_state(self):
         if os.path.exists('session_states_top_down.pkl'):
             with open('session_states_top_down.pkl', 'rb') as f:
@@ -262,3 +263,4 @@ def display_page():
     with tabs[9]:
         st.subheader("Unternehmenspolitik")
         selection.display_G1_Unternehmenspolitik()
+
