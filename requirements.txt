@@ -6,8 +6,5 @@ pandas
 sentence_transformers
 matplotlib
 altair
-st_aggrid
-os
+streamlit-aggrid
 numpy
-
-
