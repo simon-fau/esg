@@ -72,7 +72,7 @@ if selected_menu == 'Wesentlichkeitsanalyse':
             st.error(f"Fehler: Die Seite {page_module.__name__} hat keine Funktion namens 'display_page'.") 
 
     if page_option == '1. Stakeholder Management':
-        import pages.stakeholder as Stakeholder_page
+        import pages.Stakeholder as Stakeholder_page
         load_page(Stakeholder_page)
     elif page_option == '2. Themenspezifische ESRS':
         import pages.Top_down as Top_down_page
