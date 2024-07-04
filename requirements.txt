@@ -3,8 +3,8 @@ plotly
 hydralit_components
 pyvis
 pandas
-sentence_transformers
 matplotlib
 altair
 streamlit-aggrid
 numpy==1.26.2
+openpyxl

@@ -4,7 +4,6 @@ from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode, DataReturnMode
 import altair as alt
 import numpy as np
 import pickle
-import os
 
 # Funktion zum Speichern des Zustands
 def save_state():
