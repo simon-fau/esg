@@ -134,27 +134,27 @@ def eigene_punkte():
                 new_row = {"Thema": thema, "Unterthema": unterthema, "Unter-Unterthema": unter_unterthema}
                 st.session_state.df2 = st.session_state.df2._append(new_row, ignore_index=True)
             save_session_state({'df2': st.session_state.df2})
-
-    gb = GridOptionsBuilder.from_dataframe(st.session_state.df2)
-    gb.configure_default_column(editable=True, resizable=True, sortable=True, filterable=True)
-    gb.configure_grid_options(domLayout='autoHeight', enableRowId=True, rowId='index')
-    grid_options = gb.build()
-    grid_options['columnDefs'] = [{'checkboxSelection': True, 'headerCheckboxSelection': True, 'width': 50}] + grid_options['columnDefs']
-
-    if st.session_state.df2.empty:
+    
+    if not st.session_state.df2.empty:
+        gb = GridOptionsBuilder.from_dataframe(st.session_state.df2)
+        gb.configure_default_column(editable=True, resizable=True, sortable=True, filterable=True)
+        gb.configure_grid_options(domLayout='autoHeight', enableRowId=True, rowId='index')
+        grid_options = gb.build()
+        grid_options['columnDefs'] = [{'checkboxSelection': True, 'headerCheckboxSelection': True, 'width': 50}] + grid_options['columnDefs']
+    
+        grid_response = AgGrid(
+            st.session_state.df2.reset_index(),
+            gridOptions=grid_options,
+            fit_columns_on_grid_load=True,
+            height=300,
+            width='100%',
+            update_mode=GridUpdateMode.MODEL_CHANGED,
+            allow_unsafe_jscode=True,
+            return_mode=DataReturnMode.__members__['AS_INPUT'],  # Adjust the DataReturnMode as per available options
+            selection_mode='multiple'
+        )
+    else:
         st.warning("Keine Daten vorhanden. Bitte fügen Sie über die Sidebar Inhalte hinzu.")
-
-    grid_response = AgGrid(
-        st.session_state.df2.reset_index(),
-        gridOptions=grid_options,
-        fit_columns_on_grid_load=True,
-        height=300,
-        width='100%',
-        update_mode=GridUpdateMode.MODEL_CHANGED,
-        allow_unsafe_jscode=True,
-        return_mode=DataReturnMode.__members__['AS_INPUT'],  # Adjust the DataReturnMode as per available options
-        selection_mode='multiple'
-    )
 
     add_empty_row = st.button('➕ Leere Zeile hinzufügen', key='add_empty_row')
     if add_empty_row:
