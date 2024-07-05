@@ -51,7 +51,6 @@ def Top_down_Nachhaltigkeitspunkte():
         return selected_points_df
 
 def extract_data_from_key(key):
-    # Initialisiere start und end basierend auf dem Key
     start, end, suffix = determine_key_suffix(key)
     
     if start is not None:
@@ -61,6 +60,12 @@ def extract_data_from_key(key):
             'Thema': thema,
             'Unterthema': unterthema,
             'Unter-Unterthema': unter_unterthema
+        }
+    else:
+        return {
+            'Thema': 'Unbekannt',
+            'Unterthema': 'Unbekannt',
+            'Unter-Unterthema': 'Unbekannt'
         }
 
 def determine_key_suffix(key):
@@ -86,21 +91,21 @@ def map_key_to_theme_and_subthemes(key, unterthema_raw):
         'G1': 'Unternehmenspolitik'
     }
     if key.endswith('E4'):
-        return map_biodiversity_key(key, unterthema_raw)
+        return map_biodiversity_key(unterthema_raw)
     elif key.endswith('S1'):
-        return map_workforce_key('Eigene Belegschaft', unterthema_raw)
+        return map_own_workforce_key(unterthema_raw)
     elif key.endswith('S2'):
-        return map_workforce_key('Belegschaft Lieferkette', unterthema_raw)
+        return map_valuechain_workforce_key(unterthema_raw)
     elif key.endswith('S3'):
         return map_community_key(unterthema_raw)
     elif key.endswith('S4'):
         return map_consumer_key(unterthema_raw)
     else:
-        return thema_map[key[-2:]], unterthema_raw, ''
+        return thema_map.get(key[-2:], 'Unbekannt'), unterthema_raw, ''
 
-def map_biodiversity_key(key, unterthema_raw):
+def map_biodiversity_key(unterthema_raw):
     unterthema_map = {
-        'Direkte Ursachen des Biodiversitätsverlusts': ['Klimawandel', 'Landnutzungsänderungen, Süßwasser- und Meeresnutzungsänderungen', 'Direkte Ausbeutung', 'Invasive gebietsfremde Arten', 'Umweltverschmutzung', 'Sonstige'],
+        'Direkte Ursachen des Biodiversitätsverlusts': ['Klimawandel', 'Land- Süßwasser- und Meeresnutzungsänderungen', 'Direkte Ausbeutung', 'Invasive gebietsfremde Arten', 'Umweltverschmutzung', 'Sonstige'],
         'Auswirkungen auf den Zustand der Arten': ['Populationsgröße von Arten', 'Globales Ausrottungsrisiko von Arten'],
         'Auswirkungen auf den Umfang und den Zustand von Ökosystemen': ['Landdegradation', 'Wüstenbildung', 'Bodenversiegelung'],
         'Auswirkungen und Abhängigkeiten von Ökosystemdienstleistungen': ['Auswirkungen und Abhängigkeiten von Ökosystemdienstleistungen']
@@ -108,16 +113,29 @@ def map_biodiversity_key(key, unterthema_raw):
     for unterthema, values in unterthema_map.items():
         if unterthema_raw in values:
             return 'Biodiversität', unterthema, unterthema_raw
+    return 'Biodiversität', 'Unbekannt', 'Unbekannt'
 
-def map_workforce_key(thema, unterthema_raw):
+def map_own_workforce_key(unterthema_raw):
     unterthema_map = {
-        'Arbeitsbedingungen': ['Sichere Beschäftigung', 'Arbeitszeit', 'Angemessene Entlohnung', 'Vereinigungsfreiheit, Existenz von Betriebsräten und Rechte der Arbeitnehmer auf Information, Anhörung und Mitbestimmung', 'Tarifverhandlungen, einschließlich der Quote der durch Tarifverträge abgedeckten Arbeitskräften', 'Vereinbarkeit von Beruf und Privatleben', 'Gesundheitsschutz und Sicherheit'],
+        'Arbeitsbedingungen': ['Sichere Beschäftigung', 'Arbeitszeit', 'Angemessene Entlohnung', 'Sozialer Dialog', 'Vereinigungsfreiheit, Existenz von Betriebsräten und Rechte der Arbeitnehmer auf Information, Anhörung und Mitbestimmung', 'Tarifverhandlungen, einschließlich der Quote der durch Tarifverträge abgedeckten Arbeitskräften', 'Vereinbarkeit von Beruf und Privatleben', 'Gesundheitsschutz und Sicherheit'],
         'Gleichbehandlung und Chancengleichheit für alle': ['Gleichstellung der Geschlechter und gleicher Lohn für gleiche Arbeit', 'Schulungen und Kompetenzentwicklung', 'Beschäftigung und Inklusion von Menschen mit Behinderungen', 'Maßnahmen gegen Gewalt und Belästigung am Arbeitsplatz', 'Vielfalt'],
-        'Sonstige arbeitsbezogene Rechte': ['Kinderarbeit', 'Zwangarbeit', 'Angemessene Unterbringungen', 'Datenschutz']
+        'Sonstige arbeitsbezogene Rechte': ['Kinderarbeit', 'Zwangarbeit', 'Wasser- und Sanitäreinrichtungen', 'Angemessene Unterbringungen', 'Datenschutz']
     }
     for unterthema, values in unterthema_map.items():
         if unterthema_raw in values:
-            return thema, unterthema, unterthema_raw
+            return 'Eigene Belegschaft', unterthema, unterthema_raw
+    return 'Eigene Belegschaft', 'Unbekannt', 'Unbekannt'
+
+def map_valuechain_workforce_key(unterthema_raw):
+    unterthema_map = {
+        'Arbeitsbedingungen': ['Sichere Beschäftigung', 'Arbeitszeit', 'Angemessene Entlohnung', 'Sozialer Dialog', 'Vereinigungsfreiheit, Existenz von Betriebsräten und Rechte der Arbeitnehmer auf Information, Anhörung und Mitbestimmung', 'Tarifverhandlungen, einschließlich der Quote der durch Tarifverträge abgedeckten Arbeitskräften', 'Vereinbarkeit von Beruf und Privatleben', 'Gesundheitsschutz und Sicherheit'],
+        'Gleichbehandlung und Chancengleichheit für alle': ['Gleichstellung der Geschlechter und gleicher Lohn für gleiche Arbeit', 'Schulungen und Kompetenzentwicklung', 'Beschäftigung und Inklusion von Menschen mit Behinderungen', 'Maßnahmen gegen Gewalt und Belästigung am Arbeitsplatz', 'Vielfalt'],
+        'Sonstige arbeitsbezogene Rechte': ['Kinderarbeit', 'Zwangarbeit', 'Wasser- und Sanitäreinrichtungen', 'Angemessene Unterbringungen', 'Datenschutz']
+    }
+    for unterthema, values in unterthema_map.items():
+        if unterthema_raw in values:
+            return 'Belegschaft Lieferkette', unterthema, unterthema_raw
+    return 'Belegschaft Lieferkette', 'Unbekannt', 'Unbekannt'
 
 def map_community_key(unterthema_raw):
     unterthema_map = {
@@ -128,6 +146,7 @@ def map_community_key(unterthema_raw):
     for unterthema, values in unterthema_map.items():
         if unterthema_raw in values:
             return 'Betroffene Gemeinschaften', unterthema, unterthema_raw
+    return 'Betroffene Gemeinschaften', 'Unbekannt', 'Unbekannt'
 
 def map_consumer_key(unterthema_raw):
     unterthema_map = {
@@ -138,7 +157,25 @@ def map_consumer_key(unterthema_raw):
     for unterthema, values in unterthema_map.items():
         if unterthema_raw in values:
             return 'Verbraucher und Endnutzer', unterthema, unterthema_raw
+    return 'Verbraucher und Endnutzer', 'Unbekannt', 'Unbekannt'
 
+def extract_data_from_key(key):
+    start, end, suffix = determine_key_suffix(key)
+    
+    if start is not None:
+        unterthema = key[start:end].replace('_', ' ')
+        thema, unterthema, unter_unterthema = map_key_to_theme_and_subthemes(key, unterthema)
+        return {
+            'Thema': thema,
+            'Unterthema': unterthema,
+            'Unter-Unterthema': unter_unterthema
+        }
+    else:
+        return {
+            'Thema': 'Unbekannt',
+            'Unterthema': 'Unbekannt',
+            'Unter-Unterthema': 'Unbekannt'
+        }
 
 def initialize_bewertet_column(longlist):
     # Initialisiert die 'Bewertet'-Spalte im 'longlist'-DataFrame

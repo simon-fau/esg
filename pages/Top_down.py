@@ -117,7 +117,7 @@ class YesNoSelection:
         sections = [
             ("Direkte Ursachen des Biodiversitätsverlusts", [
                 ("Klimawandel", "Klimawandel"),
-                ("Land-, Süßwasser- und Meeresnutzungsänderungen", "Land-,_Süßwasser-_und_Meeresnutzungsänderungen"),
+                ("Land-, Süßwasser- und Meeresnutzungsänderungen", "Land-_Süßwasser-_und_Meeresnutzungsänderungen"),
                 ("Direkte Ausbeutung", "Direkte_Ausbeutung"),
                 ("Invasive gebietsfremde Arten", "Invasive_gebietsfremde_Arten"),
                 ("Umweltverschmutzung", "Umweltverschmutzung"),
@@ -149,7 +149,7 @@ class YesNoSelection:
     def display_S1_Eigene_Belegschaft(self):
         sections = [
             ("Arbeitsbedingungen", [
-                ("Sichere Beschäftigung", "Sichere Beschäftigung"), ("Arbeitszeit", "Arbeitszeit"), ("Angemessene Entlohnung", "Angemessene_Entlohnung"),
+                ("Sichere Beschäftigung", "Sichere Beschäftigung"), ("Arbeitszeit", "Arbeitszeit"), ("Angemessene Entlohnung", "Angemessene_Entlohnung"), ("Sozialer Dialog", "Sozialer_Dialog"),
                 ("Vereinigungsfreiheit, Existenz von Betriebsräten und Rechte der Arbeitnehmer auf Information, Anhörung und Mitbestimmung", "Vereinigungsfreiheit,_Existenz_von_Betriebsräten_und_Rechte_der_Arbeitnehmer_auf_Information,_Anhörung_und_Mitbestimmung"),
                 ("Tarifverhandlungen, einschließlich der Quote der durch Tarifverträge abgedeckten Arbeitskräften", "Tarifverhandlungen,_einschließlich_der_Quote_der_durch_Tarifverträge_abgedeckten_Arbeitskräften"),
                 ("Vereinbarkeit von Beruf und Privatleben", "Vereinbarkeit_von_Beruf_und_Privatleben"), ("Gesundheitsschutz und Sicherheit", "Gesundheitsschutz_und_Sicherheit")
@@ -159,7 +159,7 @@ class YesNoSelection:
                 ("Beschäftigung und Inklusion von Menschen mit Behinderungen", "Beschäftigung_und_Inklusion_von_Menschen_mit_Behinderungen"), ("Maßnahmen gegen Gewalt und Belästigung am Arbeitsplatz", "Maßnahmen_gegen_Gewalt_und_Belästigung_am_Arbeitsplatz"), ("Vielfalt", "Vielfalt")
             ]),
             ("Sonstige arbeitsbezogene Rechte", [
-                ("Kinderarbeit", "Kinderarbeit"), ("Zwangarbeit", "Zwangarbeit"), ("Angemessene Unterbringungen", "Angemessene_Unterbringungen"), ("Datenschutz", "Datenschutz")
+                ("Kinderarbeit", "Kinderarbeit"), ("Zwangarbeit", "Zwangarbeit"), ("Angemessene Unterbringungen", "Angemessene_Unterbringungen"), ("Wasser- und Sanitäreinrichtungen", "Wasser-_und_Sanitäreinrichtungen"), ("Datenschutz", "Datenschutz")
             ])
         ]
         self.display_complex_section(sections, "S1")
@@ -169,7 +169,7 @@ class YesNoSelection:
     def display_S2_Belegschaft_Lieferkette(self):
         sections = [
             ("Arbeitsbedingungen", [
-                ("Sichere Beschäftigung", "Sichere Beschäftigung"), ("Arbeitszeit", "Arbeitszeit"), ("Angemessene Entlohnung", "Angemessene_Entlohnung"),
+                ("Sichere Beschäftigung", "Sichere Beschäftigung"), ("Arbeitszeit", "Arbeitszeit"), ("Angemessene Entlohnung", "Angemessene_Entlohnung"), ("Sozialer Dialog", "Sozialer_Dialog"),
                 ("Vereinigungsfreiheit, Existenz von Betriebsräten und Rechte der Arbeitnehmer auf Information, Anhörung und Mitbestimmung", "Vereinigungsfreiheit,_Existenz_von_Betriebsräten_und_Rechte_der_Arbeitnehmer_auf_Information,_Anhörung_und_Mitbestimmung"),
                 ("Tarifverhandlungen, einschließlich der Quote der durch Tarifverträge abgedeckten Arbeitskräften", "Tarifverhandlungen,_einschließlich_der_Quote_der_durch_Tarifverträge_abgedeckten_Arbeitskräften"),
                 ("Vereinbarkeit von Beruf und Privatleben", "Vereinbarkeit_von_Beruf_und_Privatleben"), ("Gesundheitsschutz und Sicherheit", "Gesundheitsschutz_und_Sicherheit")
@@ -179,7 +179,7 @@ class YesNoSelection:
                 ("Beschäftigung und Inklusion von Menschen mit Behinderungen", "Beschäftigung_und_Inklusion_von_Menschen_mit_Behinderungen"), ("Maßnahmen gegen Gewalt und Belästigung am Arbeitsplatz", "Maßnahmen_gegen_Gewalt_und_Belästigung_am_Arbeitsplatz"), ("Vielfalt", "Vielfalt")
             ]),
             ("Sonstige arbeitsbezogene Rechte", [
-                ("Kinderarbeit", "Kinderarbeit"), ("Zwangarbeit", "Zwangarbeit"), ("Angemessene Unterbringungen", "Angemessene_Unterbringungen"), ("Datenschutz", "Datenschutz")
+                ("Kinderarbeit", "Kinderarbeit"), ("Zwangarbeit", "Zwangarbeit"), ("Angemessene Unterbringungen", "Angemessene_Unterbringungen"), ("Wasser- und Sanitäreinrichtungen", "Wasser-_und_Sanitäreinrichtungen"), ("Datenschutz", "Datenschutz")
             ])
         ]
         self.display_complex_section(sections, "S2")
@@ -205,13 +205,13 @@ class YesNoSelection:
     # Zeigt die Auswahloptionen für Verbraucher und Endnutzer an
     def display_S4_Verbraucher_und_Endnutzer(self):
         sections = [
-            ("Informationsbezogene Auswirkungen für Verbraucher und Endnutzer", [
+            ("Informationsbezogene Auswirkungen für Verbraucher und/oder Endnutzer", [
                 ("Datenschutz", "Datenschutz"), ("Meinungsfreiheit", "Meinungsfreiheit"), ("Zugang zu (hochwertigen) Informationen", "Zugang_zu_(hochwertigen)_Informationen")
             ]),
-            ("Persönliche Sicherheit von Verbrauchern und Endnutzern", [
+            ("Persönliche Sicherheit von Verbrauchern und/oder Endnutzern", [
                 ("Gesundheitsschutz und Sicherheit", "Gesundheitsschutz_und_Sicherheit"), ("Persönliche Sicherheit", "Persönliche_Sicherheit"), ("Kinderschutz", "Kinderschutz")
             ]),
-            ("Soziale Inklusion von Verbrauchern und Endnutzern", [
+            ("Soziale Inklusion von Verbrauchern und/oder Endnutzern", [
                 ("Nichtdiskriminierung", "Nichtdiskriminierung"), ("Zugang zu Produkten und Dienstleistungen", "Zugang_zu_Produkten_und_Dienstleistungen"), ("Verantwortliche Vermarktungspraktiken", "Verantwortliche_Vermarktungspraktiken")
             ])
         ]
@@ -231,7 +231,7 @@ class YesNoSelection:
 # Hauptfunktion zum Anzeigen der Seite mit den verschiedenen Auswahloptionen
 def display_page():
     selection = YesNoSelection()
-    tabs = st.tabs(["Klimawandel", "Umweltverschmutzung", "Meeres- und Wasserressourcen", "Biodiversität", "Kreislaufwirtschaft", "Eigene Belegschaft", "Belegschaft Lieferkette", "Betroffene Gemeinschaften", "Verbraucher und Endnutzer", "Unternehmenspolitik"])
+    tabs = st.tabs(["Klimawandel", "Umweltverschmutzung", "Wasser- und Meeressourcen", "Biodiversität", "Kreislaufwirtschaft", "Eigene Belegschaft", "Belegschaft Lieferkette", "Betroffene Gemeinschaften", "Verbraucher und Endnutzer", "Unternehmenspolitik"])
     with tabs[0]:
         st.subheader("Klimawandel")
         selection.display_E1_Klimawandel()
