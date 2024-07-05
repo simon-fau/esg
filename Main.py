@@ -11,7 +11,6 @@ if os.path.exists(pickle_file_path):
 else:
     loaded_data = None
    
-
 # Setzen der Seitenkonfiguration
 st.set_page_config(
     page_title="ESG-Tool",

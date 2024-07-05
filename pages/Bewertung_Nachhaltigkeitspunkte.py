@@ -349,8 +349,6 @@ def delete_bewertung(longlist):
 
     return longlist
 
-
-
 def display_selected_data():
     if 'selected_data' in st.session_state and not st.session_state.selected_data.empty:
         # Füllen Sie fehlende Werte in 'Thema', 'Unterthema' und 'Unter-Unterthema' mit einem leeren String
@@ -513,13 +511,13 @@ def merge_dataframes():
     
     # Erstellen eines session_state von combined_df
     st.session_state.combined_df = combined_df
-    save_state()
+    
 
     # Erstellung einer Kopie von combined_df ohne NumericalRating und Quelle zur Darstellung der Longlist mit lediglich relevanten Spalten
     combined_df_without_numerical_rating_and_source = st.session_state.combined_df.drop(columns=['NumericalRating', 'Quelle'])
     # Speichern Sie die neue DataFrame in 'st.session_state'
     st.session_state['combined_df_without_numerical_rating_and_source'] = combined_df_without_numerical_rating_and_source
-    save_state()
+    
 
     # Erstellen eines neuen DataFrame 'longlist', um Probleme mit der Zuordnung von 'selected_rows' zu vermeiden
     longlist = pd.DataFrame(combined_df_without_numerical_rating_and_source)
@@ -593,9 +591,8 @@ def merge_dataframes():
     longlist = submit_bewertung(longlist, ausgewaehlte_werte)
     longlist = delete_bewertung(longlist)
     display_grid(longlist)
-   
+    save_state()
 
-    
 def Scatter_chart():
     if "selected_data" not in st.session_state or st.session_state.selected_data.empty or "combined_df" not in st.session_state or st.session_state.combined_df.empty:
         return
@@ -670,4 +667,3 @@ def display_page():
     with tab2:
         st.write("Graphische Übersicht")
         Scatter_chart()
-         
