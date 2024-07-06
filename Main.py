@@ -78,19 +78,19 @@ if selected_menu == 'Wesentlichkeitsanalyse':
             st.error(f"Fehler: Die Seite {page_module.__name__} hat keine Funktion namens 'display_page'.") 
 
     if page_option == '1. Stakeholder Management':
-        import pages.Stakeholder as Stakeholder_page
+        import pages.Stakeholder_Management as Stakeholder_page
         load_page(Stakeholder_page)
     elif page_option == '2. Themenspezifische ESRS':
-        import pages.Top_down as Top_down_page
+        import pages.Themenspezifische_ESRS as Top_down_page
         load_page(Top_down_page)
     elif page_option == '3. Interne Nachhaltigkeitspunkte':
-        import pages.Bottom_up_eigene as Bottom_up_eigene_page
+        import pages.Interne_Nachhaltigkeitspunkte as Bottom_up_eigene_page
         load_page(Bottom_up_eigene_page)
     elif page_option == '4. Externe Nachhaltigkeitspunkte':
-        import pages.Bottom_up_stakeholder as Bottom_up_stakeholder_page
+        import pages.Externe_Nachhaltigkeitspunkte as Bottom_up_stakeholder_page
         load_page(Bottom_up_stakeholder_page)
     elif page_option == '5. Bewertung der Longlist':
-        import pages.Bewertung_Nachhaltigkeitspunkte as Bewertung_Nachhaltigkeitspunkte_page
+        import pages.Longlist as Bewertung_Nachhaltigkeitspunkte_page
         load_page(Bewertung_Nachhaltigkeitspunkte_page)
     elif page_option == '6. Erstellung der Shortlist':
         import pages.Shortlist as Shortlist_page

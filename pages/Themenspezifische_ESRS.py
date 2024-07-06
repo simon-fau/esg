@@ -2,6 +2,16 @@ import streamlit as st
 import pickle
 import os
 
+def Text():
+    st.header("Themenspezifische ESRS")
+    st.markdown("""
+        Bitte bewerten Sie die Themengebiete anhand ihrer Relevanz für Ihr Unternehmen. Dabei gilt folgende Definition für die verschiedenen Auswahlmöglichkeiten:
+        - **Wesentlich**: Das Thema ist für das Unternehmen von hoher Bedeutung und hat einen signifikanten Einfluss auf das Unternehmen.
+        - **Eher Wesentlich**: Das Thema ist für das Unternehmen von Bedeutung und hat einen Einfluss auf das Unternehmen.
+        - **Eher nicht Wesentlich**: Das Thema ist für das Unternehmen von geringer Bedeutung und hat einen geringen Einfluss auf das Unternehmen.
+        - **Nicht Wesentlich**: Das Thema ist für das Unternehmen nicht von Bedeutung und hat keinen Einfluss auf das Unternehmen.        
+    """)
+
 class YesNoSelection:
     def __init__(self):
         self.load_session_state()
@@ -230,6 +240,7 @@ class YesNoSelection:
 
 # Hauptfunktion zum Anzeigen der Seite mit den verschiedenen Auswahloptionen
 def display_page():
+    Text()
     selection = YesNoSelection()
     tabs = st.tabs(["Klimawandel", "Umweltverschmutzung", "Wasser- und Meeressourcen", "Biodiversität", "Kreislaufwirtschaft", "Eigene Belegschaft", "Belegschaft Lieferkette", "Betroffene Gemeinschaften", "Verbraucher und Endnutzer", "Unternehmenspolitik"])
     with tabs[0]:
