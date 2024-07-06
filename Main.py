@@ -2,15 +2,22 @@ import os
 import streamlit as st
 import hydralit_components as hc
 import pickle
+import pandas as pd
 
-# Laden der Pickle Datei der Longlist beim start, da ablauf Pickle und dann session state, sonst wird immer der stand der pickl datei beim erstmaligen öffnen, dem des aktuellen session states vorgezogen
+# Laden der Pickle Datei der Longlist.py, sodass der sesseion state beim Laden der Main direkt abgerufen wird.
 pickle_file_path = os.path.join(os.path.dirname(__file__), 'a.pkl')
 if os.path.exists(pickle_file_path):
     with open(pickle_file_path, 'rb') as f:
         loaded_data = pickle.load(f)
 else:
     loaded_data = None
-   
+
+# Initialisierung der Session States
+if loaded_data is not None:
+    for key, value in loaded_data.items():
+        if key not in st.session_state:
+            st.session_state[key] = value
+
 # Setzen der Seitenkonfiguration
 st.set_page_config(
     page_title="ESG-Tool",
@@ -84,7 +91,6 @@ if selected_menu == 'Wesentlichkeitsanalyse':
         load_page(Bottom_up_stakeholder_page)
     elif page_option == '5. Bewertung der Longlist':
         import pages.Bewertung_Nachhaltigkeitspunkte as Bewertung_Nachhaltigkeitspunkte_page
-        Bewertung_Nachhaltigkeitspunkte_page.loaded_data = loaded_data
         load_page(Bewertung_Nachhaltigkeitspunkte_page)
     elif page_option == '6. Erstellung der Shortlist':
         import pages.Shortlist as Shortlist_page
