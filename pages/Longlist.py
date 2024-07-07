@@ -268,7 +268,7 @@ def submit_bewertung(longlist, ausgewaehlte_werte):
         ] if part)
 
         new_data['Auswirkung'] = auswirkung_string
-        finanziell_string = f"{ausgewaehlte_werte.get('ausmass_finanziell', '')} ; {ausgewaehlte_werte.get('wahrscheinlichkeit_finanziell', '')} ; {ausgewaehlte_werte.get('auswirkung_finanziell', '')}"
+        finanziell_string = f"{ausgewaehlte_werte.get('art_finanziell', '')} ; {ausgewaehlte_werte.get('ausmass_finanziell', '')} ; {ausgewaehlte_werte.get('wahrscheinlichkeit_finanziell', '')} ; {ausgewaehlte_werte.get('auswirkung_finanziell', '')}"
         new_data['Finanziell'] = finanziell_string
 
         # Berechnung des Scores für finanzielle Bewertungen
@@ -409,9 +409,10 @@ def bewertung():
 
         # Display each part of 'Finanziell'
         finanziell_mapping = {
-            1: 'Ausmaß',
-            2: 'Wahrscheinlichkeit',
-            3: 'Finanzielle Auswirkung'
+            1: 'Art',
+            2: 'Ausmaß',
+            3: 'Wahrscheinlichkeit',
+            4: 'Finanzielle Auswirkung'
         }
 
         col1, col2, col3 = st.columns([1, 1, 1])
@@ -437,6 +438,25 @@ def bewertung():
         with col3:
             # Hier können weitere Informationen oder Aktionen hinzugefügt werden
             pass
+
+        # Hinzufügen der Bewertung zum session state 'all_evaluations'
+        if 'all_evaluations' not in st.session_state:
+            st.session_state['all_evaluations'] = []
+
+        evaluation = {
+            'ID': selected_row['ID'].values[0],
+            'Auswirkung': selected_row['Auswirkung'].values[0],
+            'Score Auswirkung': selected_row['Score Auswirkung'].values[0],
+            'Finanziell': selected_row['Finanziell'].values[0],
+            'Score Finanzen': selected_row['Score Finanzen'].values[0]
+        }
+
+        st.session_state['all_evaluations'].append(evaluation)
+
+        # Erstellen und Anzeigen eines DataFrame mit allen Bewertungen
+        evaluations_df = pd.DataFrame(st.session_state['all_evaluations'])
+        #st.write("**Alle Bewertungen**")
+        #st.dataframe(evaluations_df)
 
     # Zustand speichern nach jeder Änderung
     save_state()
@@ -532,7 +552,7 @@ def merge_dataframes():
     option = auswirkung_option = auswirkung_art_option = ausmass_neg_tat = umfang_neg_tat = behebbarkeit_neg_tat = ''
     ausmass_neg_pot = umfang_neg_pot = behebbarkeit_neg_pot = wahrscheinlichkeit_neg_pot = ''  
     ausmass_pos_tat = umfang_pos_tat = ausmass_pos_pot = umfang_pos_pot = behebbarkeit_pos_pot = ''
-    wahrscheinlichkeit_finanziell = ausmass_finanziell = auswirkung_finanziell = ''
+    art_finanziell = wahrscheinlichkeit_finanziell = ausmass_finanziell = auswirkung_finanziell = ''
 
     st.sidebar.markdown('---')
     st.sidebar.write("**Bewertungen hinzufügen**")
@@ -561,6 +581,7 @@ def merge_dataframes():
                     behebbarkeit_pos_pot = st.select_slider("Behebbarkeit:", options=["Kein Aufwand", "Leicht zu beheben", "Mit Aufwand", "Mit hohem Aufwand", "Mit sehr hohem Aufwand", "Nicht behebbar"], key="behebbarkeit_pos_pot")
     
         with st.expander("Finanzielle Bewertung"):
+            art_finanziell = st.selectbox("Eigenschaft der Auswirkung:", ['Chance', 'Risiko', 'Keine Auswirkung'], index=2, key="art_finanziell")
             ausmass_finanziell = st.select_slider("Ausmaß:", options=["Keine", "Minimal", "Niedrig", "Medium", "Hoch", "Sehr hoch"], key="ausmass_finanziell")
             wahrscheinlichkeit_finanziell = st.select_slider("Wahrscheinlichkeit:", options=["Tritt nicht ein", "Unwahrscheinlich", "Eher unwahrscheinlich", "Eher wahrscheinlich", "Wahrscheinlich", "Sicher"], key="wahrscheinlichkeit_finanziell")
             auswirkung_finanziell = st.select_slider("Finanzielle Auswirkung:", options=["Keine", "Sehr gering", "Eher gering", "Eher hoch", "Hoch", "Sehr hoch"], key="auswirkung_finanziell")
@@ -582,6 +603,7 @@ def merge_dataframes():
         "ausmass_pos_pot": ausmass_pos_pot,
         "umfang_pos_pot": umfang_pos_pot,
         "behebbarkeit_pos_pot": behebbarkeit_pos_pot,
+        "art_finanziell": art_finanziell,
         "wahrscheinlichkeit_finanziell": wahrscheinlichkeit_finanziell,
         "ausmass_finanziell": ausmass_finanziell,
         "auswirkung_finanziell": auswirkung_finanziell

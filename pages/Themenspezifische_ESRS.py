@@ -6,10 +6,10 @@ def Text():
     st.header("Themenspezifische ESRS")
     st.markdown("""
         Bitte bewerten Sie die Themengebiete anhand ihrer Relevanz für Ihr Unternehmen. Dabei gilt folgende Definition für die verschiedenen Auswahlmöglichkeiten:
-        - **Wesentlich**: Das Thema ist für das Unternehmen von hoher Bedeutung und hat einen signifikanten Einfluss auf das Unternehmen.
-        - **Eher Wesentlich**: Das Thema ist für das Unternehmen von Bedeutung und hat einen Einfluss auf das Unternehmen.
-        - **Eher nicht Wesentlich**: Das Thema ist für das Unternehmen von geringer Bedeutung und hat einen geringen Einfluss auf das Unternehmen.
-        - **Nicht Wesentlich**: Das Thema ist für das Unternehmen nicht von Bedeutung und hat keinen Einfluss auf das Unternehmen.        
+        - **Wesentlich**:  Ein Aspekt ist wesentlich, wenn er signifikante tatsächliche oder potenzielle Auswirkungen auf Menschen oder die Umwelt hat oder wesentliche finanzielle Auswirkungen auf das Unternehmen nach sich zieht bzw. zu erwarten sind.
+        - **Eher Wesentlich**: Ein Aspekt ist eher wesentlich, wenn er bedeutende, aber nicht unbedingt kritische Auswirkungen auf Menschen oder die Umwelt hat oder wenn finanzielle Auswirkungen wahrscheinlich, aber nicht zwingend erheblich sind.
+        - **Eher nicht Wesentlich**: Ein Aspekt ist eher nicht wesentlich, wenn die Auswirkungen auf Menschen oder die Umwelt begrenzt sind oder die finanziellen Auswirkungen gering oder unwahrscheinlich sind.
+        - **Nicht Wesentlich**: Ein Aspekt ist nicht wesentlich, wenn er keine oder nur vernachlässigbare Auswirkungen auf Menschen, die Umwelt oder die Finanzen des Unternehmens hat.
     """)
 
 class YesNoSelection:

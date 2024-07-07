@@ -207,7 +207,7 @@ def Excel_button():
      # Download-Button für die Excel-Datei
     if st.sidebar.download_button(label="⬇️ Excel-Datei herunterladen",
                           data=download_excel(),
-                          file_name="Ergebnis.xlsx",
+                          file_name="Shortlist.xlsx",
                           mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"):
         st.success("Download gestartet!")
 
