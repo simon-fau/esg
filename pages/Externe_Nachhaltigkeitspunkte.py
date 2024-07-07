@@ -66,8 +66,8 @@ def calculate_selected_rows(df, class_size):
 def extract_company_name(file):
     try:
         df = pd.read_excel(file, sheet_name='Einführung', engine='openpyxl', usecols="B")
-        if df.shape[0] > 11:
-            return df.iloc[11, 0]
+        if df.shape[0] > 10:
+            return df.iloc[10, 0]
         st.warning(f"Firmennamen in {file.name} nicht gefunden oder außerhalb des zulässigen Bereichs.")
     except Exception as e:
         st.error(f"Fehler beim Extrahieren des Firmennamens: {e}")
