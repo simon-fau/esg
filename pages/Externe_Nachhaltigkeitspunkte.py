@@ -174,21 +174,17 @@ def excel_upload():
                 new_df = st.session_state.ranking_df[relevant_columns]
                 new_df = new_df[new_df['NumericalRating'] >= 1]
 
-                if 'stakeholder_punkte_df' in st.session_state:
-                    st.session_state.stakeholder_punkte_df = pd.merge(
+                if not st.session_state.stakeholder_punkte_df.empty:
+                    merged_df = pd.merge(
                         st.session_state.stakeholder_punkte_df, new_df, 
-                        on=['Thema', 'Unterthema', 'Unter-Unterthema', 'Quelle'], how='outer'
+                        on=['Thema', 'Unterthema', 'Unter-Unterthema', 'Quelle'], how='outer', suffixes=('_x', '_y')
                     )
-                    st.session_state.stakeholder_punkte_df['AuswirkungRating'] = st.session_state.stakeholder_punkte_df['AuswirkungRating_x'].add(
-                        st.session_state.stakeholder_punkte_df['AuswirkungRating_y'], fill_value=0
-                    ).astype(int)
-                    st.session_state.stakeholder_punkte_df['FinanzRating'] = st.session_state.stakeholder_punkte_df['FinanzRating_x'].add(
-                        st.session_state.stakeholder_punkte_df['FinanzRating_y'], fill_value=0
-                    ).astype(int)
-                    st.session_state.stakeholder_punkte_df['NumericalRating'] = st.session_state.stakeholder_punkte_df['NumericalRating_x'].add(
-                        st.session_state.stakeholder_punkte_df['NumericalRating_y'], fill_value=0
-                    ).astype(int)
-                    st.session_state.stakeholder_punkte_df.drop(columns=['AuswirkungRating_x', 'AuswirkungRating_y', 'FinanzRating_x', 'FinanzRating_y', 'NumericalRating_x', 'NumericalRating_y'], inplace=True)
+
+                    merged_df['AuswirkungRating'] = merged_df['AuswirkungRating_x'].add(merged_df['AuswirkungRating_y'], fill_value=0).astype(int)
+                    merged_df['FinanzRating'] = merged_df['FinanzRating_x'].add(merged_df['FinanzRating_y'], fill_value=0).astype(int)
+                    merged_df['NumericalRating'] = merged_df['NumericalRating_x'].add(merged_df['NumericalRating_y'], fill_value=0).astype(int)
+                    merged_df.drop(columns=['AuswirkungRating_x', 'AuswirkungRating_y', 'FinanzRating_x', 'FinanzRating_y', 'NumericalRating_x', 'NumericalRating_y'], inplace=True)
+                    st.session_state.stakeholder_punkte_df = merged_df
                 else:
                     st.session_state.stakeholder_punkte_df = new_df
 
@@ -225,4 +221,3 @@ def display_page():
     with tab2:
         add_slider()
         stakeholder_punkte()
-
