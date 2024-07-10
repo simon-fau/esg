@@ -80,17 +80,47 @@ def get_node_color(score):
     return "green"
 
 def sidebar():
-    gruppe = st.text_input("Gruppe", '')
-    bestehende_beziehung = st.selectbox("Bestehende Beziehung", ['', 'Ja', 'Nein'])
-    auswirkung = st.selectbox("Auswirkung auf Interessen", ['', 'Hoch', 'Mittel', 'Niedrig'])
-    level_des_engagements = st.selectbox("Level des Engagements", ['', 'Hoch', 'Mittel', 'Niedrig'])
-    stakeholdergruppe = st.selectbox("Stakeholdergruppe", ['', 'Intern', 'Extern'])
-    kommunikation = st.selectbox("Kommunikation", ['', 'Regelmäßig', 'Gelegentlich', 'Nie'])
-    art_der_betroffenheit = st.selectbox("Art der Betroffenheit", ['', 'Direkt', 'Indirekt', 'Keine'])
-    zeithorizont = st.selectbox("Zeithorizont", ['', 'Kurzfristig', 'Mittelfristig', 'Langfristig'])
-    st.write("")
-    st.write("")
+    if 'gruppe' not in st.session_state:
+        st.session_state.gruppe = ''
+    if 'bestehende_beziehung' not in st.session_state:
+        st.session_state.bestehende_beziehung = ''
+    if 'auswirkung' not in st.session_state:
+        st.session_state.auswirkung = ''
+    if 'level_des_engagements' not in st.session_state:
+        st.session_state.level_des_engagements = ''
+    if 'stakeholdergruppe' not in st.session_state:
+        st.session_state.stakeholdergruppe = ''
+    if 'kommunikation' not in st.session_state:
+        st.session_state.kommunikation = ''
+    if 'art_der_betroffenheit' not in st.session_state:
+        st.session_state.art_der_betroffenheit = ''
+    if 'zeithorizont' not in st.session_state:
+        st.session_state.zeithorizont = ''
+
+    gruppe = st.text_input("Gruppe", value=st.session_state.gruppe)
+    bestehende_beziehung = st.selectbox("Bestehende Beziehung", ['', 'Ja', 'Nein'], index=0 if st.session_state.bestehende_beziehung == '' else ['','Ja','Nein'].index(st.session_state.bestehende_beziehung))
+    auswirkung = st.selectbox("Auswirkung auf Interessen", ['', 'Hoch', 'Mittel', 'Niedrig'], index=0 if st.session_state.auswirkung == '' else ['', 'Hoch', 'Mittel', 'Niedrig'].index(st.session_state.auswirkung))
+    level_des_engagements = st.selectbox("Level des Engagements", ['', 'Hoch', 'Mittel', 'Niedrig'], index=0 if st.session_state.level_des_engagements == '' else ['', 'Hoch', 'Mittel', 'Niedrig'].index(st.session_state.level_des_engagements))
+    stakeholdergruppe = st.selectbox("Stakeholdergruppe", ['', 'Intern', 'Extern'], index=0 if st.session_state.stakeholdergruppe == '' else ['', 'Intern', 'Extern'].index(st.session_state.stakeholdergruppe))
+    kommunikation = st.selectbox("Kommunikation", ['', 'Regelmäßig', 'Gelegentlich', 'Nie'], index=0 if st.session_state.kommunikation == '' else ['', 'Regelmäßig', 'Gelegentlich', 'Nie'].index(st.session_state.kommunikation))
+    art_der_betroffenheit = st.selectbox("Art der Betroffenheit", ['', 'Direkt', 'Indirekt', 'Keine'], index=0 if st.session_state.art_der_betroffenheit == '' else ['', 'Direkt', 'Indirekt', 'Keine'].index(st.session_state.art_der_betroffenheit))
+    zeithorizont = st.selectbox("Zeithorizont", ['', 'Kurzfristig', 'Mittelfristig', 'Langfristig'], index=0 if st.session_state.zeithorizont == '' else ['', 'Kurzfristig', 'Mittelfristig', 'Langfristig'].index(st.session_state.zeithorizont))
+
     add_row = st.button('➕ Hinzufügen')
+
+    if add_row:
+        # Setzen Sie hier die Logik zum Hinzufügen der Daten ein
+
+        # Setzen Sie den Zustand jeder SelectBox zurück
+        st.session_state.gruppe = ''
+        st.session_state.bestehende_beziehung = ''
+        st.session_state.auswirkung = ''
+        st.session_state.level_des_engagements = ''
+        st.session_state.stakeholdergruppe = ''
+        st.session_state.kommunikation = ''
+        st.session_state.art_der_betroffenheit = ''
+        st.session_state.zeithorizont = ''
+
     return gruppe, bestehende_beziehung, auswirkung, level_des_engagements, stakeholdergruppe, kommunikation, art_der_betroffenheit, zeithorizont, add_row
 
 # Funktion zur Anzeige der AgGrid und Rückgabe der GridResponse

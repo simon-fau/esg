@@ -29,7 +29,7 @@ if 'slider_value' not in st.session_state:
     st.session_state.slider_value = OPTIONS[0]
 
 if 'stakeholder_punkte_df' not in st.session_state:
-    st.session_state.stakeholder_punkte_df = pd.DataFrame(columns=['Platzierung', 'Thema', 'Unterthema', 'Unter-Unterthema', 'NumericalRating', 'Quelle'])
+    st.session_state.stakeholder_punkte_df = pd.DataFrame(columns=['Platzierung', 'Thema', 'Unterthema', 'Unter-Unterthema', 'AuswirkungRating', 'FinanzRating', 'NumericalRating', 'Quelle'])
 
 # Utility functions
 def calculate_class_size(df):
@@ -45,12 +45,14 @@ def get_numerical_rating(value):
     return ratings.get(value, 0)
 
 def aggregate_rankings(df):
-    df['NumericalRating'] = df['Bewertung'].apply(get_numerical_rating).astype(int)
+    df['AuswirkungRating'] = df['Auswirkungsbezogene Bewertung'].apply(get_numerical_rating).astype(int)
+    df['FinanzRating'] = df['Finanzbezogene Bewertung'].apply(get_numerical_rating).astype(int)
+    df['NumericalRating'] = df['AuswirkungRating'] + df['FinanzRating']
     df.fillna({'Thema': 'Unbekannt', 'Unterthema': 'Unbekannt', 'Unter-Unterthema': ''}, inplace=True)
-    ranking = df.groupby(['Thema', 'Unterthema', 'Unter-Unterthema', 'Quelle']).agg({'NumericalRating': 'sum'}).reset_index()
+    ranking = df.groupby(['Thema', 'Unterthema', 'Unter-Unterthema', 'Quelle']).agg({'AuswirkungRating': 'sum', 'FinanzRating': 'sum', 'NumericalRating': 'sum'}).reset_index()
     ranking.sort_values(by='NumericalRating', ascending=False, inplace=True)
     ranking['Platzierung'] = ranking['NumericalRating'].rank(method='min', ascending=False).astype(int)
-    return ranking[['Platzierung', 'Thema', 'Unterthema', 'Unter-Unterthema', 'NumericalRating', 'Quelle']]
+    return ranking[['Platzierung', 'Thema', 'Unterthema', 'Unter-Unterthema', 'AuswirkungRating', 'FinanzRating', 'NumericalRating', 'Quelle']]
 
 def calculate_selected_rows(df, class_size):
     slider_value = st.session_state.slider_value
@@ -151,7 +153,7 @@ def excel_upload():
                 company_names[file.name] = company_name
             for sheet_name in ['Top-Down', 'Intern', 'Extern']:
                 try:
-                    df = pd.read_excel(file, sheet_name=sheet_name, engine='openpyxl', usecols=['Thema', 'Unterthema', 'Unter-Unterthema', 'Bewertung'])
+                    df = pd.read_excel(file, sheet_name=sheet_name, engine='openpyxl', usecols=['Thema', 'Unterthema', 'Unter-Unterthema', 'Auswirkungsbezogene Bewertung', 'Finanzbezogene Bewertung'])
                     df['Quelle'] = company_name if sheet_name == 'Extern' else sheet_name
                     df_list.append(df)
                 except ValueError:
@@ -168,7 +170,7 @@ def excel_upload():
             save_session_state({'grid_response': st.session_state.grid_response})
 
             if st.button('Stakeholder Punkte übernehmen'):
-                relevant_columns = ['Thema', 'Unterthema', 'Unter-Unterthema', 'NumericalRating', 'Quelle']
+                relevant_columns = ['Thema', 'Unterthema', 'Unter-Unterthema', 'AuswirkungRating', 'FinanzRating', 'NumericalRating', 'Quelle']
                 new_df = st.session_state.ranking_df[relevant_columns]
                 new_df = new_df[new_df['NumericalRating'] >= 1]
 
@@ -177,10 +179,16 @@ def excel_upload():
                         st.session_state.stakeholder_punkte_df, new_df, 
                         on=['Thema', 'Unterthema', 'Unter-Unterthema', 'Quelle'], how='outer'
                     )
+                    st.session_state.stakeholder_punkte_df['AuswirkungRating'] = st.session_state.stakeholder_punkte_df['AuswirkungRating_x'].add(
+                        st.session_state.stakeholder_punkte_df['AuswirkungRating_y'], fill_value=0
+                    ).astype(int)
+                    st.session_state.stakeholder_punkte_df['FinanzRating'] = st.session_state.stakeholder_punkte_df['FinanzRating_x'].add(
+                        st.session_state.stakeholder_punkte_df['FinanzRating_y'], fill_value=0
+                    ).astype(int)
                     st.session_state.stakeholder_punkte_df['NumericalRating'] = st.session_state.stakeholder_punkte_df['NumericalRating_x'].add(
                         st.session_state.stakeholder_punkte_df['NumericalRating_y'], fill_value=0
                     ).astype(int)
-                    st.session_state.stakeholder_punkte_df.drop(columns=['NumericalRating_x', 'NumericalRating_y'], inplace=True)
+                    st.session_state.stakeholder_punkte_df.drop(columns=['AuswirkungRating_x', 'AuswirkungRating_y', 'FinanzRating_x', 'FinanzRating_y', 'NumericalRating_x', 'NumericalRating_y'], inplace=True)
                 else:
                     st.session_state.stakeholder_punkte_df = new_df
 
@@ -217,3 +225,4 @@ def display_page():
     with tab2:
         add_slider()
         stakeholder_punkte()
+
