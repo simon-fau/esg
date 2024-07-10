@@ -13,7 +13,7 @@ def save_state():
 def stakeholder_Nachhaltigkeitspunkte():
     # Initialisiere DataFrame falls nicht vorhanden
     if 'stakeholder_punkte_filtered' not in st.session_state:
-        st.session_state.stakeholder_punkte_filtered = pd.DataFrame(columns=["Platzierung", "Thema", "Unterthema", "Unter-Unterthema", "NumericalRating", "Quelle"])	
+        st.session_state.stakeholder_punkte_filtered = pd.DataFrame(columns=["Platzierung", "Thema", "Unterthema", "Unter-Unterthema", "Gesamtbewertung Stakeholder", "Quelle"])	
     
     # Erstelle eine Kopie des DataFrame
     selected_rows_st = st.session_state.stakeholder_punkte_filtered.copy()
@@ -358,9 +358,9 @@ def display_selected_data():
         # Auswahl der benötigten Spalten
         selected_columns = st.session_state.selected_data[['ID', 'Auswirkung', 'Finanziell', 'Score Finanzen', 'Score Auswirkung', 'Thema', 'Unterthema', 'Unter-Unterthema']]
 
-        # Extrahieren Sie die Spalte 'NumericalRating' aus 'combined_df' und fügen Sie sie zu 'selected_columns' hinzu
-        if 'combined_df' in st.session_state and 'NumericalRating' in st.session_state.combined_df.columns:
-            combined_df_with_numerical_rating = st.session_state.combined_df[['ID', 'NumericalRating']]
+        # Extrahieren Sie die Spalte 'Gesamtbewertung Stakeholder' aus 'combined_df' und fügen Sie sie zu 'selected_columns' hinzu
+        if 'combined_df' in st.session_state and 'Gesamtbewertung Stakeholder' in st.session_state.combined_df.columns:
+            combined_df_with_numerical_rating = st.session_state.combined_df[['ID', 'Gesamtbewertung Stakeholder']]
             selected_columns = pd.merge(selected_columns, combined_df_with_numerical_rating, on='ID', how='left')
         
         # Speichern Sie 'selected_columns' in 'st.session_state'
@@ -503,8 +503,8 @@ def merge_dataframes():
     # Gruppieren der Daten nach 'Thema', 'Unterthema' und 'Unter-Unterthema' und Zusammenführen der 'Quelle'-Werte
     combined_df = combined_df.groupby(['Thema', 'Unterthema', 'Unter-Unterthema']).agg({'Quelle': lambda x: ' & '.join(sorted(set(x)))}).reset_index()
 
-    # Hinzufügen der 'NumericalRating' Spalte aus 'selected_rows_st'
-    combined_df = pd.merge(combined_df, selected_rows_st[['Thema', 'Unterthema', 'Unter-Unterthema', 'NumericalRating']], on=['Thema', 'Unterthema', 'Unter-Unterthema'], how='left')
+    # Hinzufügen der 'Gesamtbewertung Stakeholder' Spalte aus 'selected_rows_st'
+    combined_df = pd.merge(combined_df, selected_rows_st[['Thema', 'Unterthema', 'Unter-Unterthema', 'Gesamtbewertung Stakeholder']], on=['Thema', 'Unterthema', 'Unter-Unterthema'], how='left')
 
     # Entfernen von Duplikaten
     combined_df = combined_df.drop_duplicates(subset=['Thema', 'Unterthema', 'Unter-Unterthema'])
@@ -533,8 +533,8 @@ def merge_dataframes():
     st.session_state.combined_df = combined_df
     
 
-    # Erstellung einer Kopie von combined_df ohne NumericalRating und Quelle zur Darstellung der Longlist mit lediglich relevanten Spalten
-    combined_df_without_numerical_rating_and_source = st.session_state.combined_df.drop(columns=['NumericalRating', 'Quelle'])
+    # Erstellung einer Kopie von combined_df ohne Gesamtbewertung Stakeholder und Quelle zur Darstellung der Longlist mit lediglich relevanten Spalten
+    combined_df_without_numerical_rating_and_source = st.session_state.combined_df.drop(columns=['Gesamtbewertung Stakeholder', 'Quelle'])
     # Speichern Sie die neue DataFrame in 'st.session_state'
     st.session_state['combined_df_without_numerical_rating_and_source'] = combined_df_without_numerical_rating_and_source
     
@@ -619,10 +619,10 @@ def Scatter_chart():
     if "selected_data" not in st.session_state or st.session_state.selected_data.empty or "combined_df" not in st.session_state or st.session_state.combined_df.empty:
         return
 
-    required_columns = ['ID', 'Score Finanzen', 'Score Auswirkung', 'Thema', 'Unterthema', 'Unter-Unterthema']
+    required_columns = ['ID', 'Score Finanzen', 'Score Auswirkung', 'Thema', 'Unterthema', 'Unter-Unterthema', 'Gesamtbewertung Stakeholder']
     if all(column in st.session_state.selected_data.columns for column in required_columns):
         selected_columns = st.session_state.selected_data[required_columns]
-        selected_columns = pd.merge(selected_columns, st.session_state.combined_df[['ID', 'NumericalRating', 'Quelle']], on='ID', how='inner')
+        selected_columns = pd.merge(selected_columns, st.session_state.combined_df[['ID', 'Gesamtbewertung Stakeholder', 'Quelle']], on='ID', how='inner')
 
         def assign_color(theme):
             if theme in ['Klimawandel', 'Umweltverschmutzung', 'Wasser- & Meeresressourcen', 'Biodiversität', 'Kreislaufwirtschaft']:
@@ -636,9 +636,9 @@ def Scatter_chart():
 
         selected_columns['color'] = selected_columns['Thema'].apply(assign_color)
 
-        min_rating = st.session_state.combined_df['NumericalRating'].min()
-        max_rating = st.session_state.combined_df['NumericalRating'].max()
-        selected_columns['size'] = ((selected_columns['NumericalRating'] - min_rating) / (max_rating - min_rating)) * (1000 - 100) + 100
+        min_rating = st.session_state.combined_df['Gesamtbewertung Stakeholder'].min()
+        max_rating = st.session_state.combined_df['Gesamtbewertung Stakeholder'].max()
+        selected_columns['size'] = ((selected_columns['Gesamtbewertung Stakeholder'] - min_rating) / (max_rating - min_rating)) * (1000 - 100) + 100
         selected_columns['size'] = selected_columns['size'].fillna(100)
 
         chart = alt.Chart(selected_columns, width=800, height=600).mark_circle().encode(

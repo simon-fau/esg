@@ -29,11 +29,11 @@ if 'slider_value' not in st.session_state:
     st.session_state.slider_value = OPTIONS[0]
 
 if 'stakeholder_punkte_df' not in st.session_state:
-    st.session_state.stakeholder_punkte_df = pd.DataFrame(columns=['Platzierung', 'Thema', 'Unterthema', 'Unter-Unterthema', 'AuswirkungRating', 'FinanzRating', 'NumericalRating', 'Quelle'])
+    st.session_state.stakeholder_punkte_df = pd.DataFrame(columns=['Platzierung', 'Thema', 'Unterthema', 'Unter-Unterthema', 'Bewertung Auswirkung', 'Bewertung Finanzen', 'Gesamtbewertung Stakeholder', 'Quelle'])
 
 # Utility functions
 def calculate_class_size(df):
-    return (df['NumericalRating'].max() - df['NumericalRating'].min()) / 4
+    return (df['Gesamtbewertung Stakeholder'].max() - df['Gesamtbewertung Stakeholder'].min()) / 4
 
 def get_numerical_rating(value):
     ratings = {
@@ -45,25 +45,25 @@ def get_numerical_rating(value):
     return ratings.get(value, 0)
 
 def aggregate_rankings(df):
-    df['AuswirkungRating'] = df['Auswirkungsbezogene Bewertung'].apply(get_numerical_rating).astype(int)
-    df['FinanzRating'] = df['Finanzbezogene Bewertung'].apply(get_numerical_rating).astype(int)
-    df['NumericalRating'] = df['AuswirkungRating'] + df['FinanzRating']
+    df['Bewertung Auswirkung'] = df['Auswirkungsbezogene Bewertung'].apply(get_numerical_rating).astype(int)
+    df['Bewertung Finanzen'] = df['Finanzbezogene Bewertung'].apply(get_numerical_rating).astype(int)
+    df['Gesamtbewertung Stakeholder'] = df['Bewertung Auswirkung'] + df['Bewertung Finanzen']
     df.fillna({'Thema': 'Unbekannt', 'Unterthema': 'Unbekannt', 'Unter-Unterthema': ''}, inplace=True)
-    ranking = df.groupby(['Thema', 'Unterthema', 'Unter-Unterthema', 'Quelle']).agg({'AuswirkungRating': 'sum', 'FinanzRating': 'sum', 'NumericalRating': 'sum'}).reset_index()
-    ranking.sort_values(by='NumericalRating', ascending=False, inplace=True)
-    ranking['Platzierung'] = ranking['NumericalRating'].rank(method='min', ascending=False).astype(int)
-    return ranking[['Platzierung', 'Thema', 'Unterthema', 'Unter-Unterthema', 'AuswirkungRating', 'FinanzRating', 'NumericalRating', 'Quelle']]
+    ranking = df.groupby(['Thema', 'Unterthema', 'Unter-Unterthema', 'Quelle']).agg({'Bewertung Auswirkung': 'sum', 'Bewertung Finanzen': 'sum', 'Gesamtbewertung Stakeholder': 'sum'}).reset_index()
+    ranking.sort_values(by='Gesamtbewertung Stakeholder', ascending=False, inplace=True)
+    ranking['Platzierung'] = ranking['Gesamtbewertung Stakeholder'].rank(method='min', ascending=False).astype(int)
+    return ranking[['Platzierung', 'Thema', 'Unterthema', 'Unter-Unterthema', 'Bewertung Auswirkung', 'Bewertung Finanzen', 'Gesamtbewertung Stakeholder', 'Quelle']]
 
 def calculate_selected_rows(df, class_size):
     slider_value = st.session_state.slider_value
     if slider_value == 'Wesentlich':
-        return df[df['NumericalRating'] > 3 * class_size + df['NumericalRating'].min()]
+        return df[df['Gesamtbewertung Stakeholder'] > 3 * class_size + df['Gesamtbewertung Stakeholder'].min()]
     elif slider_value == 'Eher Wesentlich':
-        return df[df['NumericalRating'] > 2 * class_size + df['NumericalRating'].min()]
+        return df[df['Gesamtbewertung Stakeholder'] > 2 * class_size + df['Gesamtbewertung Stakeholder'].min()]
     elif slider_value == 'Eher nicht wesentlich':
-        return df[df['NumericalRating'] > class_size + df['NumericalRating'].min()]
+        return df[df['Gesamtbewertung Stakeholder'] > class_size + df['Gesamtbewertung Stakeholder'].min()]
     else:
-        return df[df['NumericalRating'] > 0]
+        return df[df['Gesamtbewertung Stakeholder'] > 0]
 
 def extract_company_name(file):
     try:
@@ -107,7 +107,7 @@ def display_aggrid(df, with_checkboxes=False):
     
     # Set specific width for "Platzierung" and "Numerical Rating" columns
     gb.configure_column('Platzierung', width=30)  # Adjust width as needed
-    gb.configure_column('NumericalRating', width=80)  # Adjust width as needed
+    gb.configure_column('Gesamtbewertung Stakeholder', width=80)  # Adjust width as needed
     
     grid_options = gb.build()
     return AgGrid(df, gridOptions=grid_options, enable_enterprise_modules=True, update_mode=GridUpdateMode.MODEL_CHANGED)
@@ -170,9 +170,9 @@ def excel_upload():
             save_session_state({'grid_response': st.session_state.grid_response})
 
             if st.button('Stakeholder Punkte übernehmen'):
-                relevant_columns = ['Thema', 'Unterthema', 'Unter-Unterthema', 'AuswirkungRating', 'FinanzRating', 'NumericalRating', 'Quelle']
+                relevant_columns = ['Thema', 'Unterthema', 'Unter-Unterthema', 'Bewertung Auswirkung', 'Bewertung Finanzen', 'Gesamtbewertung Stakeholder', 'Quelle']
                 new_df = st.session_state.ranking_df[relevant_columns]
-                new_df = new_df[new_df['NumericalRating'] >= 1]
+                new_df = new_df[new_df['Gesamtbewertung Stakeholder'] >= 1]
 
                 if not st.session_state.stakeholder_punkte_df.empty:
                     merged_df = pd.merge(
@@ -180,16 +180,16 @@ def excel_upload():
                         on=['Thema', 'Unterthema', 'Unter-Unterthema', 'Quelle'], how='outer', suffixes=('_x', '_y')
                     )
 
-                    merged_df['AuswirkungRating'] = merged_df['AuswirkungRating_x'].add(merged_df['AuswirkungRating_y'], fill_value=0).astype(int)
-                    merged_df['FinanzRating'] = merged_df['FinanzRating_x'].add(merged_df['FinanzRating_y'], fill_value=0).astype(int)
-                    merged_df['NumericalRating'] = merged_df['NumericalRating_x'].add(merged_df['NumericalRating_y'], fill_value=0).astype(int)
+                    merged_df['Bewertung Auswirkung'] = merged_df['AuswirkungRating_x'].add(merged_df['AuswirkungRating_y'], fill_value=0).astype(int)
+                    merged_df['Bewertung Finanzen'] = merged_df['FinanzRating_x'].add(merged_df['FinanzRating_y'], fill_value=0).astype(int)
+                    merged_df['Gesamtbewertung Stakeholder'] = merged_df['NumericalRating_x'].add(merged_df['NumericalRating_y'], fill_value=0).astype(int)
                     merged_df.drop(columns=['AuswirkungRating_x', 'AuswirkungRating_y', 'FinanzRating_x', 'FinanzRating_y', 'NumericalRating_x', 'NumericalRating_y'], inplace=True)
                     st.session_state.stakeholder_punkte_df = merged_df
                 else:
                     st.session_state.stakeholder_punkte_df = new_df
 
-                st.session_state.stakeholder_punkte_df.sort_values(by='NumericalRating', ascending=False, inplace=True)
-                st.session_state.stakeholder_punkte_df['Platzierung'] = st.session_state.stakeholder_punkte_df['NumericalRating'].rank(method='min', ascending=False).astype(int)
+                st.session_state.stakeholder_punkte_df.sort_values(by='Gesamtbewertung Stakeholder', ascending=False, inplace=True)
+                st.session_state.stakeholder_punkte_df['Platzierung'] = st.session_state.stakeholder_punkte_df['Gesamtbewertung Stakeholder'].rank(method='min', ascending=False).astype(int)
                 save_session_state({'stakeholder_punkte_df': st.session_state.stakeholder_punkte_df})
                 st.success("Stakeholder Punkte erfolgreich übernommen")
 

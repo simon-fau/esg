@@ -44,7 +44,7 @@ def Chart(intersection_value, stakeholder_importance_value):
 
         columns_to_display = ['Score Finanzen', 'Score Auswirkung']
         selected_columns_df = selected_columns_df[columns_to_display]
-        required_columns = ['ID', 'Score Finanzen', 'Score Auswirkung', 'Thema', 'Unterthema', 'Unter-Unterthema', 'NumericalRating']
+        required_columns = ['ID', 'Score Finanzen', 'Score Auswirkung', 'Thema', 'Unterthema', 'Unter-Unterthema', 'Gesamtbewertung Stakeholder']
 
         # Check if the DataFrame is empty after filtering
         if selected_columns_df.empty:
@@ -63,9 +63,9 @@ def Chart(intersection_value, stakeholder_importance_value):
 
         selected_columns['color'] = selected_columns['Thema'].apply(assign_color)
 
-        min_rating = st.session_state.combined_df['NumericalRating'].min()
-        max_rating = st.session_state.combined_df['NumericalRating'].max()
-        selected_columns['size'] = ((selected_columns['NumericalRating'] - min_rating) / (max_rating - min_rating)) * (1000 - 100) + 100
+        min_rating = st.session_state.combined_df['Gesamtbewertung Stakeholder'].min()
+        max_rating = st.session_state.combined_df['Gesamtbewertung Stakeholder'].max()
+        selected_columns['size'] = ((selected_columns['Gesamtbewertung Stakeholder'] - min_rating) / (max_rating - min_rating)) * (1000 - 100) + 100
         selected_columns['size'] = selected_columns['size'].fillna(100)
 
         # Base scatter chart
