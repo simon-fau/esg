@@ -162,7 +162,7 @@ def display_stakeholder_ranking_and_network():
 
     with col2:
         st.subheader("Netzwerkdiagramm")
-        net = Network(height="300px", width="100%", bgcolor="white", font_color="black")
+        net = Network(height="500px", width="100%", bgcolor="white", font_color="black")
         net.add_node("Mein Unternehmen", color="black", label="", title="")
         if 'namen_tabelle' in st.session_state:
             for _, row in st.session_state['namen_tabelle'].iterrows():

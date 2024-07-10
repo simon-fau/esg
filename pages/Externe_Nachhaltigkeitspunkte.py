@@ -100,6 +100,13 @@ def display_aggrid(df, with_checkboxes=False):
     if with_checkboxes:
         gb.configure_selection('multiple', use_checkbox=True, groupSelectsChildren="Group checkbox select children", rowMultiSelectWithClick=True)
     gb.configure_side_bar()
+    gb.configure_grid_options(domLayout='autoHeight')  # Adjusted to autoHeight for dynamic sizing
+    gb.configure_default_column(flex=1, minWidth=100, resizable=True, autoHeight=True)  # Ensure columns use available space
+    
+    # Set specific width for "Platzierung" and "Numerical Rating" columns
+    gb.configure_column('Platzierung', width=30)  # Adjust width as needed
+    gb.configure_column('NumericalRating', width=80)  # Adjust width as needed
+    
     grid_options = gb.build()
     return AgGrid(df, gridOptions=grid_options, enable_enterprise_modules=True, update_mode=GridUpdateMode.MODEL_CHANGED)
 
@@ -197,7 +204,6 @@ def display_sidebar():
         for index, row in st.session_state.company_names.iterrows():
             st.sidebar.markdown(f"- {row['Company Name']}")
     
-
 def display_page():
     st.header("Stakeholder-Management")
     st.markdown("""

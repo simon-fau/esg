@@ -97,7 +97,7 @@ if selected_menu == 'Wesentlichkeitsanalyse':
         load_page(Shortlist_page)
 
 else:
-    st.markdown("""<style>section[data-testid='stSidebar'][aria-expanded='true']{display: none;}</style>""", unsafe_allow_html=True)
+    st.markdown("""<style>section.st-emotion-cache-vk3wp9.eczjsme11{display: none !important;}</style>""", unsafe_allow_html=True)
 
 if selected_menu == 'Übersicht':
     import pages.Übersicht as Übersicht_page
