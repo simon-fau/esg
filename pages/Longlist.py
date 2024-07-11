@@ -13,7 +13,7 @@ def save_state():
 def stakeholder_Nachhaltigkeitspunkte():
     # Initialisiere DataFrame falls nicht vorhanden
     if 'stakeholder_punkte_filtered' not in st.session_state:
-        st.session_state.stakeholder_punkte_filtered = pd.DataFrame(columns=["Platzierung", "Thema", "Unterthema", "Unter-Unterthema", "Gesamtbewertung Stakeholder", "Quelle"])	
+        st.session_state.stakeholder_punkte_filtered = pd.DataFrame(columns=["Platzierung", "Thema", "Unterthema", "Unter-Unterthema", "Stakeholder Gesamtbew.", "Quelle"])	
     
     # Erstelle eine Kopie des DataFrame
     selected_rows_st = st.session_state.stakeholder_punkte_filtered.copy()
@@ -358,9 +358,9 @@ def display_selected_data():
         # Auswahl der benötigten Spalten
         selected_columns = st.session_state.selected_data[['ID', 'Auswirkung', 'Finanziell', 'Score Finanzen', 'Score Auswirkung', 'Thema', 'Unterthema', 'Unter-Unterthema']]
 
-        # Extrahieren Sie die Spalte 'Gesamtbewertung Stakeholder' aus 'combined_df' und fügen Sie sie zu 'selected_columns' hinzu
-        if 'combined_df' in st.session_state and 'Gesamtbewertung Stakeholder' in st.session_state.combined_df.columns:
-            combined_df_with_numerical_rating = st.session_state.combined_df[['ID', 'Gesamtbewertung Stakeholder']]
+        # Extrahieren Sie die Spalte 'Stakeholder Gesamtbew.' aus 'combined_df' und fügen Sie sie zu 'selected_columns' hinzu
+        if 'combined_df' in st.session_state and 'Stakeholder Gesamtbew.' in st.session_state.combined_df.columns:
+            combined_df_with_numerical_rating = st.session_state.combined_df[['ID', 'Stakeholder Gesamtbew.']]
             selected_columns = pd.merge(selected_columns, combined_df_with_numerical_rating, on='ID', how='left')
         
         # Speichern Sie 'selected_columns' in 'st.session_state'
@@ -503,8 +503,8 @@ def merge_dataframes():
     # Gruppieren der Daten nach 'Thema', 'Unterthema' und 'Unter-Unterthema' und Zusammenführen der 'Quelle'-Werte
     combined_df = combined_df.groupby(['Thema', 'Unterthema', 'Unter-Unterthema']).agg({'Quelle': lambda x: ' & '.join(sorted(set(x)))}).reset_index()
 
-    # Hinzufügen der 'Gesamtbewertung Stakeholder' Spalte aus 'selected_rows_st'
-    combined_df = pd.merge(combined_df, selected_rows_st[['Thema', 'Unterthema', 'Unter-Unterthema', 'Gesamtbewertung Stakeholder']], on=['Thema', 'Unterthema', 'Unter-Unterthema'], how='left')
+    # Hinzufügen der 'Stakeholder Gesamtbew.' Spalte aus 'selected_rows_st'
+    combined_df = pd.merge(combined_df, selected_rows_st[['Thema', 'Unterthema', 'Unter-Unterthema', 'Stakeholder Gesamtbew.']], on=['Thema', 'Unterthema', 'Unter-Unterthema'], how='left')
 
     # Entfernen von Duplikaten
     combined_df = combined_df.drop_duplicates(subset=['Thema', 'Unterthema', 'Unter-Unterthema'])
@@ -533,8 +533,8 @@ def merge_dataframes():
     st.session_state.combined_df = combined_df
     
 
-    # Erstellung einer Kopie von combined_df ohne Gesamtbewertung Stakeholder und Quelle zur Darstellung der Longlist mit lediglich relevanten Spalten
-    combined_df_without_numerical_rating_and_source = st.session_state.combined_df.drop(columns=['Gesamtbewertung Stakeholder', 'Quelle'])
+    # Erstellung einer Kopie von combined_df ohne Stakeholder Gesamtbew. und Quelle zur Darstellung der Longlist mit lediglich relevanten Spalten
+    combined_df_without_numerical_rating_and_source = st.session_state.combined_df.drop(columns=['Stakeholder Gesamtbew.', 'Quelle'])
     # Speichern Sie die neue DataFrame in 'st.session_state'
     st.session_state['combined_df_without_numerical_rating_and_source'] = combined_df_without_numerical_rating_and_source
     
@@ -615,77 +615,10 @@ def merge_dataframes():
     display_grid(longlist)
     save_state()
 
-def Scatter_chart():
-    if "selected_data" not in st.session_state or st.session_state.selected_data.empty or "combined_df" not in st.session_state or st.session_state.combined_df.empty:
-        return
-
-    required_columns = ['ID', 'Score Finanzen', 'Score Auswirkung', 'Thema', 'Unterthema', 'Unter-Unterthema', 'Gesamtbewertung Stakeholder']
-    if all(column in st.session_state.selected_data.columns for column in required_columns):
-        selected_columns = st.session_state.selected_data[required_columns]
-        selected_columns = pd.merge(selected_columns, st.session_state.combined_df[['ID', 'Gesamtbewertung Stakeholder', 'Quelle']], on='ID', how='inner')
-
-        def assign_color(theme):
-            if theme in ['Klimawandel', 'Umweltverschmutzung', 'Wasser- & Meeresressourcen', 'Biodiversität', 'Kreislaufwirtschaft']:
-                return 'Environmental'
-            elif theme in ['Eigene Belegschaft', 'Belegschaft Lieferkette', 'Betroffene Gemeinschaften', 'Verbraucher und Endnutzer']:
-                return 'Social'
-            elif theme == 'Unternehmenspolitik':
-                return 'Governance'
-            else:
-                return 'Sonstige'
-
-        selected_columns['color'] = selected_columns['Thema'].apply(assign_color)
-
-        min_rating = st.session_state.combined_df['Gesamtbewertung Stakeholder'].min()
-        max_rating = st.session_state.combined_df['Gesamtbewertung Stakeholder'].max()
-        selected_columns['size'] = ((selected_columns['Gesamtbewertung Stakeholder'] - min_rating) / (max_rating - min_rating)) * (1000 - 100) + 100
-        selected_columns['size'] = selected_columns['size'].fillna(100)
-
-        chart = alt.Chart(selected_columns, width=800, height=600).mark_circle().encode(
-            x=alt.X('Score Finanzen', scale=alt.Scale(domain=(0, 1000)), title='Finanzielle Wesentlichkeit'),
-            y=alt.Y('Score Auswirkung', scale=alt.Scale(domain=(0, 1000)), title='Auswirkungsbezogene Wesentlichkeit'),
-            color=alt.Color('color:N', scale=alt.Scale(
-                domain=['Environmental', 'Social', 'Governance', 'Sonstige'],
-                range=['green', 'yellow', 'blue', 'gray']
-            ), legend=alt.Legend(
-                title="Thema",
-                orient="right",
-                titleColor='black',
-                labelColor='black',
-                titleFontSize=12,
-                labelFontSize=10,
-                values=['Environmental', 'Social', 'Governance', 'Sonstige']
-            )),
-            size=alt.Size('size:Q', scale=alt.Scale(range=[100, 1000]), legend=alt.Legend(
-                title="Stakeholder Importance",
-                orient="right",
-                titleColor='black',
-                labelColor='black',
-                titleFontSize=12,
-                labelFontSize=10
-            )),
-            tooltip=required_columns
-        ).properties(
-            width=800,
-            height=600
-        ).configure_legend(
-            strokeColor=None,
-            fillColor='white',
-            cornerRadius=5,
-            padding=10,
-            titleFont='Helvetica',
-            labelFont='Helvetica'
-        )
-
-        st.altair_chart(chart)
-
 def display_page():
-    tab1, tab2 = st.tabs(["Bewertung der Nachhaltigkeitspunkte (Longlist)", "Graphische Übersicht"])
-    with tab1:    
-            merge_dataframes()
-            display_selected_data()   
-            with st.expander("Bewertungen"):
-                bewertung()
-    with tab2:
-        st.write("Graphische Übersicht")
-        Scatter_chart()
+    st.title("Bewertung der Nachhaltigkeitspunkte (Longlist)")  
+    merge_dataframes()
+    display_selected_data()   
+    with st.expander("Bewertungen"):
+        bewertung()
+   

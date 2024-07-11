@@ -44,7 +44,7 @@ def Chart(intersection_value, stakeholder_importance_value):
 
         columns_to_display = ['Score Finanzen', 'Score Auswirkung']
         selected_columns_df = selected_columns_df[columns_to_display]
-        required_columns = ['ID', 'Score Finanzen', 'Score Auswirkung', 'Thema', 'Unterthema', 'Unter-Unterthema', 'Gesamtbewertung Stakeholder']
+        required_columns = ['ID', 'Score Finanzen', 'Score Auswirkung', 'Thema', 'Unterthema', 'Unter-Unterthema', 'Stakeholder Wichtigkeit']
 
         # Check if the DataFrame is empty after filtering
         if selected_columns_df.empty:
@@ -63,10 +63,10 @@ def Chart(intersection_value, stakeholder_importance_value):
 
         selected_columns['color'] = selected_columns['Thema'].apply(assign_color)
 
-        min_rating = st.session_state.combined_df['Gesamtbewertung Stakeholder'].min()
-        max_rating = st.session_state.combined_df['Gesamtbewertung Stakeholder'].max()
-        selected_columns['size'] = ((selected_columns['Gesamtbewertung Stakeholder'] - min_rating) / (max_rating - min_rating)) * (1000 - 100) + 100
-        selected_columns['size'] = selected_columns['size'].fillna(100)
+        min_rating = st.session_state.combined_df['Stakeholder Gesamtbew.'].min()
+        max_rating = st.session_state.combined_df['Stakeholder Gesamtbew.'].max()
+        selected_columns['Stakeholder Wichtigkeit'] = ((selected_columns['Stakeholder Gesamtbew.'] - min_rating) / (max_rating - min_rating)) * (1000 - 100) + 100
+        selected_columns['Stakeholder Wichtigkeit'] = selected_columns['Stakeholder Wichtigkeit'].fillna(100)
 
         # Base scatter chart
         scatter = alt.Chart(selected_columns, width=800, height=600).mark_circle().encode(
@@ -84,8 +84,8 @@ def Chart(intersection_value, stakeholder_importance_value):
                 labelFontSize=10,
                 values=['Environmental', 'Social', 'Governance', 'Sonstige']
             )),
-            size=alt.Size('size:Q', scale=alt.Scale(range=[100, 1000]), legend=alt.Legend(
-                title="Stakeholder Importance",
+            size=alt.Size('Stakeholder Wichtigkeit:Q', scale=alt.Scale(range=[100, 1000]), legend=alt.Legend(
+                title="Stakeholder Wichtigkeit",
                 orient="right",
                 titleColor='black',
                 labelColor='black',
@@ -134,7 +134,7 @@ def filter_table(intersection_value, stakeholder_importance_value):
         # Filter the data based on the sum of 'Score Finanzen' and 'Score Auswirkung' being greater than intersection_value
         st.session_state.filtered_df = selected_columns_df[
             (selected_columns_df['Score Finanzen'] + selected_columns_df['Score Auswirkung'] > intersection_value) |
-            (selected_columns_df['size'] > stakeholder_importance_value)
+            (selected_columns_df['Stakeholder Gesamtbew.'] > stakeholder_importance_value)
         ]
         
         # Ensure necessary columns are present
@@ -160,7 +160,7 @@ def display_slider():
     st.sidebar.markdown("---")
     # Slider for intersection value
     st.sidebar.slider("Grenzwert für die Relevanz angeben", min_value=0, max_value=1000, value=st.session_state['intersection_value'], step=10, key="intersection_slider")
-    st.sidebar.slider("Grenzwert für Stakeholder Relevanz angeben", min_value=100, max_value=1000, value=st.session_state['stakeholder_importance_value'], step=50, key="stakeholder_importance_slider")
+    st.sidebar.slider("Grenzwert für Stakeholder Relevanz angeben", min_value=0, max_value=1000, value=st.session_state['stakeholder_importance_value'], step=50, key="stakeholder_importance_slider")
  
 template_path = os.path.join(os.path.dirname(__file__), 'Templates', 'Ausführung.xlsx')
 
