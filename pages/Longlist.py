@@ -4,6 +4,8 @@ from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode, DataReturnMode
 import altair as alt
 import numpy as np
 import pickle
+import matplotlib.pyplot as plt
+
 
 # Funktion zum Speichern des Zustands
 def save_state():
@@ -320,7 +322,6 @@ def submit_bewertung(longlist, ausgewaehlte_werte):
         st.success("Bewertung abgesendet")
     return longlist
 
-
 def delete_bewertung(longlist):
     st.sidebar.markdown("---")
     st.sidebar.write("**Bewertungen löschen**")
@@ -614,6 +615,23 @@ def merge_dataframes():
     longlist = delete_bewertung(longlist)
     display_grid(longlist)
     save_state()
+
+def bewertung_Uebersicht():
+    if 'longlist' not in st.session_state or st.session_state['longlist'].empty:
+        st.warning('Keine Longlist vorhanden. Bitte fügen Sie eine Longlist hinzu.')
+        return  # Beendet die Funktion, wenn keine Longlist vorhanden ist
+
+    # Zählen der Anzahl der Bewertungen in der Longlist
+    bewertung_counts = st.session_state['longlist']['Bewertet'].value_counts()
+
+    # Berechnen des Prozentsatzes der "Ja"-Bewertungen
+    total_bewertungen = bewertung_counts.sum()
+    ja_bewertungen = bewertung_counts.get('Ja', 0)
+    ja_prozent = int((ja_bewertungen / total_bewertungen) * 100) if total_bewertungen > 0 else 0
+
+    # Anzeigen des Prozentsatzes mit einer Fortschrittsleiste
+    st.write(f'Prozentsatz der "Ja"-Bewertungen: {ja_prozent}%')
+    st.progress(ja_prozent)
 
 def display_page():
     st.title("Bewertung der Nachhaltigkeitspunkte (Longlist)")  

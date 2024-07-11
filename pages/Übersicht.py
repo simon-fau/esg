@@ -1,6 +1,8 @@
 import streamlit as st
 from pages.Stakeholder_Management import display_stakeholder_ranking_and_network
 from pages.Externe_Nachhaltigkeitspunkte import calculate_class_size, calculate_selected_rows, display_aggrid
+from pages.Longlist import merge_dataframes, bewertung_Uebersicht
+
 
 def display_stakeholder_table():
     class_size = calculate_class_size(st.session_state.stakeholder_punkte_df)
@@ -21,7 +23,7 @@ def companies_in_stakeholder_table():
             st.markdown(f"- {row['Company Name']}")
 
 def display_page():
-    tab1, tab2 = st.tabs(["Stakeholder", "Shortlist"])
+    tab1, tab2 = st.tabs(["Stakeholder", "Longlist"])
 
     with tab1:
         st.title("Bewertete Nachhaltigkeitspunkte der Stakeholder:")
@@ -30,6 +32,9 @@ def display_page():
         companies_in_stakeholder_table()
 
     with tab2:
-        st.write("Shortlist")
+        st.write("Longlist")
+        merge_dataframes()
+        bewertung_Uebersicht()
+
         
     
