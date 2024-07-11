@@ -217,3 +217,5 @@ def display_page():
     filter_table(st.session_state['intersection_slider'], st.session_state['stakeholder_importance_slider'])
     Excel_button()
     save_state()
+    st.write("Selected Columns:", st.session_state.get('selected_columns', 'Keine Spalten ausgewählt'))
+    
