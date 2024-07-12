@@ -2,7 +2,7 @@ import streamlit as st
 from pages.Stakeholder_Management import display_stakeholder_ranking_and_network
 from pages.Externe_Nachhaltigkeitspunkte import calculate_class_size, calculate_selected_rows, display_aggrid
 from pages.Longlist import merge_dataframes, bewertung_Uebersicht
-from pages.Shortlist import chart_Übersicht
+from pages.Shortlist import chart_übersicht_allgemein
 import plotly.express as px
 import plotly.graph_objects as go
 
@@ -38,5 +38,5 @@ def display_page():
         merge_dataframes()
         bewertung_Uebersicht()
         st.write("Selected Columns:", st.session_state.get('selected_columns', 'Keine Spalten ausgewählt'))
-        chart_Übersicht()
+        chart_übersicht_allgemein()
         

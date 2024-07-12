@@ -219,6 +219,78 @@ def Excel_button():
                           mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"):
         st.success("Download gestartet!")
 
+#---- Abschnitt zur Erstellung von unterschiedlichen Charts für die Übersicht ----#
+
+def chart_übersicht_allgemein():
+
+    if 'selected_columns' in st.session_state and len(st.session_state['selected_columns']) > 0:
+        selected_columns = st.session_state['selected_columns']
+
+        # Daten vorbereiten
+        if isinstance(selected_columns, list):
+            selected_columns_df = pd.DataFrame(selected_columns)
+        else:
+            selected_columns_df = selected_columns
+
+        columns_to_display = ['Score Finanzen', 'Score Auswirkung']
+        selected_columns_df = selected_columns_df[columns_to_display]
+        required_columns = ['ID', 'Score Finanzen', 'Score Auswirkung', 'Thema', 'Unterthema', 'Unter-Unterthema', 'Stakeholder Wichtigkeit']
+
+        if selected_columns_df.empty:
+            st.warning("Keine Daten vorhanden, um den Chart anzuzeigen.")
+            return
+
+        def assign_color(theme):
+            if theme in ['Klimawandel', 'Umweltverschmutzung', 'Wasser- & Meeresressourcen', 'Biodiversität', 'Kreislaufwirtschaft']:
+                return 'Environmental'
+            elif theme in ['Eigene Belegschaft', 'Belegschaft Lieferkette', 'Betroffene Gemeinschaften', 'Verbraucher und Endnutzer']:
+                return 'Social'
+            elif theme == 'Unternehmenspolitik':
+                return 'Governance'
+            else:
+                return 'Sonstige'
+
+        selected_columns['color'] = selected_columns['Thema'].apply(assign_color)
+
+        min_rating = st.session_state.combined_df['Stakeholder Gesamtbew.'].min()
+        max_rating = st.session_state.combined_df['Stakeholder Gesamtbew.'].max()
+        selected_columns['Stakeholder Wichtigkeit'] = ((selected_columns['Stakeholder Gesamtbew.'] - min_rating) / (max_rating - min_rating)) * (1000 - 100) + 100
+        selected_columns['Stakeholder Wichtigkeit'] = selected_columns['Stakeholder Wichtigkeit'].fillna(100)
+
+        # Basis-Scatter-Chart
+        scatter = alt.Chart(selected_columns, width=1000, height=800).mark_circle().encode(
+            x=alt.X('Score Finanzen', scale=alt.Scale(domain=(0, 1000)), title='Finanzielle Wesentlichkeit'),
+            y=alt.Y('Score Auswirkung', scale=alt.Scale(domain=(0, 1000)), title='Auswirkungsbezogene Wesentlichkeit'),
+            color=alt.Color('color:N', scale=alt.Scale(
+                domain=['Environmental', 'Social', 'Governance', 'Sonstige'],
+                range=['green', 'yellow', 'blue', 'gray']
+            ), legend=alt.Legend(
+                title="Thema",
+                orient="right",
+                titleColor='black',
+                labelColor='black',
+                titleFontSize=12,
+                labelFontSize=10,
+                values=['Environmental', 'Social', 'Governance', 'Sonstige']
+            )),
+            size=alt.Size('Stakeholder Wichtigkeit:Q', scale=alt.Scale(range=[100, 1000]), legend=alt.Legend(
+                title="Stakeholder Wichtigkeit",
+                orient="right",
+                titleColor='black',
+                labelColor='black',
+                titleFontSize=12,
+                labelFontSize=10
+            )),
+            tooltip=required_columns
+        )
+
+        st.altair_chart(scatter)
+    else:
+        st.warning("Keine Daten ausgewählt.")
+
+def chart_auswirkungsbezogen():
+    
+
 def display_page():
     display_slider()
     if 'apply_changes' in st.session_state and st.session_state['apply_changes']:
