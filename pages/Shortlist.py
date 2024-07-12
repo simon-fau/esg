@@ -288,8 +288,86 @@ def chart_übersicht_allgemein():
     else:
         st.warning("Keine Daten ausgewählt.")
 
+# Neue Chart-Auswirkungsbezogen-Funktion
 def chart_auswirkungsbezogen():
-    
+    st.header("Graphische Übersicht - Auswirkungsbezogen")
+
+    if 'selected_columns' in st.session_state and len(st.session_state['selected_columns']) > 0:
+        df = st.session_state['selected_columns']
+
+        # Farbcodierung basierend auf der Untersuchung der Zeichenkette in "Score Auswirkung"
+        def determine_color(impact):
+            if 'Positive Auswirkung' in impact:
+                return 'Positive Auswirkung'
+            elif 'Negative Auswirkung' in impact:
+                return 'Negative Auswirkung'
+            else:
+                return None  # Ignore "Keine Auswirkung"
+
+        # Shape determination basierend auf "Tatsächliche Auswirkung" oder "Potentielle Auswirkung"
+        def determine_shape(impact):
+            if 'Tatsächliche Auswirkung' in impact:
+                return 'Tatsächliche Auswirkung'
+            elif 'Potentielle Auswirkung' in impact:
+                return 'Potentielle Auswirkung'
+            else:
+                return None
+
+        # Filter out rows with "Keine Auswirkung"
+        df['color'] = df['Auswirkung'].apply(determine_color)
+        df = df[df['color'].notnull()]
+
+        # Add shape column
+        df['shape'] = df['Auswirkung'].apply(determine_shape)
+
+        # Berechnung der Stakeholder Wichtigkeit
+        min_rating = st.session_state.combined_df['Stakeholder Gesamtbew.'].min()
+        max_rating = st.session_state.combined_df['Stakeholder Gesamtbew.'].max()
+        df['Stakeholder Wichtigkeit'] = ((df['Stakeholder Gesamtbew.'] - min_rating) / (max_rating - min_rating)) * (1000 - 100) + 100
+        df['Stakeholder Wichtigkeit'] = df['Stakeholder Wichtigkeit'].fillna(100)
+
+        # Basis-Scatter-Chart
+        scatter = alt.Chart(df, width=1000, height=800).mark_point(filled=True).encode(
+            x=alt.X('Score Finanzen', scale=alt.Scale(domain=(0, 1000)), title='Finanzielle Wesentlichkeit'),
+            y=alt.Y('Score Auswirkung', scale=alt.Scale(domain=(0, 1000)), title='Auswirkungsbezogene Wesentlichkeit'),
+            color=alt.Color('color:N', scale=alt.Scale(
+                domain=['Positive Auswirkung', 'Negative Auswirkung'],
+                range=['green', 'red']
+            ), legend=alt.Legend(
+                title="Auswirkung",
+                orient="right",
+                titleColor='black',
+                labelColor='black',
+                titleFontSize=12,
+                labelFontSize=10,
+                values=['Positive Auswirkung', 'Negative Auswirkung']
+            )),
+            shape=alt.Shape('shape:N', scale=alt.Scale(
+                domain=['Tatsächliche Auswirkung', 'Potentielle Auswirkung'],
+                range=['circle', 'square']
+            ), legend=alt.Legend(
+                title="Typ der Auswirkung",
+                orient="right",
+                titleColor='black',
+                labelColor='black',
+                titleFontSize=12,
+                labelFontSize=10,
+                values=['Tatsächliche Auswirkung', 'Potentielle Auswirkung']
+            )),
+            size=alt.Size('Stakeholder Wichtigkeit:Q', scale=alt.Scale(range=[100, 1000]), legend=alt.Legend(
+                title="Stakeholder Wichtigkeit",
+                orient="right",
+                titleColor='black',
+                labelColor='black',
+                titleFontSize=12,
+                labelFontSize=10
+            )),
+            tooltip=['ID', 'Score Finanzen', 'Score Auswirkung', 'Thema', 'Unterthema', 'Unter-Unterthema', 'Stakeholder Wichtigkeit']
+        )
+
+        st.altair_chart(scatter)
+    else:
+        st.warning("Keine Daten ausgewählt.")
 
 def display_page():
     display_slider()
@@ -299,4 +377,5 @@ def display_page():
     else:
         Chart(100, 500)  # Display initial chart without any filter
     Excel_button()
+    chart_auswirkungsbezogen()
     save_state()
