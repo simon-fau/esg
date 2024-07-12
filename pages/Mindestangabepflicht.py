@@ -74,3 +74,94 @@ def display_page():
 
 
 
+
+
+
+def chart_Übersicht():
+
+    if 'selected_columns' in st.session_state and len(st.session_state['selected_columns']) > 0:
+        selected_columns = st.session_state['selected_columns']
+
+        # Prepare the data
+        if isinstance(selected_columns, list):
+            selected_columns_df = pd.DataFrame(selected_columns)
+        else:
+            selected_columns_df = selected_columns
+
+        columns_to_display = ['Score Finanzen', 'Score Auswirkung']
+        selected_columns_df = selected_columns_df[columns_to_display]
+        required_columns = ['ID', 'Score Finanzen', 'Score Auswirkung', 'Thema', 'Unterthema', 'Unter-Unterthema', 'Stakeholder Wichtigkeit']
+
+        # Check if the DataFrame is empty after filtering
+        if selected_columns_df.empty:
+            st.warning("Keine Daten vorhanden, um den Chart anzuzeigen.")
+            return  # Stop the function execution
+
+        def assign_color(theme):
+            if theme in ['Klimawandel', 'Umweltverschmutzung', 'Wasser- & Meeresressourcen', 'Biodiversität', 'Kreislaufwirtschaft']:
+                return 'Environmental'
+            elif theme in ['Eigene Belegschaft', 'Belegschaft Lieferkette', 'Betroffene Gemeinschaften', 'Verbraucher und Endnutzer']:
+                return 'Social'
+            elif theme == 'Unternehmenspolitik':
+                return 'Governance'
+            else:
+                return 'Sonstige'
+
+        selected_columns['color'] = selected_columns['Thema'].apply(assign_color)
+
+        min_rating = st.session_state.combined_df['Stakeholder Gesamtbew.'].min()
+        max_rating = st.session_state.combined_df['Stakeholder Gesamtbew.'].max()
+        selected_columns['Stakeholder Wichtigkeit'] = ((selected_columns['Stakeholder Gesamtbew.'] - min_rating) / (max_rating - min_rating)) * (1000 - 100) + 100
+        selected_columns['Stakeholder Wichtigkeit'] = selected_columns['Stakeholder Wichtigkeit'].fillna(100)
+
+        # Base scatter chart
+        scatter = alt.Chart(selected_columns, width=1000, height=800).mark_circle().encode(
+            x=alt.X('Score Finanzen', scale=alt.Scale(domain=(0, 1000)), title='Finanzielle Wesentlichkeit'),
+            y=alt.Y('Score Auswirkung', scale=alt.Scale(domain=(0, 1000)), title='Auswirkungsbezogene Wesentlichkeit'),
+            color=alt.Color('color:N', scale=alt.Scale(
+                domain=['Environmental', 'Social', 'Governance', 'Sonstige'],
+                range=['green', 'yellow', 'blue', 'gray']
+            ), legend=alt.Legend(
+                title="Thema",
+                orient="right",
+                titleColor='black',
+                labelColor='black',
+                titleFontSize=12,
+                labelFontSize=10,
+                values=['Environmental', 'Social', 'Governance', 'Sonstige']
+            )),
+            size=alt.Size('Stakeholder Wichtigkeit:Q', scale=alt.Scale(range=[100, 1000]), legend=alt.Legend(
+                title="Stakeholder Wichtigkeit",
+                orient="right",
+                titleColor='black',
+                labelColor='black',
+                titleFontSize=12,
+                labelFontSize=10
+            )),
+            tooltip=required_columns
+        )
+
+        # Line
+        intersection_value = st.session_state.get('intersection_value', 500)  # Default value if not set in session state
+        line = alt.Chart(pd.DataFrame({
+            'x': [0, intersection_value],
+            'y': [intersection_value, 0]
+        })).mark_line(color='red').encode(
+            x='x:Q',
+            y='y:Q'
+        )
+
+        # Area to the left of the line
+        area = alt.Chart(pd.DataFrame({
+            'x': [0, 0, intersection_value],
+            'y': [0, intersection_value, 0]
+        })).mark_area(opacity=0.3, color='lightcoral').encode(
+            x='x:Q',
+            y='y:Q'
+        )
+
+        chart = area + scatter + line
+
+        st.altair_chart(chart)
+    else:
+        st.warning("Keine Daten ausgewählt.")

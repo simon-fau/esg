@@ -69,7 +69,7 @@ def Chart(intersection_value, stakeholder_importance_value):
         selected_columns['Stakeholder Wichtigkeit'] = selected_columns['Stakeholder Wichtigkeit'].fillna(100)
 
         # Base scatter chart
-        scatter = alt.Chart(selected_columns, width=800, height=600).mark_circle().encode(
+        scatter = alt.Chart(selected_columns, width=1000, height=800).mark_circle().encode(
             x=alt.X('Score Finanzen', scale=alt.Scale(domain=(0, 1000)), title='Finanzielle Wesentlichkeit'),
             y=alt.Y('Score Auswirkung', scale=alt.Scale(domain=(0, 1000)), title='Auswirkungsbezogene Wesentlichkeit'),
             color=alt.Color('color:N', scale=alt.Scale(
@@ -97,8 +97,8 @@ def Chart(intersection_value, stakeholder_importance_value):
 
         # Line
         line = alt.Chart(pd.DataFrame({
-            'x': [0, intersection_value],
-            'y': [intersection_value, 0]
+            'x': [0, st.session_state['intersection_value']],
+            'y': [st.session_state['intersection_value'], 0]
         })).mark_line(color='red').encode(
             x='x:Q',
             y='y:Q'
@@ -106,8 +106,8 @@ def Chart(intersection_value, stakeholder_importance_value):
 
         # Area to the left of the line
         area = alt.Chart(pd.DataFrame({
-            'x': [0, 0, intersection_value],
-            'y': [0, intersection_value, 0]
+            'x': [0, 0, st.session_state['intersection_value']],
+            'y': [0, st.session_state['intersection_value'], 0]
         })).mark_area(opacity=0.3, color='lightcoral').encode(
             x='x:Q',
             y='y:Q'
@@ -133,8 +133,8 @@ def filter_table(intersection_value, stakeholder_importance_value):
         
         # Filter the data based on the sum of 'Score Finanzen' and 'Score Auswirkung' being greater than intersection_value
         st.session_state.filtered_df = selected_columns_df[
-            (selected_columns_df['Score Finanzen'] + selected_columns_df['Score Auswirkung'] > intersection_value) |
-            (selected_columns_df['Stakeholder Gesamtbew.'] > stakeholder_importance_value)
+            (selected_columns_df['Score Finanzen'] + selected_columns_df['Score Auswirkung'] > st.session_state['intersection_value']) |
+            (selected_columns_df['Stakeholder Wichtigkeit'] > st.session_state['stakeholder_importance_value'])
         ]
         
         # Ensure necessary columns are present
@@ -159,9 +159,17 @@ def filter_table(intersection_value, stakeholder_importance_value):
 def display_slider():
     st.sidebar.markdown("---")
     # Slider for intersection value
-    st.sidebar.slider("Grenzwert für die Relevanz angeben", min_value=0, max_value=1000, value=st.session_state['intersection_value'], step=10, key="intersection_slider")
-    st.sidebar.slider("Grenzwert für Stakeholder Relevanz angeben", min_value=0, max_value=1000, value=st.session_state['stakeholder_importance_value'], step=50, key="stakeholder_importance_slider")
- 
+    intersection_value = st.sidebar.slider("Grenzwert für die Relevanz angeben", min_value=0, max_value=1000, value=st.session_state['intersection_value'], step=10)
+
+    # Slider for stakeholder importance value
+    stakeholder_importance_value = st.sidebar.slider("Grenzwert für Stakeholder Relevanz angeben", min_value=0, max_value=1000, value=st.session_state['stakeholder_importance_value'], step=50)
+
+    if st.sidebar.button('Auswahl anwenden'):
+        st.session_state['intersection_value'] = intersection_value
+        st.session_state['stakeholder_importance_value'] = stakeholder_importance_value
+        st.session_state['apply_changes'] = True
+        st.experimental_rerun()
+
 template_path = os.path.join(os.path.dirname(__file__), 'Templates', 'Ausführung.xlsx')
 
 def transfer_data_to_excel(dataframe):
@@ -204,7 +212,7 @@ def Excel_button():
     if st.sidebar.button('🔃 Excel aktualisieren'):
         transfer_data_to_excel(st.session_state.filtered_df)
     
-     # Download-Button für die Excel-Datei
+    # Download-Button für die Excel-Datei
     if st.sidebar.download_button(label="⬇️ Excel-Datei herunterladen",
                           data=download_excel(),
                           file_name="Shortlist.xlsx",
@@ -213,9 +221,10 @@ def Excel_button():
 
 def display_page():
     display_slider()
-    Chart(st.session_state['intersection_slider'], st.session_state['stakeholder_importance_slider'])
-    filter_table(st.session_state['intersection_slider'], st.session_state['stakeholder_importance_slider'])
+    if 'apply_changes' in st.session_state and st.session_state['apply_changes']:
+        Chart(st.session_state['intersection_value'], st.session_state['stakeholder_importance_value'])
+        filter_table(st.session_state['intersection_value'], st.session_state['stakeholder_importance_value'])
+    else:
+        Chart(100, 500)  # Display initial chart without any filter
     Excel_button()
     save_state()
-    st.write("Selected Columns:", st.session_state.get('selected_columns', 'Keine Spalten ausgewählt'))
-    
