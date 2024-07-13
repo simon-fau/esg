@@ -219,6 +219,16 @@ def Excel_button():
                           mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"):
         st.success("Download gestartet!")
 
+def display_page():
+    display_slider()
+    if 'apply_changes' in st.session_state and st.session_state['apply_changes']:
+        Chart(st.session_state['intersection_value'], st.session_state['stakeholder_importance_value'])
+        filter_table(st.session_state['intersection_value'], st.session_state['stakeholder_importance_value'])
+    else:
+        Chart(100, 500)  # Display initial chart without any filter
+    Excel_button()
+    save_state()
+
 #---- Abschnitt zur Erstellung von unterschiedlichen Charts für die Übersicht ----#
 
 def chart_übersicht_allgemein():
@@ -288,7 +298,7 @@ def chart_übersicht_allgemein():
     else:
         st.warning("Keine Daten ausgewählt.")
 
-# Neue Chart-Auswirkungsbezogen-Funktion
+# Graphik zur Darstellung auswikrungsbezogener Punkte. Unterscheidung positiv & negativ, sowie potentiell und tatsächlich
 def chart_auswirkungsbezogen():
     st.header("Graphische Übersicht - Auswirkungsbezogen")
 
@@ -304,12 +314,12 @@ def chart_auswirkungsbezogen():
             else:
                 return None  # Ignore "Keine Auswirkung"
 
-        # Shape determination basierend auf "Tatsächliche Auswirkung" oder "Potentielle Auswirkung"
+        # Shape determination basierend auf "Tatsächliche Auswirkung" oder "Potenzielle Auswirkung"
         def determine_shape(impact):
             if 'Tatsächliche Auswirkung' in impact:
                 return 'Tatsächliche Auswirkung'
-            elif 'Potentielle Auswirkung' in impact:
-                return 'Potentielle Auswirkung'
+            elif 'Potenzielle Auswirkung' in impact:
+                return 'Potenzielle Auswirkung'
             else:
                 return None
 
@@ -343,7 +353,7 @@ def chart_auswirkungsbezogen():
                 values=['Positive Auswirkung', 'Negative Auswirkung']
             )),
             shape=alt.Shape('shape:N', scale=alt.Scale(
-                domain=['Tatsächliche Auswirkung', 'Potentielle Auswirkung'],
+                domain=['Tatsächliche Auswirkung', 'Potenzielle Auswirkung'],
                 range=['circle', 'square']
             ), legend=alt.Legend(
                 title="Typ der Auswirkung",
@@ -352,7 +362,7 @@ def chart_auswirkungsbezogen():
                 labelColor='black',
                 titleFontSize=12,
                 labelFontSize=10,
-                values=['Tatsächliche Auswirkung', 'Potentielle Auswirkung']
+                values=['Tatsächliche Auswirkung', 'Potenzielle Auswirkung']
             )),
             size=alt.Size('Stakeholder Wichtigkeit:Q', scale=alt.Scale(range=[100, 1000]), legend=alt.Legend(
                 title="Stakeholder Wichtigkeit",
@@ -369,13 +379,60 @@ def chart_auswirkungsbezogen():
     else:
         st.warning("Keine Daten ausgewählt.")
 
-def display_page():
-    display_slider()
-    if 'apply_changes' in st.session_state and st.session_state['apply_changes']:
-        Chart(st.session_state['intersection_value'], st.session_state['stakeholder_importance_value'])
-        filter_table(st.session_state['intersection_value'], st.session_state['stakeholder_importance_value'])
+def chart_finanzbezogen():
+    st.header("Graphische Übersicht - Finanziell")
+
+    if 'selected_columns' in st.session_state and len(st.session_state['selected_columns']) > 0:
+        df = st.session_state['selected_columns']
+
+        # Farbcodierung basierend auf der Untersuchung der Zeichenkette in "Score Finanzen"
+        def determine_color(finance):
+            if 'Chance' in finance:
+                return 'Chance'
+            elif 'Risiko' in finance:
+                return 'Risiko'
+            else:
+                return None  # Ignore "Keine Relevanz"
+
+
+        # Filter out rows with "Keine Relevanz"
+        df['color'] = df['Finanziell'].apply(determine_color)
+        df = df[df['color'].notnull()]
+
+        # Berechnung der Stakeholder Wichtigkeit
+        min_rating = st.session_state.combined_df['Stakeholder Gesamtbew.'].min()
+        max_rating = st.session_state.combined_df['Stakeholder Gesamtbew.'].max()
+        df['Stakeholder Wichtigkeit'] = ((df['Stakeholder Gesamtbew.'] - min_rating) / (max_rating - min_rating)) * (1000 - 100) + 100
+        df['Stakeholder Wichtigkeit'] = df['Stakeholder Wichtigkeit'].fillna(100)
+
+        # Basis-Scatter-Chart
+        scatter = alt.Chart(df, width=1000, height=800).mark_point(filled=True).encode(
+            x=alt.X('Score Finanzen', scale=alt.Scale(domain=(0, 1000)), title='Finanzielle Wesentlichkeit'),
+            y=alt.Y('Score Auswirkung', scale=alt.Scale(domain=(0, 1000)), title='Auswirkungsbezogene Wesentlichkeit'),
+            color=alt.Color('color:N', scale=alt.Scale(
+                domain=['Chance', 'Risiko'],
+                range=['green', 'red']
+            ), legend=alt.Legend(
+                title="Finanzielle Relevanz",
+                orient="right",
+                titleColor='black',
+                labelColor='black',
+                titleFontSize=12,
+                labelFontSize=10,
+                values=['Chance', 'Risiko']
+            )),
+
+            size=alt.Size('Stakeholder Wichtigkeit:Q', scale=alt.Scale(range=[100, 1000]), legend=alt.Legend(
+                title="Stakeholder Wichtigkeit",
+                orient="right",
+                titleColor='black',
+                labelColor='black',
+                titleFontSize=12,
+                labelFontSize=10
+            )),
+            tooltip=['ID', 'Score Finanzen', 'Score Auswirkung', 'Thema', 'Unterthema', 'Unter-Unterthema', 'Stakeholder Wichtigkeit']
+        )
+
+        st.altair_chart(scatter)
     else:
-        Chart(100, 500)  # Display initial chart without any filter
-    Excel_button()
-    chart_auswirkungsbezogen()
-    save_state()
+        st.warning("Keine Daten ausgewählt.")
