@@ -1,7 +1,7 @@
 import streamlit as st
 from pages.Stakeholder_Management import stakeholder_ranking, stakeholder_network
 from pages.Externe_Nachhaltigkeitspunkte import calculate_class_size, calculate_selected_rows, display_aggrid
-from pages.Longlist import merge_dataframes, bewertung_Uebersicht, Top_down_Nachhaltigkeitspunkte, stakeholder_Nachhaltigkeitspunkte, eigene_Nachhaltigkeitspunkte
+from pages.Longlist import merge_dataframes, bewertung_Uebersicht
 from pages.Shortlist import chart_übersicht_allgemein, chart_auswirkungsbezogen, chart_finanzbezogen
 
 def display_stakeholder_table():
@@ -31,8 +31,8 @@ def display_stakeholder_table():
 #Anzahl der Punkte in der Longlist für die Darstellung in der Übersicht
 def anzahl_punkte_Longlist():
     if 'longlist' in st.session_state:
-        anzahl = len(st.session_state.longlist)
-        st.metric(label="Anzahl der Punkte in der Longlist:", value=anzahl)
+        count = len(st.session_state.longlist)
+        st.metric(label="Anzahl der Punkte in der Longlist:", value=count)
 
 # Function to count top-down points
 def count_top_down_points():
@@ -52,15 +52,19 @@ def count_stakeholder_points():
     count = combined_df[~combined_df['Quelle'].str.contains("Top-Down|Top-Down Bewertung|Top-Down & Top-Down Bewertung|Eigene & Intern", na=False)].shape[0]
     st.metric("davon externe Punkte", count)
 
+def count_shortlist_points():
+    if 'filtered_df' in st.session_state:
+        count = len(st.session_state.filtered_df)
+        st.metric("Anzahl der Punkte in der Shortlist:", count)
 
 def companies_in_stakeholder_table():
     if 'company_names' in st.session_state: 
-        st.markdown("**Nachhaltigkeitspunkte von folgenden Stakeholdern einbezogen:**")
+        st.markdown("Nachhaltigkeitspunkte von folgenden Stakeholdern einbezogen:")
         for index, row in st.session_state.company_names.iterrows():
             st.markdown(f"- {row['Company Name']}")
 
 def display_page():
-    tab1, tab2, tab3 = st.tabs(["Allgemeine Übersicht", "Stakeholder Übersicht", "Nachhaltigkeitspunkte"])
+    tab1, tab2, tab3 = st.tabs(["Allgemeine Übersicht", "Longlist", "Shortlist"])
 
     with tab1:
         col = st.columns((1.5, 4.5, 2), gap='medium')
@@ -68,7 +72,7 @@ def display_page():
         with col[0]:
             container = st.container(border=True)
             with container:
-                st.markdown('#### Zahlen & Fakten')
+                st.markdown('#### Longlist')
                 anzahl_punkte_Longlist()
                 count_top_down_points()
                 count_internal_points()
@@ -81,11 +85,18 @@ def display_page():
         
         with col[1]:
                 chart_übersicht_allgemein(width=900, height=800)
-                
-                
 
-            
-            
+        with col[2]:
+            container_3 = st.container(border=True)
+            with container_3:
+                st.markdown('#### Shortlist')
+                count_shortlist_points()
+
+            container_4 = st.container(border=True)
+            with container_4:
+                st.markdown('#### Stakeholder')
+                companies_in_stakeholder_table()
+      
 
     with tab2:
         st.write("Longlist")
