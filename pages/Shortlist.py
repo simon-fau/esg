@@ -231,7 +231,13 @@ def display_page():
 
 #---- Abschnitt zur Erstellung von unterschiedlichen Charts für die Übersicht ----#
 
-def chart_übersicht_allgemein(width=1000, height=800):
+def chart_übersicht_allgemein(width, height):
+
+    st.write(" ")
+    st.write(" ")
+    st.write(" ")
+    st.write(" ")
+    st.write(" ")
 
     if 'selected_columns' in st.session_state and len(st.session_state['selected_columns']) > 0:
         selected_columns = st.session_state['selected_columns']
@@ -299,8 +305,13 @@ def chart_übersicht_allgemein(width=1000, height=800):
         st.warning("Keine Daten ausgewählt.")
 
 # Graphik zur Darstellung auswikrungsbezogener Punkte. Unterscheidung positiv & negativ, sowie potentiell und tatsächlich
-def chart_auswirkungsbezogen():
-    st.header("Graphische Übersicht - Auswirkungsbezogen")
+def chart_auswirkungsbezogen(width, height):
+
+    st.write(" ")
+    st.write(" ")
+    st.write(" ")
+    st.write(" ")
+    st.write(" ")
 
     if 'selected_columns' in st.session_state and len(st.session_state['selected_columns']) > 0:
         df = st.session_state['selected_columns']
@@ -337,7 +348,7 @@ def chart_auswirkungsbezogen():
         df['Stakeholder Wichtigkeit'] = df['Stakeholder Wichtigkeit'].fillna(100)
 
         # Basis-Scatter-Chart
-        scatter = alt.Chart(df, width=1000, height=800).mark_point(filled=True).encode(
+        scatter = alt.Chart(df, width=width, height=height).mark_point(filled=True).encode(
             x=alt.X('Score Finanzen', scale=alt.Scale(domain=(0, 1000)), title='Finanzielle Wesentlichkeit'),
             y=alt.Y('Score Auswirkung', scale=alt.Scale(domain=(0, 1000)), title='Auswirkungsbezogene Wesentlichkeit'),
             color=alt.Color('color:N', scale=alt.Scale(
@@ -379,8 +390,12 @@ def chart_auswirkungsbezogen():
     else:
         st.warning("Keine Daten ausgewählt.")
 
-def chart_finanzbezogen():
-    st.header("Graphische Übersicht - Finanziell")
+def chart_finanzbezogen(width, height):
+    st.write(" ")
+    st.write(" ")
+    st.write(" ")
+    st.write(" ")
+    st.write(" ")
 
     if 'selected_columns' in st.session_state and len(st.session_state['selected_columns']) > 0:
         df = st.session_state['selected_columns']
@@ -406,7 +421,7 @@ def chart_finanzbezogen():
         df['Stakeholder Wichtigkeit'] = df['Stakeholder Wichtigkeit'].fillna(100)
 
         # Basis-Scatter-Chart
-        scatter = alt.Chart(df, width=1000, height=800).mark_point(filled=True).encode(
+        scatter = alt.Chart(df, width=width, height=height).mark_point(filled=True).encode(
             x=alt.X('Score Finanzen', scale=alt.Scale(domain=(0, 1000)), title='Finanzielle Wesentlichkeit'),
             y=alt.Y('Score Auswirkung', scale=alt.Scale(domain=(0, 1000)), title='Auswirkungsbezogene Wesentlichkeit'),
             color=alt.Color('color:N', scale=alt.Scale(

@@ -4,13 +4,27 @@ import hydralit_components as hc
 import pickle
 import pandas as pd
 
-# Laden der Pickle Datei der Longlist.py, sodass der sesseion state beim Laden der Main direkt abgerufen wird.
+# Funktion zum Laden der Pickle-Datei mit Fehlerbehandlung
+def load_pickle(file_path):
+    if not os.path.exists(file_path):
+        return None
+
+    if os.path.getsize(file_path) == 0:
+        return None
+
+    try:
+        with open(file_path, 'rb') as f:
+            return pickle.load(f)
+    except EOFError:
+        st.error("EOFError: Die Pickle-Datei ist leer oder beschädigt.")
+        return None
+    except pickle.UnpicklingError:
+        st.error("UnpicklingError: Die Pickle-Datei ist nicht korrekt formatiert.")
+        return None
+
+# Laden der Pickle-Datei der Longlist.py
 pickle_file_path = os.path.join(os.path.dirname(__file__), 'a.pkl')
-if os.path.exists(pickle_file_path):
-    with open(pickle_file_path, 'rb') as f:
-        loaded_data = pickle.load(f)
-else:
-    loaded_data = None
+loaded_data = load_pickle(pickle_file_path)
 
 # Initialisierung der Session States
 if loaded_data is not None:
@@ -50,10 +64,16 @@ selected_menu = hc.nav_bar(
     override_theme={'menu_background': '#0431B4'}
 )
 
+def load_page(page_module):
+    page_function = getattr(page_module, 'display_page', None)
+    if callable(page_function):
+        page_function()
+    else:
+        st.error(f"Fehler: Die Seite {page_module.__name__} hat keine Funktion namens 'display_page'.")
+
 if selected_menu == 'Wesentlichkeitsanalyse':
     st.markdown("""<style>section[data-testid='stSidebar'][aria-expanded='true']{display: block;}</style>""", unsafe_allow_html=True)
     st.sidebar.title("Wesentlichkeitsanalyse")
-    # CSS, um die spezifische Klasse auszublenden
     hide_specific_class = """
         <style>
             .st-emotion-cache-79elbk {
@@ -63,19 +83,10 @@ if selected_menu == 'Wesentlichkeitsanalyse':
     """
     st.markdown(hide_specific_class, unsafe_allow_html=True)
 
-    # Auswahl der Seite über eine SelectBox
     page_option = st.sidebar.selectbox(
         "Wählen Sie eine Option:",
         ['1. Stakeholder Management', '2. Themenspezifische ESRS', '3. Interne Nachhaltigkeitspunkte', '4. Externe Nachhaltigkeitspunkte', '5. Bewertung der Longlist', '6. Erstellung der Shortlist']
     )
-
-    # Importieren und Ausführen der entsprechenden Funktion aus der Subpage
-    def load_page(page_module):
-        page_function = getattr(page_module, 'display_page', None)
-        if callable(page_function):
-            page_function()
-        else:
-            st.error(f"Fehler: Die Seite {page_module.__name__} hat keine Funktion namens 'display_page'.") 
 
     if page_option == '1. Stakeholder Management':
         import pages.Stakeholder_Management as Stakeholder_page

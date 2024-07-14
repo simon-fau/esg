@@ -640,9 +640,7 @@ def display_page():
     st.title("Bewertung der Nachhaltigkeitspunkte (Longlist)")  
     merge_dataframes()
     display_selected_data()
-    # Anzeigen von combined_df aus dem session_state
     if 'combined_df' in st.session_state:
-        st.write("Inhaltsansicht von combined_df:")
         st.dataframe(st.session_state.combined_df)
     with st.expander("Bewertungen"):
         bewertung()

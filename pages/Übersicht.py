@@ -1,7 +1,7 @@
 import streamlit as st
-from pages.Stakeholder_Management import stakeholder_ranking, stakeholder_network
+from pages.Stakeholder_Management import stakeholder_ranking
 from pages.Externe_Nachhaltigkeitspunkte import calculate_class_size, calculate_selected_rows, display_aggrid
-from pages.Longlist import merge_dataframes, bewertung_Uebersicht
+from pages.Longlist import bewertung_Uebersicht
 from pages.Shortlist import chart_übersicht_allgemein, chart_auswirkungsbezogen, chart_finanzbezogen
 
 def display_stakeholder_table():
@@ -34,22 +34,22 @@ def anzahl_punkte_Longlist():
         count = len(st.session_state.longlist)
         st.metric(label="Anzahl der Punkte in der Longlist:", value=count)
 
-# Function to count top-down points
+# Funktion, die zählt wie viele themespezifische Punkte in der Longlist sind. Inhalte werden aufgenommen wenn combined_df "Top-Down|Top-Down Bewertung|Top-Down & Top-Down Bewertung" enthält. 
 def count_top_down_points():
     combined_df = st.session_state.combined_df
     count = combined_df[combined_df['Quelle'].str.contains("Top-Down|Top-Down Bewertung|Top-Down & Top-Down Bewertung", na=False)].shape[0]
     st.metric("davon themespezifische Punkte:", count)
 
-# Function to count internal points
+# Funktion, die zählt wie viele interne Punkte in der Longlist sind. Inhalte werden aufgenommen wenn combined_df "Intern|Eigene|Eigene & Intern" enthält
 def count_internal_points():
     combined_df = st.session_state.combined_df
-    count = combined_df[combined_df['Quelle'].str.contains("Eigene & Intern", na=False)].shape[0]
+    count = combined_df[combined_df['Quelle'].str.contains("Intern|Eigene|Eigene & Intern", na=False)].shape[0]
     st.metric("davon interne Punkte", count)
 
-# Function to count stakeholder points
+# Funktio, die zählt wie viele Stakeholderpunkte in der Longlist sind. "~combined_df" bedeutet, dass alle Zeilen aus der Longlist genommen werden, die nicht "Top-Down|Top-Down Bewertung|Top-Down..." sind
 def count_stakeholder_points():
     combined_df = st.session_state.combined_df
-    count = combined_df[~combined_df['Quelle'].str.contains("Top-Down|Top-Down Bewertung|Top-Down & Top-Down Bewertung|Eigene & Intern", na=False)].shape[0]
+    count = combined_df[~combined_df['Quelle'].str.contains("Top-Down|Top-Down Bewertung|Top-Down & Top-Down Bewertung|Intern|Eigene|Eigene & Intern", na=False)].shape[0]
     st.metric("davon externe Punkte", count)
 
 def count_shortlist_points():
@@ -64,59 +64,55 @@ def companies_in_stakeholder_table():
             st.markdown(f"- {row['Company Name']}")
 
 def display_page():
-    tab1, tab2, tab3 = st.tabs(["Allgemeine Übersicht", "Longlist", "Shortlist"])
 
-    with tab1:
-        col = st.columns((1.5, 4.5, 2), gap='medium')
-        
-        with col[0]:
-            container = st.container(border=True)
-            with container:
-                st.markdown('#### Longlist')
-                anzahl_punkte_Longlist()
-                count_top_down_points()
-                count_internal_points()
-                count_stakeholder_points()
+    col = st.columns((1.5, 4.5, 1.5), gap='medium')
+    
+    with col[0]:
+        container = st.container(border=True)
+        with container:
+            st.markdown('#### Longlist')
+            anzahl_punkte_Longlist()
+            count_top_down_points()
+            count_internal_points()
+            count_stakeholder_points()
 
-            container_2 = st.container(border=True)
-            with container_2:
-                st.markdown('#### Fortschritt Bewertungen')
-                bewertung_Uebersicht()
+        container_2 = st.container(border=True)
+        with container_2:
+            st.markdown('#### Fortschritt Bewertungen')
+            bewertung_Uebersicht()
+            
+    
+    with col[1]:
         
-        with col[1]:
+        container_3 = st.container(border=True)
+        with container_3:
+            col1, col2 = st.columns([1, 2])
+            with col1:
+                chart_options = ["Allgemeine Graphik", "Auswirkungsbezoge Graphik", "Finanzbezoge Graphik"]
+                selected_chart = st.selectbox("Wähle eine Grafik aus:", chart_options)
+            with col2:
+                pass
+            # Anzeigen der ausgewählten Grafik
+            if selected_chart == "Allgemeine Graphik":
                 chart_übersicht_allgemein(width=900, height=800)
+            elif selected_chart == "Auswirkungsbezoge Graphik":
+                chart_auswirkungsbezogen(width=900, height=800)
+            elif selected_chart == "Finanzbezoge Graphik":
+                chart_finanzbezogen(width=900, height=800)
 
-        with col[2]:
-            container_3 = st.container(border=True)
-            with container_3:
-                st.markdown('#### Shortlist')
-                count_shortlist_points()
+    with col[2]:
+        container_4 = st.container(border=True)
+        with container_4:
+            st.markdown('#### Shortlist')
+            count_shortlist_points()
 
-            container_4 = st.container(border=True)
-            with container_4:
-                st.markdown('#### Stakeholder')
-                companies_in_stakeholder_table()
-      
+        container_5 = st.container(border=True)
+        with container_5:
+            st.markdown('#### Stakeholder')
+            companies_in_stakeholder_table()
 
-    with tab2:
-        st.write("Longlist")
-        
-        chart_übersicht_allgemein()
-        chart_auswirkungsbezogen()
-        chart_finanzbezogen()
-        merge_dataframes()
-
-    with tab3:
-        col1, col2 = st.columns ([3, 1])
-        with col1:
-            st.write("Identifikation und Bewertung von Stakeholdern")
+        container_6 = st.container(border=True)
+        with container_6:
+            st.markdown('#### Stakeholder Ranking')
             stakeholder_ranking()
-        with col2:
-            st.write("Stakeholder Netzwerk")
-            stakeholder_network()
-       
-        companies_in_stakeholder_table()
-        display_stakeholder_table()
-        bewertung_Uebersicht()
-
-        
+      
