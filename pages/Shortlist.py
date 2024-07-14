@@ -231,7 +231,7 @@ def display_page():
 
 #---- Abschnitt zur Erstellung von unterschiedlichen Charts für die Übersicht ----#
 
-def chart_übersicht_allgemein():
+def chart_übersicht_allgemein(width=1000, height=800):
 
     if 'selected_columns' in st.session_state and len(st.session_state['selected_columns']) > 0:
         selected_columns = st.session_state['selected_columns']
@@ -268,7 +268,7 @@ def chart_übersicht_allgemein():
         selected_columns['Stakeholder Wichtigkeit'] = selected_columns['Stakeholder Wichtigkeit'].fillna(100)
 
         # Basis-Scatter-Chart
-        scatter = alt.Chart(selected_columns, width=1000, height=800).mark_circle().encode(
+        scatter = alt.Chart(selected_columns, width=width, height=height).mark_circle().encode(
             x=alt.X('Score Finanzen', scale=alt.Scale(domain=(0, 1000)), title='Finanzielle Wesentlichkeit'),
             y=alt.Y('Score Auswirkung', scale=alt.Scale(domain=(0, 1000)), title='Auswirkungsbezogene Wesentlichkeit'),
             color=alt.Color('color:N', scale=alt.Scale(

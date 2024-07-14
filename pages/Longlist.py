@@ -616,6 +616,7 @@ def merge_dataframes():
     display_grid(longlist)
     save_state()
 
+
 def bewertung_Uebersicht():
     if 'longlist' not in st.session_state or st.session_state['longlist'].empty:
         st.warning('Keine Longlist vorhanden. Bitte fügen Sie eine Longlist hinzu.')
@@ -630,13 +631,21 @@ def bewertung_Uebersicht():
     ja_prozent = int((ja_bewertungen / total_bewertungen) * 100) if total_bewertungen > 0 else 0
 
     # Anzeigen des Prozentsatzes mit einer Fortschrittsleiste
-    st.write(f'Prozentsatz der "Ja"-Bewertungen: {ja_prozent}%')
+    st.write(f'{ja_prozent}% der Inhalte der Longlist wurden bewertet.')
     st.progress(ja_prozent)
 
 def display_page():
+
+
     st.title("Bewertung der Nachhaltigkeitspunkte (Longlist)")  
     merge_dataframes()
-    display_selected_data()   
+    display_selected_data()
+    # Anzeigen von combined_df aus dem session_state
+    if 'combined_df' in st.session_state:
+        st.write("Inhaltsansicht von combined_df:")
+        st.dataframe(st.session_state.combined_df)
     with st.expander("Bewertungen"):
         bewertung()
+
+    
    

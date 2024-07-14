@@ -17,7 +17,6 @@ class YesNoSelection:
         self.load_session_state()
         self.initialize_state()
 
-    # Initialisiert den Zustand der Auswahloptionen
     def initialize_state(self):
         options = {
             'Wesentlich_Klimawandel': False,
@@ -32,18 +31,15 @@ class YesNoSelection:
         if 'yes_no_selection' not in st.session_state:
             st.session_state['yes_no_selection'] = options
 
-    # Speichert den aktuellen Zustand der Auswahloptionen in eine Pickle-Datei
     def save_session_state(self):
         with open('session_states_top_down.pkl', 'wb') as f:
             pickle.dump(st.session_state['yes_no_selection'], f)
 
-    # Lädt den Zustand der Auswahloptionen aus einer Pickle-Datei
     def load_session_state(self):
         if os.path.exists('session_states_top_down.pkl'):
             with open('session_states_top_down.pkl', 'rb') as f:
                 st.session_state['yes_no_selection'] = pickle.load(f)
 
-    # Definiert die Struktur für Auswahlsektionen ohne Untersektionen z.B für Klimawandel
     def display_section(self, topics, section_key):
         headers = ["Wesentlich", "Eher Wesentlich", "Eher nicht Wesentlich", "Nicht Wesentlich"]
         header_row = st.columns([4, 1, 1, 1, 1])
@@ -61,7 +57,6 @@ class YesNoSelection:
 
         st.session_state['yes_no_selection'] = {**st.session_state['yes_no_selection'], **current_selection}
 
-    # Definiert die Struktur für komplexe Auswahlsektionen mit mehreren Untersektionen z.B für Biodiversität
     def display_complex_section(self, sections, section_key):
         headers = ["Wesentlich", "Eher Wesentlich", "Eher nicht Wesentlich", "Nicht Wesentlich"]
         header_row = st.columns([4, 1, 1, 1, 1])
@@ -86,24 +81,21 @@ class YesNoSelection:
                 **create_section(section_title, topics)
             }
 
-    # Zeigt einen Speicher-Button an und speichert den Zustand, wenn dieser gedrückt wird
     def display_save_button(self, section_name):
         col1, col2 = st.columns([4, 1])
         with col2:
-            st.write("") # Platzhalter
+            st.write("")  # Platzhalter
             st.write("")    
             st.write("")
             if st.button(f"💾 Auswahl speichern", key=f'Button_{section_name}'):
                 self.save_session_state()
                 st.success("Auswahl erfolgreich gespeichert!")
 
-    # Zeigt die Auswahloptionen für Klimawandel an
     def display_E1_Klimawandel(self):
         topics = [("Anpassung an Klimawandel", "Anpassung_an_den_Klimawandel"), ("Klimaschutz", "Klimaschutz"), ("Energie", "Energie")]
         self.display_section(topics, "E1")
         self.display_save_button("Klimawandel")
 
-    # Zeigt die Auswahloptionen für Umweltverschmutzung an
     def display_E2_Umweltverschmutzung(self):
         topics = [
             ("Luftverschmutzung", "Luftverschmutzung"), ("Wasserverschmutzung", "Wasserverschmutzung"), ("Bodenverschmutzung", "Bodenverschmutzung"),
@@ -113,7 +105,6 @@ class YesNoSelection:
         self.display_section(topics, "E2")
         self.display_save_button("Umweltverschmutzung")
 
-    # Zeigt die Auswahloptionen für Wasser- und Meeresressourcen an
     def display_E3_Wasser_und_Meeresressourcen(self):
         topics = [
             ("Wasserverbrauch", "Wasserverbrauch"), ("Wasserentnahme", "Wasserentnahme"), ("Ableitung von Wasser", "Ableitung_von_Wasser"),
@@ -122,7 +113,6 @@ class YesNoSelection:
         self.display_section(topics, "E3")
         self.display_save_button("WasserundMeeresressourcen")
 
-    # Zeigt die Auswahloptionen für Biodiversität an
     def display_E4_Biodiversität(self):
         sections = [
             ("Direkte Ursachen des Biodiversitätsverlusts", [
@@ -149,13 +139,11 @@ class YesNoSelection:
         self.display_complex_section(sections, "E4")
         self.display_save_button("Biodiversität")
 
-    # Zeigt die Auswahloptionen für Kreislaufwirtschaft an
     def display_E5_Kreislaufwirtschaft(self):
         topics = [("Ressourcenzuflüsse, einschließlich Ressourcennutzung", "Ressourcenzuflüsse,_einschließlich_Ressourcennutzung"), ("Ressourcenabflüsse im Zusammenhang mit Produkten und Dienstleistungen", "Ressourcenabflüsse_im_Zusammenhang_mit_Produkten_und_Dienstleistungen"), ("Abfälle", "Abfälle")]
         self.display_section(topics, "E5")
         self.display_save_button("Kreislaufwirtschaft")
 
-    # Zeigt die Auswahloptionen für die eigene Belegschaft an
     def display_S1_Eigene_Belegschaft(self):
         sections = [
             ("Arbeitsbedingungen", [
@@ -175,7 +163,6 @@ class YesNoSelection:
         self.display_complex_section(sections, "S1")
         self.display_save_button("Eigene_Belegschaft")
 
-    # Zeigt die Auswahloptionen für die Belegschaft in der Lieferkette an
     def display_S2_Belegschaft_Lieferkette(self):
         sections = [
             ("Arbeitsbedingungen", [
@@ -195,7 +182,6 @@ class YesNoSelection:
         self.display_complex_section(sections, "S2")
         self.display_save_button("Belegschaft_Lieferkette")
 
-    # Zeigt die Auswahloptionen für betroffene Gemeinschaften an
     def display_S3_Betroffene_Gemeinschaften(self):
         sections = [
             ("Wirtschaftliche, soziale und kulturelle Rechte von Gemeinschaften", [
@@ -212,7 +198,6 @@ class YesNoSelection:
         self.display_complex_section(sections, "S3")
         self.display_save_button("Betroffene_Gemeinschaften")
             
-    # Zeigt die Auswahloptionen für Verbraucher und Endnutzer an
     def display_S4_Verbraucher_und_Endnutzer(self):
         sections = [
             ("Informationsbezogene Auswirkungen für Verbraucher und/oder Endnutzer", [
@@ -228,7 +213,6 @@ class YesNoSelection:
         self.display_complex_section(sections, "S4")
         self.display_save_button("Verbraucher_und_Endnutzer")
 
-    # Zeigt die Auswahloptionen für Unternehmenspolitik an
     def display_G1_Unternehmenspolitik(self):
         topics = [
             ("Unternehmenskultur", "Unternehmenskultur"), ("Schutz von Hinweisgebern (Whistleblowers)", "Schutz_von_Hinweisgebern_(Whistleblowers)"), ("Tierschutz", "Tierschutz"),
@@ -238,7 +222,6 @@ class YesNoSelection:
         self.display_section(topics, "G1")
         self.display_save_button("Unternehmenspolitik")
 
-# Hauptfunktion zum Anzeigen der Seite mit den verschiedenen Auswahloptionen
 def display_page():
     Text()
     selection = YesNoSelection()
@@ -273,3 +256,5 @@ def display_page():
     with tabs[9]:
         st.subheader("Unternehmenspolitik")
         selection.display_G1_Unternehmenspolitik()
+
+

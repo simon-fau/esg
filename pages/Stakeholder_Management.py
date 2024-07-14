@@ -183,25 +183,23 @@ def display_stakeholder_management():
         add_new_row(*inputs[:-1])
 
 # Funktion zum Anzeigen des Stakeholder-Rankings und des Netzwerkdiagramms
-def display_stakeholder_ranking_and_network():
-    col1, col2 = st.columns([1.5, 1.5])
-    with col1:
-        st.subheader("Ranking")
-        if 'namen_tabelle' in st.session_state:
-            generate_stakeholder_ranking()
+def stakeholder_ranking():
+    
+    if 'namen_tabelle' in st.session_state:
+        generate_stakeholder_ranking()
 
-    with col2:
-        st.subheader("Netzwerkdiagramm")
-        net = Network(height="500px", width="100%", bgcolor="white", font_color="black")
-        net.add_node("Mein Unternehmen", color="black", label="", title="")
-        if 'namen_tabelle' in st.session_state:
-            for _, row in st.session_state['namen_tabelle'].iterrows():
-                size = row['Score'] / 100 * 10 + 15
-                color = get_node_color(row['Score'])
-                net.add_node(row['Gruppe'], color=color, label=row['Gruppe'], title=row['Gruppe'], size=size)
-                net.add_edge("Mein Unternehmen", row['Gruppe'])
-        net.save_graph("network.html")
-        st.components.v1.html(open("network.html", "r").read(), height=600)
+def stakeholder_network():
+        
+    net = Network(height="500px", width="100%", bgcolor="white", font_color="black")
+    net.add_node("Mein Unternehmen", color="black", label="", title="")
+    if 'namen_tabelle' in st.session_state:
+        for _, row in st.session_state['namen_tabelle'].iterrows():
+            size = row['Score'] / 100 * 10 + 15
+            color = get_node_color(row['Score'])
+            net.add_node(row['Gruppe'], color=color, label=row['Gruppe'], title=row['Gruppe'], size=size)
+            net.add_edge("Mein Unternehmen", row['Gruppe'])
+    net.save_graph("network.html")
+    st.components.v1.html(open("network.html", "r").read(), height=600)
 
 # Hauptfunktion zum Anzeigen der Seite
 def display_page():
@@ -219,6 +217,12 @@ def display_page():
             df_temp = st.session_state.df.copy()
             df_temp['Score'] = df_temp.apply(calculate_score, axis=1)
             st.session_state['namen_tabelle'] = df_temp.sort_values(by='Score', ascending=False).reset_index(drop=True)
-            display_stakeholder_ranking_and_network()
+            col1, col2 = st.columns([1, 1])
+            with col1:
+                st.subheader("Ranking")
+                stakeholder_ranking()
+            with col2:
+                st.subheader("Netzwerkdiagramm")
+                stakeholder_network()
         else:
             st.write("Keine Stakeholder-Daten vorhanden.")
