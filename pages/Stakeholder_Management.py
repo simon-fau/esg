@@ -6,7 +6,7 @@ from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode, DataReturnMode
 from pyvis.network import Network
 
 # Konstante für den Dateinamen des Sitzungszustands
-STATE_FILE = 'session_state_stakeholder.pkl'
+STATE_FILE = 'a.pkl'
 
 # Funktion zum Initialisieren des DataFrame
 def initialize_df():
@@ -21,26 +21,19 @@ def initialize_df():
         "Zeithorizont"
     ])
 
-# Funktion zum Laden des Sitzungszustands
-def load_session_state():
-    if os.path.exists(STATE_FILE):
-        with open(STATE_FILE, 'rb') as f:
-            return pickle.load(f)
-    return {}
-
 # Funktion zum Speichern des Sitzungszustands
-def save_session_state(state):
-    current_state = load_session_state()
-    combined_state = {**current_state, **state}
+def save_state():
     with open(STATE_FILE, 'wb') as f:
-        pickle.dump(combined_state, f)
+        pickle.dump(dict(st.session_state), f)
 
 # Initialisierung des Sitzungszustands
-loaded_state = load_session_state()
-if 'df' not in st.session_state:
+if os.path.exists(STATE_FILE):
+    with open(STATE_FILE, 'rb') as f:
+        loaded_state = pickle.load(f)
+        for key, value in loaded_state.items():
+            st.session_state[key] = value
+else:
     st.session_state.df = initialize_df()
-if 'df' in loaded_state:
-    st.session_state.df = loaded_state['df']
 
 # Funktion zur Berechnung des Scores für eine Zeile
 def calculate_score(row):
@@ -59,17 +52,14 @@ def generate_stakeholder_ranking():
     if not score_table.empty:
         score_table['Ranking'] = range(1, len(score_table) + 1)
         score_table = score_table.sort_values(by='Score', ascending=False).reset_index(drop=True)
-        # Speichern des Rankings im session state
         st.session_state['ranking_table'] = score_table
-        # Speichern des aktualisierten Session States mit save_session_state
-        save_session_state({'ranking_table': score_table})
+        save_state()
         st.dataframe(score_table[['Ranking', 'Gruppe', 'Score']], 
                      column_config={"Score": st.column_config.ProgressColumn(min_value=0, max_value=100, format="%f")}, 
                      hide_index=True, 
                      width=800)
     else:
         st.write("Keine Stakeholder-Daten vorhanden.")
-
 
 # Funktion zum Abrufen der Knotenfarbe basierend auf dem Score
 def get_node_color(score):
@@ -109,9 +99,6 @@ def sidebar():
     add_row = st.button('➕ Hinzufügen')
 
     if add_row:
-        # Setzen Sie hier die Logik zum Hinzufügen der Daten ein
-
-        # Setzen Sie den Zustand jeder SelectBox zurück
         st.session_state.gruppe = ''
         st.session_state.bestehende_beziehung = ''
         st.session_state.auswirkung = ''
@@ -148,7 +135,7 @@ def delete_selected_rows(grid_response):
     selected_rows = grid_response['selected_rows']
     selected_indices = [row['index'] for row in selected_rows]
     st.session_state.df = st.session_state.df.drop(selected_indices)
-    save_session_state({'df': st.session_state.df})
+    save_state()
     st.experimental_rerun()
 
 def add_new_row(gruppe, bestehende_beziehung, auswirkung, level_des_engagements, stakeholdergruppe, kommunikation, art_der_betroffenheit, zeithorizont):
@@ -163,7 +150,7 @@ def add_new_row(gruppe, bestehende_beziehung, auswirkung, level_des_engagements,
         "Zeithorizont": [zeithorizont]
     })
     st.session_state.df = pd.concat([new_row, st.session_state.df]).reset_index(drop=True)
-    save_session_state({'df': st.session_state.df})
+    save_state()
     st.experimental_rerun()
 
 # Hauptfunktion zum Anzeigen des Stakeholder-Managements
@@ -184,12 +171,10 @@ def display_stakeholder_management():
 
 # Funktion zum Anzeigen des Stakeholder-Rankings und des Netzwerkdiagramms
 def stakeholder_ranking():
-    
     if 'namen_tabelle' in st.session_state:
         generate_stakeholder_ranking()
 
 def stakeholder_network():
-        
     net = Network(height="500px", width="100%", bgcolor="white", font_color="black")
     net.add_node("Mein Unternehmen", color="black", label="", title="")
     if 'namen_tabelle' in st.session_state:
@@ -206,7 +191,7 @@ def display_page():
     st.header("Stakeholder-Management")
     st.markdown("""
         Hier können Sie ihre Stakeholder effektiv verwalten und analysieren. Sie können relevante Informationen über verschiedene Stakeholdergruppen hinzufügen, bearbeiten und visualisieren. Die Daten helfen Ihnen, Strategien für den Umgang mit Ihren Stakeholdern zu entwickeln und zu priorisieren, basierend auf verschiedenen Kriterien wie Engagement-Level und Kommunikationshäufigkeit.          
-    """)      
+    """)
     tab1, tab2 = st.tabs(["Stakeholder Übersicht", "Stakeholder Ranking & Netzwerkdiagramm"])
 
     with tab1:
@@ -226,3 +211,5 @@ def display_page():
                 stakeholder_network()
         else:
             st.write("Keine Stakeholder-Daten vorhanden.")
+
+

@@ -37,7 +37,7 @@ st.set_page_config(
     page_title="ESG-Tool",
     page_icon=os.path.join(os.path.dirname(__file__)),
     layout="wide",
-    initial_sidebar_state="collapsed"
+    initial_sidebar_state="expanded"  # Hier auf "expanded" setzen
 )
 
 # Hauptüberschrift und Untertitel
@@ -106,7 +106,6 @@ if selected_menu == 'Wesentlichkeitsanalyse':
     elif page_option == '6. Erstellung der Shortlist':
         import pages.Shortlist as Shortlist_page
         load_page(Shortlist_page)
-
 else:
     st.markdown("""<style>section[data-testid='stSidebar'][aria-expanded='true']{display: none;}</style>""", unsafe_allow_html=True)
 
@@ -122,3 +121,4 @@ elif selected_menu == 'Allgemeine_Angaben':
 elif selected_menu == 'Mindestangabepflicht':
     import pages.Mindestangabepflicht as Mindestangabepflicht_page
     Mindestangabepflicht_page.display_page()
+
