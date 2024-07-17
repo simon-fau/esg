@@ -6,7 +6,6 @@ import numpy as np
 import pickle
 import matplotlib.pyplot as plt
 
-
 # Funktion zum Speichern des Zustands
 def save_state():
     with open('a.pkl', 'wb') as f:
@@ -634,8 +633,42 @@ def bewertung_Uebersicht():
     st.write(f'{ja_prozent}% der Inhalte der Longlist wurden bewertet.')
     st.progress(ja_prozent)
 
-def display_page():
+# Anzahl der Punkte in der Longlist für die Darstellung in der Übersicht
+def anzahl_punkte_Longlist():
+    if 'combined_df' in st.session_state:
+        count = len(st.session_state.combined_df)
+        st.metric(label="Anzahl der Punkte in der Longlist:", value=count)
 
+# Funktion, die zählt wie viele themespezifische Punkte in der Longlist sind. Inhalte werden aufgenommen wenn combined_df "Top-Down|Top-Down Bewertung|Top-Down & Top-Down Bewertung" enthält. 
+def count_top_down_points():
+    if 'combined_df' in st.session_state:
+        combined_df = st.session_state.combined_df
+        # Filtern der Zeilen, die die angegebenen Schlüsselwörter enthalten
+        count = combined_df[combined_df['Quelle'].str.contains("Top-Down|Top-Down Bewertung|Top-Down & Top-Down Bewertung", na=False)].shape[0]
+        # Ausgabe der Anzahl als st.metric
+        st.metric(label="Anzahl der Top-Down Punkte:", value=count)
+        
+# Funktion, die zählt wie viele interne Punkte in der Longlist sind. Inhalte werden aufgenommen wenn combined_df "Intern|Eigene|Eigene & Intern" enthält
+def count_internal_points():
+    if 'combined_df' in st.session_state:
+        combined_df = st.session_state.combined_df
+        # Filtern der Zeilen, die die angegebenen Schlüsselwörter enthalten
+        count = combined_df[combined_df['Quelle'].str.contains("Intern|Eigene|Eigene & Intern", na=False)].shape[0]
+        # Ausgabe der Anzahl als st.metric
+        st.metric(label="Anzahl der Top-Down Punkte:", value=count)
+    
+
+# Funktio, die zählt wie viele Stakeholderpunkte in der Longlist sind. "~combined_df" bedeutet, dass alle Zeilen aus der Longlist genommen werden, die nicht "Top-Down|Top-Down Bewertung|Top-Down..." sind
+def count_stakeholder_points():
+    if 'combined_df' in st.session_state:
+        combined_df = st.session_state.combined_df
+        # Filtern der Zeilen, die die angegebenen Schlüsselwörter enthalten
+        count = combined_df[~combined_df['Quelle'].str.contains("Top-Down|Top-Down Bewertung|Top-Down & Top-Down Bewertung|Intern|Eigene|Eigene & Intern", na=False)].shape[0]
+        # Ausgabe der Anzahl als st.metric
+        st.metric(label="Anzahl der Top-Down Punkte:", value=count)
+    
+
+def display_page():
 
     st.title("Bewertung der Nachhaltigkeitspunkte (Longlist)")  
     merge_dataframes()
@@ -644,6 +677,11 @@ def display_page():
         st.dataframe(st.session_state.combined_df)
     with st.expander("Bewertungen"):
         bewertung()
+
+    anzahl_punkte_Longlist()
+    count_stakeholder_points()
+    count_internal_points()
+    count_top_down_points()
 
     
    

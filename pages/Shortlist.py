@@ -8,19 +8,13 @@ import shutil
 import io
 from openpyxl import load_workbook
 
-# Funktion zum Laden des Zustands
-def load_state():
-    if os.path.exists('session_state_shortlist.pkl'):
-        with open('session_state_shortlist.pkl', 'rb') as f:
-            st.session_state.update(pickle.load(f))
+
 
 # Funktion zum Speichern des Zustands
 def save_state():
-    with open('session_state_shortlist.pkl', 'wb') as f:
+    with open('a.pkl', 'wb') as f:
         pickle.dump(dict(st.session_state), f)
 
-# Zustand laden beim Start
-load_state()
 
 # Set initial session state values if they are not already set
 if 'intersection_value' not in st.session_state:
@@ -29,6 +23,7 @@ if 'stakeholder_importance_value' not in st.session_state:
     st.session_state['stakeholder_importance_value'] = 500
 if 'filtered_df' not in st.session_state:
     st.session_state['filtered_df'] = pd.DataFrame()  # Initialize as an empty DataFrame
+
 
 def Chart(intersection_value, stakeholder_importance_value):
     st.header("Graphische Übersicht")

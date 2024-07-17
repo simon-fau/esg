@@ -1,7 +1,7 @@
 import streamlit as st
 from pages.Stakeholder_Management import stakeholder_ranking
 from pages.Externe_Nachhaltigkeitspunkte import calculate_class_size, calculate_selected_rows, display_aggrid
-from pages.Longlist import bewertung_Uebersicht
+from pages.Longlist import bewertung_Uebersicht, anzahl_punkte_Longlist, count_top_down_points, count_internal_points, count_stakeholder_points
 from pages.Shortlist import chart_übersicht_allgemein, chart_auswirkungsbezogen, chart_finanzbezogen
 
 def display_stakeholder_table():
@@ -27,30 +27,6 @@ def display_stakeholder_table():
         grid_response = display_aggrid(stakeholder_punkte_filtered.drop(columns=['_index']), with_checkboxes=False)
     else:
         st.warning("Es wurden noch keine Inhalte im Excel-Upload hochgeladen. Bitte laden Sie eine Excel-Datei hoch.")
-
-#Anzahl der Punkte in der Longlist für die Darstellung in der Übersicht
-def anzahl_punkte_Longlist():
-    if 'longlist' in st.session_state:
-        count = len(st.session_state.longlist)
-        st.metric(label="Anzahl der Punkte in der Longlist:", value=count)
-
-# Funktion, die zählt wie viele themespezifische Punkte in der Longlist sind. Inhalte werden aufgenommen wenn combined_df "Top-Down|Top-Down Bewertung|Top-Down & Top-Down Bewertung" enthält. 
-def count_top_down_points():
-    combined_df = st.session_state.combined_df
-    count = combined_df[combined_df['Quelle'].str.contains("Top-Down|Top-Down Bewertung|Top-Down & Top-Down Bewertung", na=False)].shape[0]
-    st.metric("davon themespezifische Punkte:", count)
-
-# Funktion, die zählt wie viele interne Punkte in der Longlist sind. Inhalte werden aufgenommen wenn combined_df "Intern|Eigene|Eigene & Intern" enthält
-def count_internal_points():
-    combined_df = st.session_state.combined_df
-    count = combined_df[combined_df['Quelle'].str.contains("Intern|Eigene|Eigene & Intern", na=False)].shape[0]
-    st.metric("davon interne Punkte", count)
-
-# Funktio, die zählt wie viele Stakeholderpunkte in der Longlist sind. "~combined_df" bedeutet, dass alle Zeilen aus der Longlist genommen werden, die nicht "Top-Down|Top-Down Bewertung|Top-Down..." sind
-def count_stakeholder_points():
-    combined_df = st.session_state.combined_df
-    count = combined_df[~combined_df['Quelle'].str.contains("Top-Down|Top-Down Bewertung|Top-Down & Top-Down Bewertung|Intern|Eigene|Eigene & Intern", na=False)].shape[0]
-    st.metric("davon externe Punkte", count)
 
 def count_shortlist_points():
     if 'filtered_df' in st.session_state:
@@ -81,7 +57,6 @@ def display_page():
             st.markdown('#### Fortschritt Bewertungen')
             bewertung_Uebersicht()
             
-    
     with col[1]:
         
         container_3 = st.container(border=True)
@@ -115,4 +90,3 @@ def display_page():
         with container_6:
             st.markdown('#### Stakeholder Ranking')
             stakeholder_ranking()
-      
