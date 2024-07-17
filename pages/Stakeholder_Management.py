@@ -211,5 +211,3 @@ def display_page():
                 stakeholder_network()
         else:
             st.write("Keine Stakeholder-Daten vorhanden.")
-
-

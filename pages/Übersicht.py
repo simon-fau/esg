@@ -26,7 +26,7 @@ def display_stakeholder_table():
         # Display the table without checkboxes
         grid_response = display_aggrid(stakeholder_punkte_filtered.drop(columns=['_index']), with_checkboxes=False)
     else:
-        st.warning("Es wurden noch keine Inhalte im Excel-Upload hochgeladen. Bitte laden Sie eine Excel-Datei hoch.")
+        st.info("Es wurden noch keine Inhalte hinzugefügt.")
 
 def count_shortlist_points():
     if 'filtered_df' in st.session_state:
@@ -34,17 +34,27 @@ def count_shortlist_points():
         st.metric("Anzahl der Punkte in der Shortlist:", count)
 
 def companies_in_stakeholder_table():
-    if 'company_names' in st.session_state: 
+    if 'company_names' in st.session_state and not st.session_state.company_names.empty:
         st.markdown("Nachhaltigkeitspunkte von folgenden Stakeholdern einbezogen:")
         for index, row in st.session_state.company_names.iterrows():
             st.markdown(f"- {row['Company Name']}")
+    else:
+        st.info("Keine Stakeholder einbezogen.")
 
 def display_page():
+    # Check if all relevant session states are empty
+    session_states_to_check = [
+        'stakeholder_punkte_df', 'filtered_df', 'company_names', 
+        'namen_tabelle', 'ranking_table', 'stakeholder_punkte_filtered'
+    ]
+    if all(key not in st.session_state or st.session_state[key].empty for key in session_states_to_check):
+        st.info("Es wurden noch keine Inhalte hinzugefügt.")
+        return
 
     col = st.columns((1.5, 4.5, 1.5), gap='medium')
     
     with col[0]:
-        container = st.container(border=True)
+        container = st.container()
         with container:
             st.markdown('#### Longlist')
             anzahl_punkte_Longlist()
@@ -52,14 +62,13 @@ def display_page():
             count_internal_points()
             count_stakeholder_points()
 
-        container_2 = st.container(border=True)
+        container_2 = st.container()
         with container_2:
             st.markdown('#### Fortschritt Bewertungen')
             bewertung_Uebersicht()
             
     with col[1]:
-        
-        container_3 = st.container(border=True)
+        container_3 = st.container()
         with container_3:
             col1, col2 = st.columns([1, 2])
             with col1:
@@ -76,17 +85,17 @@ def display_page():
                 chart_finanzbezogen(width=900, height=800)
 
     with col[2]:
-        container_4 = st.container(border=True)
+        container_4 = st.container()
         with container_4:
             st.markdown('#### Shortlist')
             count_shortlist_points()
 
-        container_5 = st.container(border=True)
+        container_5 = st.container()
         with container_5:
             st.markdown('#### Stakeholder')
             companies_in_stakeholder_table()
 
-        container_6 = st.container(border=True)
+        container_6 = st.container()
         with container_6:
             st.markdown('#### Stakeholder Ranking')
             stakeholder_ranking()

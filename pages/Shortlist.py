@@ -43,7 +43,7 @@ def Chart(intersection_value, stakeholder_importance_value):
 
         # Check if the DataFrame is empty after filtering
         if selected_columns_df.empty:
-            st.warning("Keine Daten vorhanden, um den Chart anzuzeigen.")
+            st.info("Keine Daten vorhanden, um den Chart anzuzeigen.")
             return  # Stop the function execution
 
         def assign_color(theme):
@@ -112,7 +112,7 @@ def Chart(intersection_value, stakeholder_importance_value):
 
         st.altair_chart(chart)
     else:
-        st.warning("Keine Daten ausgewählt.")
+        st.info("Keine Daten ausgewählt.")
 
 def filter_table(intersection_value, stakeholder_importance_value):
     st.header("Shortlist")
@@ -137,7 +137,7 @@ def filter_table(intersection_value, stakeholder_importance_value):
         filtered_df = st.session_state.filtered_df[columns_to_display]
 
         if filtered_df.empty:
-            st.warning("Keine Inhalte verfügbar")
+            st.info("Keine Inhalte verfügbar")
         else:
             # Configure the grid
             gb = GridOptionsBuilder.from_dataframe(filtered_df)
@@ -149,7 +149,7 @@ def filter_table(intersection_value, stakeholder_importance_value):
             AgGrid(filtered_df, gridOptions=grid_options, enable_enterprise_modules=True, update_mode=GridUpdateMode.MODEL_CHANGED, fit_columns_on_grid_load=True)
 
     else:
-        st.warning("Keine Inhalte vorhanden")
+        st.info("Keine Inhalte vorhanden")
 
 def display_slider():
     st.sidebar.markdown("---")
@@ -248,7 +248,7 @@ def chart_übersicht_allgemein(width, height):
         required_columns = ['ID', 'Score Finanzen', 'Score Auswirkung', 'Thema', 'Unterthema', 'Unter-Unterthema', 'Stakeholder Wichtigkeit']
 
         if selected_columns_df.empty:
-            st.warning("Keine Daten vorhanden, um den Chart anzuzeigen.")
+            st.info("Keine Daten vorhanden, um den Chart anzuzeigen.")
             return
 
         def assign_color(theme):
@@ -297,7 +297,7 @@ def chart_übersicht_allgemein(width, height):
 
         st.altair_chart(scatter)
     else:
-        st.warning("Keine Daten ausgewählt.")
+        st.info("Keine Daten ausgewählt.")
 
 # Graphik zur Darstellung auswikrungsbezogener Punkte. Unterscheidung positiv & negativ, sowie potentiell und tatsächlich
 def chart_auswirkungsbezogen(width, height):
@@ -383,7 +383,7 @@ def chart_auswirkungsbezogen(width, height):
 
         st.altair_chart(scatter)
     else:
-        st.warning("Keine Daten ausgewählt.")
+        st.info("Keine Daten ausgewählt.")
 
 def chart_finanzbezogen(width, height):
     st.write(" ")
@@ -445,4 +445,4 @@ def chart_finanzbezogen(width, height):
 
         st.altair_chart(scatter)
     else:
-        st.warning("Keine Daten ausgewählt.")
+        st.info("Keine Daten ausgewählt.")

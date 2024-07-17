@@ -369,11 +369,11 @@ def display_selected_data():
 # Zeigt Bertungen nur an, wenn diese auch in der Longlist vorhanden sind
 def bewertung():
     if 'selected_columns' not in st.session_state or st.session_state['selected_columns'].empty:
-        st.warning('Keine Bewertung vorhanden. Bitte fügen Sie eine Bewertung hinzu.')
+        st.info('Keine Bewertung vorhanden. Bitte fügen Sie eine Bewertung hinzu.')
         return  # Beendet die Funktion, wenn keine Bewertung vorhanden ist
 
     if 'longlist' not in st.session_state:
-        st.warning('Keine Longlist vorhanden. Bitte fügen Sie eine Longlist hinzu.')
+        st.info('Keine Longlist vorhanden. Bitte fügen Sie eine Longlist hinzu.')
         return  # Beendet die Funktion, wenn keine Longlist vorhanden ist
 
     longlist_ids = st.session_state['longlist']['ID'].unique()
@@ -618,7 +618,8 @@ def merge_dataframes():
 
 def bewertung_Uebersicht():
     if 'longlist' not in st.session_state or st.session_state['longlist'].empty:
-        st.warning('Keine Longlist vorhanden. Bitte fügen Sie eine Longlist hinzu.')
+        st.write('0% der Inhalte der Longlist wurden bewertet.')
+        st.progress(0)
         return  # Beendet die Funktion, wenn keine Longlist vorhanden ist
 
     # Zählen der Anzahl der Bewertungen in der Longlist
@@ -635,12 +636,14 @@ def bewertung_Uebersicht():
 
 # Anzahl der Punkte in der Longlist für die Darstellung in der Übersicht
 def anzahl_punkte_Longlist():
-    if 'combined_df' in st.session_state:
+    count = 0  # Standardwert auf 0 setzen
+    if 'combined_df' in st.session_state and not st.session_state.combined_df.empty:
         count = len(st.session_state.combined_df)
-        st.metric(label="Anzahl der Punkte in der Longlist:", value=count)
+    st.metric(label="Anzahl der Punkte in der Longlist:", value=count)
 
 # Funktion, die zählt wie viele themespezifische Punkte in der Longlist sind. Inhalte werden aufgenommen wenn combined_df "Top-Down|Top-Down Bewertung|Top-Down & Top-Down Bewertung" enthält. 
 def count_top_down_points():
+    count = 0
     if 'combined_df' in st.session_state:
         combined_df = st.session_state.combined_df
         # Filtern der Zeilen, die die angegebenen Schlüsselwörter enthalten
@@ -650,6 +653,7 @@ def count_top_down_points():
         
 # Funktion, die zählt wie viele interne Punkte in der Longlist sind. Inhalte werden aufgenommen wenn combined_df "Intern|Eigene|Eigene & Intern" enthält
 def count_internal_points():
+    count = 0
     if 'combined_df' in st.session_state:
         combined_df = st.session_state.combined_df
         # Filtern der Zeilen, die die angegebenen Schlüsselwörter enthalten
@@ -660,6 +664,7 @@ def count_internal_points():
 
 # Funktio, die zählt wie viele Stakeholderpunkte in der Longlist sind. "~combined_df" bedeutet, dass alle Zeilen aus der Longlist genommen werden, die nicht "Top-Down|Top-Down Bewertung|Top-Down..." sind
 def count_stakeholder_points():
+    count = 0
     if 'combined_df' in st.session_state:
         combined_df = st.session_state.combined_df
         # Filtern der Zeilen, die die angegebenen Schlüsselwörter enthalten
@@ -678,10 +683,7 @@ def display_page():
     with st.expander("Bewertungen"):
         bewertung()
 
-    anzahl_punkte_Longlist()
-    count_stakeholder_points()
-    count_internal_points()
-    count_top_down_points()
+   
 
     
    

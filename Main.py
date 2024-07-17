@@ -37,7 +37,7 @@ st.set_page_config(
     page_title="ESG-Tool",
     page_icon=os.path.join(os.path.dirname(__file__)),
     layout="wide",
-    initial_sidebar_state="expanded"  # Hier auf "expanded" setzen
+    initial_sidebar_state="expanded"  
 )
 
 # Hauptüberschrift und Untertitel
