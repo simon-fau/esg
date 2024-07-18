@@ -154,7 +154,7 @@ def eigene_punkte():
             selection_mode='multiple'
         )
     else:
-        st.info("Keine Daten vorhanden. Bitte fügen Sie über die Sidebar Inhalte hinzu.")
+        st.info("Keine Daten vorhanden.")
 
     add_empty_row = st.button('➕ Leere Zeile hinzufügen', key='add_empty_row')
     if add_empty_row:

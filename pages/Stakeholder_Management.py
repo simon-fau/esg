@@ -47,7 +47,7 @@ def calculate_score(row):
     return round(score)
 
 # Funktion zum Generieren des Stakeholder-Rankings
-def generate_stakeholder_ranking():
+def stakeholder_ranking():
     score_table = st.session_state['namen_tabelle'][['Gruppe', 'Score']].copy()
     if not score_table.empty:
         score_table['Ranking'] = range(1, len(score_table) + 1)
@@ -160,7 +160,7 @@ def display_stakeholder_management():
         inputs = sidebar()
     
     if st.session_state.df.empty:
-        st.warning("Keine Daten vorhanden.")
+        st.info("Keine Daten vorhanden.")
     else:
         grid_response = display_grid()
         if st.button('🗑️ Zeile löschen') and grid_response:
@@ -168,11 +168,6 @@ def display_stakeholder_management():
     
     if inputs[-1]:  # add_row is the last element in the tuple 'inputs'
         add_new_row(*inputs[:-1])
-
-# Funktion zum Anzeigen des Stakeholder-Rankings und des Netzwerkdiagramms
-def stakeholder_ranking():
-    if 'namen_tabelle' in st.session_state:
-        generate_stakeholder_ranking()
 
 def stakeholder_network():
     net = Network(height="500px", width="100%", bgcolor="white", font_color="black")

@@ -6,7 +6,7 @@ from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
 
 # Constants
 STATE_FILE = 'a.pkl'
-OPTIONS = ['Nicht Wesentlich', 'Eher nicht wesentlich', 'Eher Wesentlich', 'Wesentlich']
+OPTIONS = ['100%', 'Top 75%', 'Top 50%', 'Top 25%']
 
 # Session state management
 def load_session_state():
@@ -57,11 +57,11 @@ def aggregate_rankings(df):
 
 def calculate_selected_rows(df, class_size):
     slider_value = st.session_state.slider_value
-    if slider_value == 'Wesentlich':
+    if slider_value == 'Top 25%':
         return df[df['Stakeholder Gesamtbew.'] > 3 * class_size + df['Stakeholder Gesamtbew.'].min()]
-    elif slider_value == 'Eher Wesentlich':
+    elif slider_value == 'Top 50%':
         return df[df['Stakeholder Gesamtbew.'] > 2 * class_size + df['Stakeholder Gesamtbew.'].min()]
-    elif slider_value == 'Eher nicht wesentlich':
+    elif slider_value == 'Top 75%':
         return df[df['Stakeholder Gesamtbew.'] > class_size + df['Stakeholder Gesamtbew.'].min()]
     else:
         return df[df['Stakeholder Gesamtbew.'] > 0]
@@ -219,4 +219,3 @@ def display_page():
     with tab2:
         add_slider()
         stakeholder_punkte()
-

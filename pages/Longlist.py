@@ -319,6 +319,7 @@ def submit_bewertung(longlist, ausgewaehlte_werte):
 
         longlist['Bewertet'] = longlist['ID'].isin(st.session_state.selected_data['ID']).replace({True: 'Ja', False: 'Nein'})
         st.success("Bewertung abgesendet")
+   
     return longlist
 
 def delete_bewertung(longlist):
@@ -367,7 +368,7 @@ def display_selected_data():
         st.session_state['selected_columns'] = selected_columns
 
 # Zeigt Bertungen nur an, wenn diese auch in der Longlist vorhanden sind
-def bewertung():
+def Bewertungsanzeige():
     if 'selected_columns' not in st.session_state or st.session_state['selected_columns'].empty:
         st.info('Keine Bewertung vorhanden. Bitte fügen Sie eine Bewertung hinzu.')
         return  # Beendet die Funktion, wenn keine Bewertung vorhanden ist
@@ -512,7 +513,7 @@ def merge_dataframes():
     # Hinzufügen einer 'ID'-Spalte
     combined_df.insert(0, 'ID', range(1, 1 + len(combined_df)))
 
-     # Hinzufügen einer 'ID'-Spalte
+    # Hinzufügen einer 'ID'-Spalte
     for index, row in combined_df.iterrows():
         content = (row['Thema'], row['Unterthema'], row['Unter-Unterthema'])
 
@@ -582,10 +583,11 @@ def merge_dataframes():
     
         with st.expander("Finanzielle Bewertung"):
             art_finanziell = st.selectbox("Eigenschaft der Auswirkung:", ['Chance', 'Risiko', 'Keine Auswirkung'], index=2, key="art_finanziell")
-            ausmass_finanziell = st.select_slider("Ausmaß:", options=["Keine", "Minimal", "Niedrig", "Medium", "Hoch", "Sehr hoch"], key="ausmass_finanziell")
-            wahrscheinlichkeit_finanziell = st.select_slider("Wahrscheinlichkeit:", options=["Tritt nicht ein", "Unwahrscheinlich", "Eher unwahrscheinlich", "Eher wahrscheinlich", "Wahrscheinlich", "Sicher"], key="wahrscheinlichkeit_finanziell")
-            auswirkung_finanziell = st.select_slider("Finanzielle Auswirkung:", options=["Keine", "Sehr gering", "Eher gering", "Eher hoch", "Hoch", "Sehr hoch"], key="auswirkung_finanziell")
-   
+            if art_finanziell != 'Keine Auswirkung':
+                ausmass_finanziell = st.select_slider("Ausmaß:", options=["Keine", "Minimal", "Niedrig", "Medium", "Hoch", "Sehr hoch"], key="ausmass_finanziell")
+                wahrscheinlichkeit_finanziell = st.select_slider("Wahrscheinlichkeit:", options=["Tritt nicht ein", "Unwahrscheinlich", "Eher unwahrscheinlich", "Eher wahrscheinlich", "Wahrscheinlich", "Sicher"], key="wahrscheinlichkeit_finanziell")
+                auswirkung_finanziell = st.select_slider("Finanzielle Auswirkung:", options=["Keine", "Sehr gering", "Eher gering", "Eher hoch", "Hoch", "Sehr hoch"], key="auswirkung_finanziell")
+
     # Store selected values
     ausgewaehlte_werte = {
         "option": option,
@@ -614,6 +616,18 @@ def merge_dataframes():
     longlist = delete_bewertung(longlist)
     display_grid(longlist)
     save_state()
+
+def reset_session_state_keys():
+    keys_to_reset = [
+        "auswirkung_option", "auswirkung_art_option", "auswirkung_art_option_pos",
+        "ausmass_neg_tat", "umfang_neg_tat", "behebbarkeit_neg_tat",
+        "ausmass_neg_pot", "umfang_neg_pot", "behebbarkeit_neg_pot", "wahrscheinlichkeit_neg_pot",
+        "ausmass_pos_tat", "umfang_pos_tat", "ausmass_pos_pot", "umfang_pos_pot", "behebbarkeit_pos_pot",
+        "art_finanziell", "wahrscheinlichkeit_finanziell", "ausmass_finanziell", "auswirkung_finanziell"
+    ]
+    for key in keys_to_reset:
+        if key in st.session_state:
+            del st.session_state[key]
 
 
 def bewertung_Uebersicht():
@@ -649,7 +663,7 @@ def count_top_down_points():
         # Filtern der Zeilen, die die angegebenen Schlüsselwörter enthalten
         count = combined_df[combined_df['Quelle'].str.contains("Top-Down|Top-Down Bewertung|Top-Down & Top-Down Bewertung", na=False)].shape[0]
         # Ausgabe der Anzahl als st.metric
-        st.metric(label="Anzahl der Top-Down Punkte:", value=count)
+        st.metric(label="davon aus themenspezifischer ESRS:", value=count)
         
 # Funktion, die zählt wie viele interne Punkte in der Longlist sind. Inhalte werden aufgenommen wenn combined_df "Intern|Eigene|Eigene & Intern" enthält
 def count_internal_points():
@@ -659,7 +673,7 @@ def count_internal_points():
         # Filtern der Zeilen, die die angegebenen Schlüsselwörter enthalten
         count = combined_df[combined_df['Quelle'].str.contains("Intern|Eigene|Eigene & Intern", na=False)].shape[0]
         # Ausgabe der Anzahl als st.metric
-        st.metric(label="Anzahl der Top-Down Punkte:", value=count)
+        st.metric(label="davon interne Punkte:", value=count)
     
 
 # Funktio, die zählt wie viele Stakeholderpunkte in der Longlist sind. "~combined_df" bedeutet, dass alle Zeilen aus der Longlist genommen werden, die nicht "Top-Down|Top-Down Bewertung|Top-Down..." sind
@@ -670,7 +684,7 @@ def count_stakeholder_points():
         # Filtern der Zeilen, die die angegebenen Schlüsselwörter enthalten
         count = combined_df[~combined_df['Quelle'].str.contains("Top-Down|Top-Down Bewertung|Top-Down & Top-Down Bewertung|Intern|Eigene|Eigene & Intern", na=False)].shape[0]
         # Ausgabe der Anzahl als st.metric
-        st.metric(label="Anzahl der Top-Down Punkte:", value=count)
+        st.metric(label="davon externe Punkte:", value=count)
     
 
 def display_page():
@@ -678,10 +692,9 @@ def display_page():
     st.title("Bewertung der Nachhaltigkeitspunkte (Longlist)")  
     merge_dataframes()
     display_selected_data()
-    if 'combined_df' in st.session_state:
-        st.dataframe(st.session_state.combined_df)
+    
     with st.expander("Bewertungen"):
-        bewertung()
+        Bewertungsanzeige()
 
    
 

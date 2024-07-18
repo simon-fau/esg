@@ -83,10 +83,18 @@ if selected_menu == 'Wesentlichkeitsanalyse':
     """
     st.markdown(hide_specific_class, unsafe_allow_html=True)
 
+    # Use session state to maintain the value of the select box
+    if 'wesentlichkeitsanalyse_option' not in st.session_state:
+        st.session_state['wesentlichkeitsanalyse_option'] = '1. Stakeholder Management'
+
     page_option = st.sidebar.selectbox(
         "Wählen Sie eine Option:",
-        ['1. Stakeholder Management', '2. Themenspezifische ESRS', '3. Interne Nachhaltigkeitspunkte', '4. Externe Nachhaltigkeitspunkte', '5. Bewertung der Longlist', '6. Erstellung der Shortlist']
+        ['1. Stakeholder Management', '2. Themenspezifische ESRS', '3. Interne Nachhaltigkeitspunkte', '4. Externe Nachhaltigkeitspunkte', '5. Bewertung der Longlist', '6. Erstellung der Shortlist'],
+        index=['1. Stakeholder Management', '2. Themenspezifische ESRS', '3. Interne Nachhaltigkeitspunkte', '4. Externe Nachhaltigkeitspunkte', '5. Bewertung der Longlist', '6. Erstellung der Shortlist'].index(st.session_state['wesentlichkeitsanalyse_option'])
     )
+
+    # Update session state
+    st.session_state['wesentlichkeitsanalyse_option'] = page_option
 
     if page_option == '1. Stakeholder Management':
         import pages.Stakeholder_Management as Stakeholder_page
@@ -121,4 +129,3 @@ elif selected_menu == 'Allgemeine_Angaben':
 elif selected_menu == 'Mindestangabepflicht':
     import pages.Mindestangabepflicht as Mindestangabepflicht_page
     Mindestangabepflicht_page.display_page()
-

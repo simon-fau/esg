@@ -64,6 +64,8 @@ def display_page():
         add_entries(df_mdr)
     
     with tab2:
-        st.title("Übersicht")
-        df_mdr["Antworten"] = st.session_state["Antworten"]
-        st.table(df_mdr)
+        if not any(st.session_state["Antworten"]):
+            st.info("Noch keine Einträge vorhanden.")
+        else:
+            df_mdr["Antworten"] = st.session_state["Antworten"]
+            st.table(df_mdr)
