@@ -110,6 +110,7 @@ def sidebar():
 
     return gruppe, bestehende_beziehung, auswirkung, level_des_engagements, stakeholdergruppe, kommunikation, art_der_betroffenheit, zeithorizont, add_row
 
+
 # Funktion zur Anzeige der AgGrid und Rückgabe der GridResponse
 def display_grid():
     gb = GridOptionsBuilder.from_dataframe(st.session_state.df)

@@ -41,6 +41,13 @@ def companies_in_stakeholder_table():
     else:
         st.info("Keine Stakeholder einbezogen.")
 
+def load_page(page_module):
+                page_function = getattr(page_module, 'display_page', None)
+                if callable(page_function):
+                    page_function()
+                else:
+                    st.error(f"Fehler: Die Seite {page_module.__name__} hat keine Funktion namens 'display_page'.")
+
 def display_page():
     # Check if all relevant session states are empty
     session_states_to_check = [
@@ -54,7 +61,7 @@ def display_page():
     col = st.columns((1.5, 4.5, 1.5), gap='medium')
     
     with col[0]:
-        container = st.container()
+        container = st.container(border=True)
         with container:
             st.markdown('#### Longlist')
             anzahl_punkte_Longlist()
@@ -62,13 +69,13 @@ def display_page():
             count_internal_points()
             count_stakeholder_points()
 
-        container_2 = st.container()
+        container_2 = st.container(border=True)
         with container_2:
             st.markdown('#### Fortschritt Bewertungen')
             bewertung_Uebersicht()
             
     with col[1]:
-        container_3 = st.container()
+        container_3 = st.container(border=True)
         with container_3:
             col1, col2 = st.columns([1, 2])
             with col1:
@@ -85,17 +92,17 @@ def display_page():
                 chart_finanzbezogen(width=900, height=800)
 
     with col[2]:
-        container_4 = st.container()
+        container_4 = st.container(border=True)
         with container_4:
             st.markdown('#### Shortlist')
             count_shortlist_points()
 
-        container_5 = st.container()
+        container_5 = st.container(border=True)
         with container_5:
             st.markdown('#### Stakeholder')
             companies_in_stakeholder_table()
 
-        container_6 = st.container()
+        container_6 = st.container(border=True)
         with container_6:
             st.markdown('#### Stakeholder Ranking')
             stakeholder_ranking()
