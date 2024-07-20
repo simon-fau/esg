@@ -18,35 +18,29 @@ def update_session_state():
         st.error("No ranking table found in session state")
 
 def stakeholder_alle():
-    # Display table 1 with checkboxes
-    selected_table1 = []
-    for item in st.session_state.table1:
-        if st.checkbox(item, key=f"table1_{item}"):
-            selected_table1.append(item)
-    return selected_table1
+    # Display table 1 as a dataframe
+    table1_df = pd.DataFrame(st.session_state.table1, columns=["Stakeholder"])
+    st.table(table1_df)
 
 def stakeholder_auswahl():
+    # Initialize table2 if not present
     if 'table2' not in st.session_state:
-        st.session_state.table2 = []  # table2 wird bereits leer initialisiert
+        st.session_state.table2 = []
+    
+    # Display table 2 as a dataframe
+    table2_df = pd.DataFrame(st.session_state.table2, columns=["Stakeholder"])
+    st.table(table2_df)
 
-    # Display table 2 with checkboxes
-    selected_table2 = []
-    for item in st.session_state.table2:
-        if st.checkbox(item, key=f"table2_{item}"):
-            selected_table2.append(item)
-    return selected_table2
-
-def button_nach_rechts(selected_table1):
-    # Buttons to move items
+def button_nach_rechts(selected_items):
     if st.button("Hinzufügen >>>"):
-        if selected_table1:
-            move_items(st.session_state.table1, st.session_state.table2, selected_table1)
+        if selected_items:
+            move_items(st.session_state.table1, st.session_state.table2, selected_items)
             st.experimental_rerun()
 
-def button_nach_links(selected_table2):
+def button_nach_links(selected_items):
     if st.button("<<< Entfernen"):
-        if selected_table2:
-            move_items(st.session_state.table2, st.session_state.table1, selected_table2)
+        if selected_items:
+            move_items(st.session_state.table2, st.session_state.table1, selected_items)
             st.experimental_rerun()
 
 def move_items(source, target, items):
@@ -69,15 +63,22 @@ def display_page():
     update_session_state()
 
     st.markdown("---")
-    col1, col2 = st.columns([1, 1])  # Adjust the width of the button column if needed
+    col1, col2 = st.columns([1, 1])
     
     with col1:
         st.write("**Nicht in Bewertung aufgenommene Stakeholder:**")
-        selected_table1 = stakeholder_alle()
+        stakeholder_alle()
+        
+        # Select items from table1 to move to table2
+        selected_table1 = st.multiselect("Wählen Sie Stakeholder zum Hinzufügen aus:", st.session_state.table1, key="select_table1")
         button_nach_rechts(selected_table1)
 
     with col2:
         st.write("**In Bewertung aufgenommene Stakeholder:**")
-        selected_table2 = stakeholder_auswahl()
+        stakeholder_auswahl()
+        
+        # Select items from table2 to move to table1
+        selected_table2 = st.multiselect("Wählen Sie Stakeholder zum Entfernen aus:", st.session_state.table2, key="select_table2")
         button_nach_links(selected_table2)
+
 
