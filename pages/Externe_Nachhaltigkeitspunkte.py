@@ -128,30 +128,53 @@ def stakeholder_punkte():
     else:
         st.info("Es wurden noch keine Inhalte im Excel-Upload hochgeladen. Bitte laden Sie eine Excel-Datei hoch.")
 
+def display_sidebar_items():
+    with st.sidebar:
+        st.write("Ausgewählte Optionen:")
+        for item in st.session_state.sidebar_items:
+            st.write(item)
+
+# Initial Sidebar Setup
+if 'sidebar_items' not in st.session_state:
+    st.session_state.sidebar_items = []
+
+# Main Function
 def excel_upload():
-    uploaded_files = st.file_uploader("Excel-Dateien hochladen", accept_multiple_files=True, type=['xlsx'])
-    if uploaded_files:
+    uploaded_file = st.file_uploader("Excel-Datei hochladen", type=['xlsx'])
+    
+    if uploaded_file:
         df_list = []
-        for file in uploaded_files:
-            for sheet_name in ['Top-Down', 'Intern', 'Extern']:
-                try:
-                    df = pd.read_excel(file, sheet_name=sheet_name, engine='openpyxl', usecols=['Thema', 'Unterthema', 'Unter-Unterthema', 'Auswirkungsbezogene Bewertung', 'Finanzbezogene Bewertung'])
-                    df['Quelle'] = sheet_name
-                    df_list.append(df)
-                except ValueError:
-                    st.info(f"Blatt '{sheet_name}' nicht in {file.name} gefunden.")
+        for sheet_name in ['Top-Down', 'Intern', 'Extern']:
+            try:
+                df = pd.read_excel(uploaded_file, sheet_name=sheet_name, engine='openpyxl', usecols=['Thema', 'Unterthema', 'Unter-Unterthema', 'Auswirkungsbezogene Bewertung', 'Finanzbezogene Bewertung'])
+                df['Quelle'] = sheet_name
+                df_list.append(df)
+            except ValueError:
+                st.info(f"Blatt '{sheet_name}' nicht in {uploaded_file.name} gefunden.")
+        
         if df_list:
             combined_df = pd.concat(df_list, ignore_index=True)
             st.session_state.ranking_df = aggregate_rankings(combined_df)
             save_session_state({'ranking_df': st.session_state.ranking_df})
-            st.write("")
             st.write("")
             st.write("Vorschau der hochgeladenen Daten:")
             response = display_aggrid(st.session_state.ranking_df, with_checkboxes=False)
             st.session_state.grid_response = response
             save_session_state({'grid_response': st.session_state.grid_response})
 
-            if st.button('Stakeholder Punkte übernehmen'):
+            st.write("")
+            if 'table2' not in st.session_state:
+                st.session_state.table2 = []
+
+            options = [opt for opt in st.session_state.table2 if opt not in st.session_state.sidebar_items]
+            selected_option = st.selectbox('Wählen Sie eine Option', options)
+            st.session_state.selected_option = selected_option
+            save_session_state({'selected_option': st.session_state.selected_option})
+
+            if st.button('Stakeholder Punkte übernehmen') and st.session_state.selected_option:
+                st.session_state.sidebar_items.append(st.session_state.selected_option)
+                save_session_state({'sidebar_items': st.session_state.sidebar_items})
+
                 relevant_columns = ['Thema', 'Unterthema', 'Unter-Unterthema', 'Stakeholder Bew. Auswirkung', 'Stakeholder Bew. Finanzen', 'Stakeholder Gesamtbew.', 'Quelle']
                 new_df = st.session_state.ranking_df[relevant_columns]
                 new_df = new_df[new_df['Stakeholder Gesamtbew.'] >= 1]
@@ -175,19 +198,10 @@ def excel_upload():
                 save_session_state({'stakeholder_punkte_df': st.session_state.stakeholder_punkte_df})
                 st.success("Stakeholder Punkte erfolgreich übernommen")
 
-                st.session_state.uploaded_files = uploaded_files
+                # Uploader leeren
+                st.session_state.uploaded_files = None
                 save_session_state({'uploaded_files': st.session_state.uploaded_files})
-
-def display_sidebar():
-    st.sidebar.markdown("---")
-    st.sidebar.markdown("**Bereits hochgeladene Dateien von:**")
-    if 'table2' in st.session_state and st.session_state.table2:
-        # Da table2 keine Spalten hat, wird angenommen, dass es sich um eine Liste handelt
-        selected_groups = st.sidebar.multiselect("Ausgewählte Gruppen", options=st.session_state.table2)
-        for group in selected_groups:
-            st.sidebar.markdown(f"- {group}")
-    else:
-        st.sidebar.write("No groups available.")
+                st.experimental_rerun()
 
 def display_page():
     st.header("Stakeholder-Management")
@@ -198,8 +212,7 @@ def display_page():
     tab1, tab2 = st.tabs(["Auswahl", "Ranking der Stakeholderbewertung"])
     with tab1:
         excel_upload()
-        display_sidebar()
+        display_sidebar_items()
     with tab2:
         add_slider()
         stakeholder_punkte()
-        

@@ -1,6 +1,14 @@
 import streamlit as st
-import pandas as pd
+import pickle
 
+# Konstante für den Dateinamen des Sitzungszustands
+STATE_FILE = 'a.pkl'
+
+# Funktion zum Speichern des Sitzungszustands
+def save_state():
+    with open(STATE_FILE, 'wb') as f:
+        pickle.dump(dict(st.session_state), f)
+  
 def initialize_session_state():
     if 'ranking_table' not in st.session_state:
         st.error("No ranking table found in session state")
@@ -122,7 +130,6 @@ def display_page():
         st.write(" ")
         st.write(" ")
         display_in_evaluation()
-    st.write(st.session_state.table2)
-    st.write(st.session_state.table2_df)
 
-
+    save_state()
+   
