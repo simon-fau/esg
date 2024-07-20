@@ -106,7 +106,6 @@ def display_page():
         add_button_selection()
         st.write(" ")
         st.write(" ")
-        st.markdown("---")
         st.write(" ")
         st.write(" ")
 
@@ -120,9 +119,10 @@ def display_page():
         remove_button_selection()
         st.write(" ")
         st.write(" ")
-        st.markdown("---")
         st.write(" ")
         st.write(" ")
         display_in_evaluation()
+    st.write(st.session_state.table2)
+    st.write(st.session_state.table2_df)
 
 

@@ -6,7 +6,7 @@ from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
 
 # Constants
 STATE_FILE = 'a.pkl'
-OPTIONS = ['100%', 'Top 75%', 'Top 50%', 'Top 25%']
+OPTIONS = ['Alle', 'Top 75%', 'Top 50%', 'Top 25%']
 
 # Session state management
 def load_session_state():
@@ -31,6 +31,10 @@ if 'slider_value' not in st.session_state:
 if 'stakeholder_punkte_df' not in st.session_state:
     st.session_state.stakeholder_punkte_df = pd.DataFrame(columns=['Platzierung', 'Thema', 'Unterthema', 'Unter-Unterthema', 'AuswirkungRating', 'FinanzRating', 'Stakeholder Gesamtbew.', 'Quelle'])
 
+if 'uploaded_files' not in st.session_state:
+    st.session_state.uploaded_files = []
+
+
 # Utility functions
 def calculate_class_size(df):
     return (df['Stakeholder Gesamtbew.'].max() - df['Stakeholder Gesamtbew.'].min()) / 4
@@ -54,7 +58,6 @@ def aggregate_rankings(df):
     ranking['Platzierung'] = ranking['Stakeholder Gesamtbew.'].rank(method='min', ascending=False).astype(int)
     return ranking[['Platzierung', 'Thema', 'Unterthema', 'Unter-Unterthema', 'Stakeholder Bew. Auswirkung', 'Stakeholder Bew. Finanzen', 'Stakeholder Gesamtbew.', 'Quelle']]
 
-
 def calculate_selected_rows(df, class_size):
     slider_value = st.session_state.slider_value
     if slider_value == 'Top 25%':
@@ -66,23 +69,12 @@ def calculate_selected_rows(df, class_size):
     else:
         return df[df['Stakeholder Gesamtbew.'] > 0]
 
-def extract_company_name(file):
-    try:
-        df = pd.read_excel(file, sheet_name='Einführung', engine='openpyxl', usecols="B")
-        if df.shape[0] > 10:
-            return df.iloc[10, 0]
-        st.warning(f"Firmennamen in {file.name} nicht gefunden oder außerhalb des zulässigen Bereichs.")
-    except Exception as e:
-        st.error(f"Fehler beim Extrahieren des Firmennamens: {e}")
-    return None
-
 # UI components
 def add_slider():
     with st.expander("**Grenzwert der Stakeholderpunkte:**", expanded=False):
-    
         col1, col2 = st.columns([1, 4])
         with col1:
-            current_slider_value = st.select_slider('', options=OPTIONS, value=st.session_state.slider_value, key='stakeholder_zslider')
+            current_slider_value = st.select_slider('', options=OPTIONS, value=st.session_state.slider_value, key='stakeholder_slider')
             if st.button('Auswahl übernehmen'):
                 st.session_state.slider_value = current_slider_value
                 save_session_state({'slider_value': st.session_state.slider_value})
@@ -120,7 +112,6 @@ def stakeholder_punkte():
         grid_response = display_aggrid(stakeholder_punkte_filtered, with_checkboxes=True)
         selected = grid_response['selected_rows']
 
-        
         if st.button("🗑️ Inhalt löschen"):
             if selected:
                 selected_indices = [stakeholder_punkte_filtered.iloc[row['_selectedRowNodeInfo']['nodeRowIndex']]['_index'] for row in selected]
@@ -128,33 +119,27 @@ def stakeholder_punkte():
                 save_session_state({'stakeholder_punkte_df': st.session_state.stakeholder_punkte_df})
                 st.experimental_rerun()
             else:
-                st.warning("Keine Zeilen ausgewählt.")
+                st.info("Keine Zeilen ausgewählt.")
     
         if st.button("🗑️ Alle Inhalte löschen"):
             st.session_state.stakeholder_punkte_df = st.session_state.stakeholder_punkte_df.iloc[0:0]
-            if 'company_names' in st.session_state:
-                del st.session_state['company_names']
-            save_session_state({'stakeholder_punkte_df': st.session_state.stakeholder_punkte_df, 'company_names': pd.DataFrame()})
+            save_session_state({'stakeholder_punkte_df': st.session_state.stakeholder_punkte_df})
             st.experimental_rerun()
     else:
-        st.warning("Es wurden noch keine Inhalte im Excel-Upload hochgeladen. Bitte laden Sie eine Excel-Datei hoch.")
+        st.info("Es wurden noch keine Inhalte im Excel-Upload hochgeladen. Bitte laden Sie eine Excel-Datei hoch.")
 
 def excel_upload():
     uploaded_files = st.file_uploader("Excel-Dateien hochladen", accept_multiple_files=True, type=['xlsx'])
     if uploaded_files:
         df_list = []
-        company_names = {}
         for file in uploaded_files:
-            company_name = extract_company_name(file)
-            if company_name:
-                company_names[file.name] = company_name
             for sheet_name in ['Top-Down', 'Intern', 'Extern']:
                 try:
                     df = pd.read_excel(file, sheet_name=sheet_name, engine='openpyxl', usecols=['Thema', 'Unterthema', 'Unter-Unterthema', 'Auswirkungsbezogene Bewertung', 'Finanzbezogene Bewertung'])
-                    df['Quelle'] = company_name if sheet_name == 'Extern' else sheet_name
+                    df['Quelle'] = sheet_name
                     df_list.append(df)
                 except ValueError:
-                    st.warning(f"Blatt '{sheet_name}' nicht in {file.name} gefunden.")
+                    st.info(f"Blatt '{sheet_name}' nicht in {file.name} gefunden.")
         if df_list:
             combined_df = pd.concat(df_list, ignore_index=True)
             st.session_state.ranking_df = aggregate_rankings(combined_df)
@@ -190,22 +175,20 @@ def excel_upload():
                 save_session_state({'stakeholder_punkte_df': st.session_state.stakeholder_punkte_df})
                 st.success("Stakeholder Punkte erfolgreich übernommen")
 
-                if company_names:
-                    company_names_df = pd.DataFrame(company_names.items(), columns=["File Name", "Company Name"])
-                    if 'company_names' in st.session_state:
-                        st.session_state.company_names = pd.concat([st.session_state.company_names, company_names_df], ignore_index=True)
-                    else:
-                        st.session_state.company_names = company_names_df
-                    save_session_state({'company_names': st.session_state.company_names})
-
+                st.session_state.uploaded_files = uploaded_files
+                save_session_state({'uploaded_files': st.session_state.uploaded_files})
 
 def display_sidebar():
-    if 'company_names' in st.session_state:
-        st.sidebar.markdown("---")
-        st.sidebar.markdown("**Bereits hochgeladene Dateien von:**")
-        for index, row in st.session_state.company_names.iterrows():
-            st.sidebar.markdown(f"- {row['Company Name']}")
-    
+    st.sidebar.markdown("---")
+    st.sidebar.markdown("**Bereits hochgeladene Dateien von:**")
+    if 'table2' in st.session_state and st.session_state.table2:
+        # Da table2 keine Spalten hat, wird angenommen, dass es sich um eine Liste handelt
+        selected_groups = st.sidebar.multiselect("Ausgewählte Gruppen", options=st.session_state.table2)
+        for group in selected_groups:
+            st.sidebar.markdown(f"- {group}")
+    else:
+        st.sidebar.write("No groups available.")
+
 def display_page():
     st.header("Stakeholder-Management")
     st.markdown("""
@@ -219,3 +202,4 @@ def display_page():
     with tab2:
         add_slider()
         stakeholder_punkte()
+        
