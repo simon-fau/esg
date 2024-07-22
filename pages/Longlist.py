@@ -629,7 +629,6 @@ def reset_session_state_keys():
         if key in st.session_state:
             del st.session_state[key]
 
-
 def bewertung_Uebersicht():
     if 'longlist' not in st.session_state or st.session_state['longlist'].empty:
         st.write('0% der Inhalte der Longlist wurden bewertet.')
@@ -675,7 +674,6 @@ def count_internal_points():
         # Ausgabe der Anzahl als st.metric
         st.metric(label="davon interne Punkte:", value=count)
     
-
 # Funktio, die zählt wie viele Stakeholderpunkte in der Longlist sind. "~combined_df" bedeutet, dass alle Zeilen aus der Longlist genommen werden, die nicht "Top-Down|Top-Down Bewertung|Top-Down..." sind
 def count_stakeholder_points():
     count = 0
@@ -685,11 +683,19 @@ def count_stakeholder_points():
         count = combined_df[~combined_df['Quelle'].str.contains("Top-Down|Top-Down Bewertung|Top-Down & Top-Down Bewertung|Intern|Eigene|Eigene & Intern", na=False)].shape[0]
         # Ausgabe der Anzahl als st.metric
         st.metric(label="davon externe Punkte:", value=count)
-    
 
+def check_abgeschlossen_Longlist():
+    if 'checkbox_state_6' not in st.session_state:
+        st.session_state['checkbox_state_6'] = False
+    # Checkbox erstellen und Zustand in st.session_state speichern
+    st.session_state['checkbox_state_6'] = st.checkbox("Alle Punkte bewertet?", value=st.session_state['checkbox_state_6'])
+ 
 def display_page():
-
-    st.title("Bewertung der Nachhaltigkeitspunkte (Longlist)")  
+    col1, col2 = st.columns([5, 1])
+    with col1:
+        st.header("Bewertung der Nachhaltigkeitspunkte (Longlist)")
+    with col2:
+        check_abgeschlossen_Longlist()
     merge_dataframes()
     display_selected_data()
     

@@ -204,17 +204,28 @@ def download_excel():
 def Excel_button():
     st.sidebar.markdown("---")
     st.sidebar.write("Aktualisieren Sie die Excel-Datei, sofern es Änderungen an der Shortlist gab.")
-    if st.sidebar.button('🔃 Excel aktualisieren'):
+    if st.sidebar.button('🔃 Shortlist aktualisieren'):
         transfer_data_to_excel(st.session_state.filtered_df)
     
     # Download-Button für die Excel-Datei
-    if st.sidebar.download_button(label="⬇️ Excel-Datei herunterladen",
+    if st.sidebar.download_button(label="⬇️ Shortlist herunterladen",
                           data=download_excel(),
                           file_name="Shortlist.xlsx",
                           mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"):
         st.success("Download gestartet!")
 
+def check_abgeschlossen_shortlist():
+    if 'checkbox_state_7' not in st.session_state:
+        st.session_state['checkbox_state_7'] = False
+    # Checkbox erstellen und Zustand in st.session_state speichern
+    st.session_state['checkbox_state_7'] = st.checkbox("Shortlist fertig?", value=st.session_state['checkbox_state_7'])
+
 def display_page():
+    col1, col2 = st.columns([5, 1])
+    with col1:
+        st.header("Erstellung der Shortlist")
+    with col2:
+        check_abgeschlossen_shortlist()
     display_slider()
     if 'apply_changes' in st.session_state and st.session_state['apply_changes']:
         Chart(st.session_state['intersection_value'], st.session_state['stakeholder_importance_value'])

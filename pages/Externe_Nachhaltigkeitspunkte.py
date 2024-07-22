@@ -159,22 +159,24 @@ def excel_upload():
             combined_df = pd.concat(df_list, ignore_index=True)
             st.session_state.ranking_df = aggregate_rankings(combined_df)
             save_session_state({'ranking_df': st.session_state.ranking_df})
-            st.write("")
+            
             st.write("Vorschau der hochgeladenen Daten:")
             response = display_aggrid(st.session_state.ranking_df, with_checkboxes=False)
             st.session_state.grid_response = response
             save_session_state({'grid_response': st.session_state.grid_response})
 
-            st.write("")
             if 'table2' not in st.session_state:
                 st.session_state.table2 = []
 
             options = [opt for opt in st.session_state.table2 if opt not in st.session_state.sidebar_items]
-            selected_option = st.selectbox('Wählen Sie eine Option', options)
+            selected_option = st.selectbox('Wählen Sie den zugehörigen Stakeholder aus:', options)
             st.session_state.selected_option = selected_option
             save_session_state({'selected_option': st.session_state.selected_option})
-
-            if st.button('Stakeholder Punkte übernehmen'):
+            st.write("")
+            st.write("")
+            st.write("")
+            st.write("")
+            if st.button('Punkte übernehmen'):
                 if st.session_state.selected_option:
                     st.session_state.sidebar_items.append(st.session_state.selected_option)
                     save_session_state({'sidebar_items': st.session_state.sidebar_items})
@@ -208,12 +210,22 @@ def excel_upload():
                     st.experimental_rerun()
                 else:
                     if not options:
-                        st.info("Bitte fügen sie die entsprechenden Stakeholder hinzu, oder nehmen sie diesen explizit in die Bewertung auf.")
+                        st.info("Punkte können nicht übernommen werden. Bitte fügen sie den entsprechenden Stakeholder unter hinzu und/oder nehmen sie diesen explizit in die Bewertung auf.")
                     else:
                         st.success("Stakeholder Punkte erfolgreich übernommen")
 
+def check_abgeschlossen_extern():
+    if 'checkbox_state_5' not in st.session_state:
+        st.session_state['checkbox_state_5'] = False
+    # Checkbox erstellen und Zustand in st.session_state speichern
+    st.session_state['checkbox_state_5'] = st.checkbox("Alle Dateien hochgeladen?", value=st.session_state['checkbox_state_5'])
+
 def display_page():
-    st.header("Stakeholder-Management")
+    col1, col2 = st.columns([5, 1])
+    with col1:
+        st.header("Stakeholder-Management") 
+    with col2:
+        check_abgeschlossen_extern()
     st.markdown("""
         Dieses Tool hilft Ihnen, Ihre Stakeholder effektiv zu verwalten und zu analysieren. Sie können relevante Informationen über verschiedene Stakeholdergruppen hinzufügen, bearbeiten und visualisieren. Die Daten helfen Ihnen, Strategien für den Umgang mit Ihren Stakeholdern zu entwickeln und zu priorisieren, basierend auf verschiedenen Kriterien wie Engagement-Level und Kommunikationshäufigkeit.
     """)

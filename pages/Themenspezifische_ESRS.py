@@ -3,7 +3,6 @@ import pickle
 import os
 
 def Text():
-    st.header("Themenspezifische ESRS")
     st.markdown("""
         Bitte bewerten Sie die Themengebiete anhand ihrer Relevanz für Ihr Unternehmen. Dabei gilt folgende Definition für die verschiedenen Auswahlmöglichkeiten:
         - **Wesentlich**:  Ein Aspekt ist wesentlich, wenn er signifikante tatsächliche oder potenzielle Auswirkungen auf Menschen oder die Umwelt hat oder wesentliche finanzielle Auswirkungen auf das Unternehmen nach sich zieht bzw. zu erwarten sind.
@@ -238,8 +237,19 @@ class YesNoSelection:
         self.display_section(topics, "G1")
         self.display_save_button("Unternehmenspolitik")
 
+def check_abgeschlossen_themenspezifische():
+    if 'checkbox_state_3' not in st.session_state:
+        st.session_state['checkbox_state_3'] = False
+    # Checkbox erstellen und Zustand in st.session_state speichern
+    st.session_state['checkbox_state_3'] = st.checkbox("Bearbeitung abgeschlossen?", value=st.session_state['checkbox_state_3'])
+
 # Hauptfunktion zum Anzeigen der Seite mit den verschiedenen Auswahloptionen
 def display_page():
+    col1, col2 = st.columns([5, 1])
+    with col1:
+        st.header("Themenspezifische ESRS")
+    with col2:
+        check_abgeschlossen_themenspezifische()
     Text()
     selection = YesNoSelection()
     tabs = st.tabs(["Klimawandel", "Umweltverschmutzung", "Wasser- und Meeressourcen", "Biodiversität", "Kreislaufwirtschaft", "Eigene Belegschaft", "Belegschaft Lieferkette", "Betroffene Gemeinschaften", "Verbraucher und Endnutzer", "Unternehmenspolitik"])

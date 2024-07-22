@@ -26,10 +26,6 @@ def update_table1():
     new_items = [item for item in current_ranking if item not in st.session_state.table1 and item not in st.session_state.table2]
     st.session_state.table1.extend(new_items)
 
-def display_title_and_instruction():
-    st.title("Stakeholder Auswahl")
-    st.write("Wählen Sie die Stakeholder aus, die Sie in die Bewertung aufnehmen möchten.")
-
 def display_not_in_evaluation():
     st.write("**Nicht in Bewertung aufgenommene Stakeholder:**")
     ranking_table = st.session_state['ranking_table'].copy()
@@ -95,20 +91,26 @@ def remove_button_selection():
         remove_from_table2(selected_table2)
         st.experimental_rerun()
 
-def display_page():
+def check_abgeschlossen_stakeholder_auswahl():
+    if 'checkbox_state_2' not in st.session_state:
+        st.session_state['checkbox_state_2'] = False
+    # Checkbox erstellen und Zustand in st.session_state speichern
+    st.session_state['checkbox_state_2'] = st.checkbox("Alle Stakeholder ausgewählt?", value=st.session_state['checkbox_state_2'])
 
-    display_title_and_instruction()
+def display_page():
+    col1, col2 = st.columns([5, 1])
+    with col1:
+        st.header("Stakeholder Auswahl")
+    with col2:
+        check_abgeschlossen_stakeholder_auswahl()
+    st.write("Wählen Sie die Stakeholder aus, die Sie in die Bewertung aufnehmen möchten.")
+
     if not initialize_session_state():
         return
-    
-    st.markdown("---")
 
     col1, col2 = st.columns([1, 1])
 
     with col1:
-        
-        st.write(" ")
-        st.write(" ")
         st.write(" ")
         st.write(" ")
         add_button_selection()
@@ -122,8 +124,6 @@ def display_page():
     with col2:
         st.write(" ")
         st.write(" ")
-        st.write(" ")
-        st.write(" ")
         remove_button_selection()
         st.write(" ")
         st.write(" ")
@@ -132,4 +132,3 @@ def display_page():
         display_in_evaluation()
 
     save_state()
-   

@@ -220,9 +220,19 @@ def download_excel():
         workbook.save(virtual_workbook)
         virtual_workbook.seek(0)
         return virtual_workbook.read()
+    
+def check_abgeschlossen_intern():
+    if 'checkbox_state_4' not in st.session_state:
+        st.session_state['checkbox_state_4'] = False
+    # Checkbox erstellen und Zustand in st.session_state speichern
+    st.session_state['checkbox_state_4'] = st.checkbox("Alle internen Punkte aufgenommen?", value=st.session_state['checkbox_state_4'])
 
 def display_page():
-    st.header("Interne Nachhaltigkeitspunkte")
+    col1, col2 = st.columns([5, 1])
+    with col1:
+        st.header("Interne Nachhaltigkeitspunkte")
+    with col2:
+        check_abgeschlossen_intern()
     st.markdown("""
         Hier können Sie unternehmensspezifische Nachhaltigkeitspunkte hinzufügen und verwalten. Nutzen Sie die Dropdown-Menüs und Textfelder in der Sidebar oder tragen Sie Inhalte direkt in die Tabelle ein. Achten Sie darauf, die Inhalte mit Enter zu bestätigen und den Speicher-Button zu drücken. Aktualisieren Sie anschließend die Excel-Datei, laden Sie sie herunter und leiten Sie diese an Ihre Stakeholder weiter.
     """)

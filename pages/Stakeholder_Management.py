@@ -182,9 +182,19 @@ def stakeholder_network():
     net.save_graph("network.html")
     st.components.v1.html(open("network.html", "r").read(), height=600)
 
+def check_abgeschlossen_stakeholder_management():
+    if 'checkbox_state_1' not in st.session_state:
+        st.session_state['checkbox_state_1'] = False
+    # Checkbox erstellen und Zustand in st.session_state speichern
+    st.session_state['checkbox_state_1'] = st.checkbox("Alle Stakeholder hinzugefügt?", value=st.session_state['checkbox_state_1'])
+
 # Hauptfunktion zum Anzeigen der Seite
 def display_page():
-    st.header("Stakeholder-Management")
+    col1, col2 = st.columns([5, 1])
+    with col1:
+        st.header("Stakeholder-Management")
+    with col2:
+        check_abgeschlossen_stakeholder_management()
     st.markdown("""
         Hier können Sie ihre Stakeholder effektiv verwalten und analysieren. Sie können relevante Informationen über verschiedene Stakeholdergruppen hinzufügen, bearbeiten und visualisieren. Die Daten helfen Ihnen, Strategien für den Umgang mit Ihren Stakeholdern zu entwickeln und zu priorisieren, basierend auf verschiedenen Kriterien wie Engagement-Level und Kommunikationshäufigkeit.          
     """)
