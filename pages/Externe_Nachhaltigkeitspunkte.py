@@ -34,6 +34,8 @@ if 'stakeholder_punkte_df' not in st.session_state:
 if 'uploaded_files' not in st.session_state:
     st.session_state.uploaded_files = []
 
+if 'sidebar_items' not in st.session_state:
+    st.session_state.sidebar_items = []
 
 # Utility functions
 def calculate_class_size(df):
@@ -123,20 +125,21 @@ def stakeholder_punkte():
     
         if st.button("🗑️ Alle Inhalte löschen"):
             st.session_state.stakeholder_punkte_df = st.session_state.stakeholder_punkte_df.iloc[0:0]
-            save_session_state({'stakeholder_punkte_df': st.session_state.stakeholder_punkte_df})
+            st.session_state.sidebar_items = []
+            save_session_state({
+                'stakeholder_punkte_df': st.session_state.stakeholder_punkte_df,
+                'sidebar_items': st.session_state.sidebar_items
+            })
             st.experimental_rerun()
     else:
         st.info("Es wurden noch keine Inhalte im Excel-Upload hochgeladen. Bitte laden Sie eine Excel-Datei hoch.")
 
 def display_sidebar_items():
     with st.sidebar:
-        st.write("Ausgewählte Optionen:")
+        st.markdown("---")
+        st.write("**Bereits in Bewertung aufgenommen:**")
         for item in st.session_state.sidebar_items:
             st.write(item)
-
-# Initial Sidebar Setup
-if 'sidebar_items' not in st.session_state:
-    st.session_state.sidebar_items = []
 
 # Main Function
 def excel_upload():
@@ -171,37 +174,43 @@ def excel_upload():
             st.session_state.selected_option = selected_option
             save_session_state({'selected_option': st.session_state.selected_option})
 
-            if st.button('Stakeholder Punkte übernehmen') and st.session_state.selected_option:
-                st.session_state.sidebar_items.append(st.session_state.selected_option)
-                save_session_state({'sidebar_items': st.session_state.sidebar_items})
+            if st.button('Stakeholder Punkte übernehmen'):
+                if st.session_state.selected_option:
+                    st.session_state.sidebar_items.append(st.session_state.selected_option)
+                    save_session_state({'sidebar_items': st.session_state.sidebar_items})
 
-                relevant_columns = ['Thema', 'Unterthema', 'Unter-Unterthema', 'Stakeholder Bew. Auswirkung', 'Stakeholder Bew. Finanzen', 'Stakeholder Gesamtbew.', 'Quelle']
-                new_df = st.session_state.ranking_df[relevant_columns]
-                new_df = new_df[new_df['Stakeholder Gesamtbew.'] >= 1]
+                    relevant_columns = ['Thema', 'Unterthema', 'Unter-Unterthema', 'Stakeholder Bew. Auswirkung', 'Stakeholder Bew. Finanzen', 'Stakeholder Gesamtbew.', 'Quelle']
+                    new_df = st.session_state.ranking_df[relevant_columns]
+                    new_df = new_df[new_df['Stakeholder Gesamtbew.'] >= 1]
 
-                if not st.session_state.stakeholder_punkte_df.empty:
-                    merged_df = pd.merge(
-                        st.session_state.stakeholder_punkte_df, new_df, 
-                        on=['Thema', 'Unterthema', 'Unter-Unterthema', 'Quelle'], how='outer', suffixes=('_x', '_y')
-                    )
+                    if not st.session_state.stakeholder_punkte_df.empty:
+                        merged_df = pd.merge(
+                            st.session_state.stakeholder_punkte_df, new_df, 
+                            on=['Thema', 'Unterthema', 'Unter-Unterthema', 'Quelle'], how='outer', suffixes=('_x', '_y')
+                        )
 
-                    merged_df['Stakeholder Bew. Auswirkung'] = merged_df['Stakeholder Bew. Auswirkung_x'].add(merged_df['Stakeholder Bew. Auswirkung_y'], fill_value=0).astype(int)
-                    merged_df['Stakeholder Bew. Finanzen'] = merged_df['Stakeholder Bew. Finanzen_x'].add(merged_df['Stakeholder Bew. Finanzen_y'], fill_value=0).astype(int)
-                    merged_df['Stakeholder Gesamtbew.'] = merged_df['Stakeholder Gesamtbew._x'].add(merged_df['Stakeholder Gesamtbew._y'], fill_value=0).astype(int)
-                    merged_df.drop(columns=['Stakeholder Bew. Auswirkung_x', 'Stakeholder Bew. Auswirkung_y', 'Stakeholder Bew. Finanzen_x', 'Stakeholder Bew. Finanzen_y', 'Stakeholder Gesamtbew._x', 'Stakeholder Gesamtbew._y'], inplace=True)
-                    st.session_state.stakeholder_punkte_df = merged_df
+                        merged_df['Stakeholder Bew. Auswirkung'] = merged_df['Stakeholder Bew. Auswirkung_x'].add(merged_df['Stakeholder Bew. Auswirkung_y'], fill_value=0).astype(int)
+                        merged_df['Stakeholder Bew. Finanzen'] = merged_df['Stakeholder Bew. Finanzen_x'].add(merged_df['Stakeholder Bew. Finanzen_y'], fill_value=0).astype(int)
+                        merged_df['Stakeholder Gesamtbew.'] = merged_df['Stakeholder Gesamtbew._x'].add(merged_df['Stakeholder Gesamtbew._y'], fill_value=0).astype(int)
+                        merged_df.drop(columns=['Stakeholder Bew. Auswirkung_x', 'Stakeholder Bew. Auswirkung_y', 'Stakeholder Bew. Finanzen_x', 'Stakeholder Bew. Finanzen_y', 'Stakeholder Gesamtbew._x', 'Stakeholder Gesamtbew._y'], inplace=True)
+                        st.session_state.stakeholder_punkte_df = merged_df
+                    else:
+                        st.session_state.stakeholder_punkte_df = new_df
+
+                    st.session_state.stakeholder_punkte_df.sort_values(by='Stakeholder Gesamtbew.', ascending=False, inplace=True)
+                    st.session_state.stakeholder_punkte_df['Platzierung'] = st.session_state.stakeholder_punkte_df['Stakeholder Gesamtbew.'].rank(method='min', ascending=False).astype(int)
+                    save_session_state({'stakeholder_punkte_df': st.session_state.stakeholder_punkte_df})
+                    st.success("Stakeholder Punkte erfolgreich übernommen")
+
+                    # Uploader leeren 
+                    st.session_state.uploaded_file = None
+                    save_session_state({'uploaded_file': st.session_state.uploaded_file})
+                    st.experimental_rerun()
                 else:
-                    st.session_state.stakeholder_punkte_df = new_df
-
-                st.session_state.stakeholder_punkte_df.sort_values(by='Stakeholder Gesamtbew.', ascending=False, inplace=True)
-                st.session_state.stakeholder_punkte_df['Platzierung'] = st.session_state.stakeholder_punkte_df['Stakeholder Gesamtbew.'].rank(method='min', ascending=False).astype(int)
-                save_session_state({'stakeholder_punkte_df': st.session_state.stakeholder_punkte_df})
-                st.success("Stakeholder Punkte erfolgreich übernommen")
-
-                # Uploader leeren
-                st.session_state.uploaded_files = None
-                save_session_state({'uploaded_files': st.session_state.uploaded_files})
-                st.experimental_rerun()
+                    if not options:
+                        st.info("Bitte fügen sie die entsprechenden Stakeholder hinzu, oder nehmen sie diesen explizit in die Bewertung auf.")
+                    else:
+                        st.success("Stakeholder Punkte erfolgreich übernommen")
 
 def display_page():
     st.header("Stakeholder-Management")
