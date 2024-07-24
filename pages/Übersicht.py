@@ -77,9 +77,9 @@ def display_page():
 
         container_3 = st.container(border=True)
         with container_3:
-            st.markdown('#### Stakeholder Punkte')
+            st.markdown('#### Themenbezogene ESRS')
             yes_no_selection = YesNoSelection()
-            yes_no_selection.count_marked_rows()
+            yes_no_selection.count_marked_rows_übersicht()
             
     with col[1]:
         container_4 = st.container(border=True)

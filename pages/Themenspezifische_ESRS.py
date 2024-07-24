@@ -143,7 +143,7 @@ class YesNoSelection:
                     st.warning("Es darf nur eine Checkbox pro Zeile markiert sein.")
                     self.restore_session_state()
 
-    def count_marked_rows(self):
+    def count_marked_rows_übersicht(self):
         rows = {}
         total_checkboxes = 93  # Gesamtanzahl der Checkboxen
         checked_count = 0  # Anzahl der aktivierten Checkboxen
@@ -163,6 +163,9 @@ class YesNoSelection:
         st.progress(progress)  # Zeige die Fortschrittsanzeige an
 
         return len(rows)
+    
+    def count_marked_rows_(self, total_checkboxes, checked_count):
+        st.write(f"Es wurden {checked_count} von {total_checkboxes} Checkboxen ausgewählt.")
     
     # Zeigt die Auswahloptionen für Klimawandel an
     def display_E1_Klimawandel(self):
@@ -317,8 +320,15 @@ class YesNoSelection:
 
 # Hauptfunktion zum Anzeigen der Seite mit den verschiedenen Auswahloptionen
 def display_page():
+    col1, col2 = st.columns([5, 1])
+    with col1:
+        st.header("Themenspezifische ESRS") 
+    with col2:
+        container = st.container(border=True)
+        with container:
+            yes_no_selection = YesNoSelection()
+            yes_no_selection.count_marked_rows()
     
-    st.header("Themenspezifische ESRS")  
     Text()
     selection = YesNoSelection()
     tabs = st.tabs(["Klimawandel", "Umweltverschmutzung", "Wasser- und Meeressourcen", "Biodiversität", "Kreislaufwirtschaft", "Eigene Belegschaft", "Belegschaft Lieferkette", "Betroffene Gemeinschaften", "Verbraucher und Endnutzer", "Unternehmenspolitik"])
