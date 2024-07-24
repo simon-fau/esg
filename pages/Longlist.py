@@ -701,8 +701,3 @@ def display_page():
     
     with st.expander("Bewertungen"):
         Bewertungsanzeige()
-
-   
-
-    
-   
