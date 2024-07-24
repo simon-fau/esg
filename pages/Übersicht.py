@@ -3,6 +3,7 @@ from pages.Stakeholder_Management import stakeholder_ranking
 from pages.Externe_Nachhaltigkeitspunkte import calculate_class_size, calculate_selected_rows, display_aggrid
 from pages.Longlist import bewertung_Uebersicht, anzahl_punkte_Longlist, count_top_down_points, count_internal_points, count_stakeholder_points
 from pages.Shortlist import chart_übersicht_allgemein, chart_auswirkungsbezogen, chart_finanzbezogen
+from pages.Themenspezifische_ESRS import YesNoSelection
 
 def display_stakeholder_table():
     class_size = calculate_class_size(st.session_state.stakeholder_punkte_df)
@@ -67,16 +68,22 @@ def display_page():
             anzahl_punkte_Longlist()
             count_top_down_points()
             count_internal_points()
-            count_stakeholder_points()
+            count_stakeholder_points() 
 
         container_2 = st.container(border=True)
         with container_2:
             st.markdown('#### Fortschritt Bewertungen')
             bewertung_Uebersicht()
-            
-    with col[1]:
+
         container_3 = st.container(border=True)
         with container_3:
+            st.markdown('#### Stakeholder Punkte')
+            yes_no_selection = YesNoSelection()
+            yes_no_selection.count_marked_rows()
+            
+    with col[1]:
+        container_4 = st.container(border=True)
+        with container_4:
             col1, col2 = st.columns([1, 2])
             with col1:
                 chart_options = ["Allgemeine Graphik", "Auswirkungsbezoge Graphik", "Finanzbezoge Graphik"]
@@ -92,17 +99,17 @@ def display_page():
                 chart_finanzbezogen(width=900, height=800)
 
     with col[2]:
-        container_4 = st.container(border=True)
-        with container_4:
+        container_5 = st.container(border=True)
+        with container_5:
             st.markdown('#### Shortlist')
             count_shortlist_points()
 
-        container_5 = st.container(border=True)
-        with container_5:
+        container_6 = st.container(border=True)
+        with container_6:
             st.markdown('#### Stakeholder')
             companies_in_stakeholder_table()
 
-        container_6 = st.container(border=True)
-        with container_6:
+        container_7 = st.container(border=True)
+        with container_7:
             st.markdown('#### Stakeholder Ranking')
             stakeholder_ranking()

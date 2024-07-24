@@ -134,11 +134,36 @@ class YesNoSelection:
             if st.button(f"💾 Auswahl speichern", key=f'Button_{section_name}'):
                 if validation_passed:
                     self.save_session_state()
-                    st.success("Auswahl erfolgreich gespeichert!")
+                    # Aktualisiere die Anzahl der markierten Zeilen nach dem Speichern
+                    marked_rows_count = self.count_marked_rows()
+                    # Optional: Speichere das Ergebnis in st.session_state, um es später zu verwenden
+                    st.session_state['marked_rows_count'] = marked_rows_count
+                    st.success(f"Auswahl erfolgreich gespeichert!")
                 else:
                     st.warning("Es darf nur eine Checkbox pro Zeile markiert sein.")
                     self.restore_session_state()
 
+    def count_marked_rows(self):
+        rows = {}
+        total_checkboxes = 93  # Gesamtanzahl der Checkboxen
+        checked_count = 0  # Anzahl der aktivierten Checkboxen
+
+        for key, value in st.session_state['yes_no_selection'].items():
+            if value:
+                checked_count += 1  # Zähle jede aktivierte Checkbox
+                row_key = key.split('_', 1)[1]
+                if row_key in rows:
+                    rows[row_key] += 1
+                else:
+                    rows[row_key] = 1
+
+        missing = total_checkboxes - checked_count
+        progress = checked_count / total_checkboxes  # Berechne den Fortschritt
+        st.write(f"{progress:.0%} der Inhalte wurden ausgewählt. Es fehlen noch {missing}.")
+        st.progress(progress)  # Zeige die Fortschrittsanzeige an
+
+        return len(rows)
+    
     # Zeigt die Auswahloptionen für Klimawandel an
     def display_E1_Klimawandel(self):
         self.backup_session_state()  # Create a backup before displaying the section
@@ -290,19 +315,10 @@ class YesNoSelection:
         validation_passed = self.display_section(topics, "G1")
         self.display_save_button("Unternehmenspolitik", validation_passed)
 
-def check_abgeschlossen_themenspezifische():
-    if 'checkbox_state_3' not in st.session_state:
-        st.session_state['checkbox_state_3'] = False
-    # Checkbox erstellen und Zustand in st.session_state speichern
-    st.session_state['checkbox_state_3'] = st.checkbox("Bearbeitung abgeschlossen?", value=st.session_state['checkbox_state_3'])
-
 # Hauptfunktion zum Anzeigen der Seite mit den verschiedenen Auswahloptionen
 def display_page():
-    col1, col2 = st.columns([5, 1])
-    with col1:
-        st.header("Themenspezifische ESRS")
-    with col2:
-        check_abgeschlossen_themenspezifische()
+    
+    st.header("Themenspezifische ESRS")  
     Text()
     selection = YesNoSelection()
     tabs = st.tabs(["Klimawandel", "Umweltverschmutzung", "Wasser- und Meeressourcen", "Biodiversität", "Kreislaufwirtschaft", "Eigene Belegschaft", "Belegschaft Lieferkette", "Betroffene Gemeinschaften", "Verbraucher und Endnutzer", "Unternehmenspolitik"])
