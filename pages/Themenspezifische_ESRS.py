@@ -128,17 +128,21 @@ class YesNoSelection:
     def display_save_button(self, section_name, validation_passed):
         col1, col2 = st.columns([4, 1])
         with col2:
-            st.write("") # Platzhalter
+            st.write("")  # Platzhalter
             st.write("")    
             st.write("")
             if st.button(f"💾 Auswahl speichern", key=f'Button_{section_name}'):
                 if validation_passed:
-                    self.save_session_state()
-                    # Aktualisiere die Anzahl der markierten Zeilen nach dem Speichern
-                    marked_rows_count = self.count_marked_rows()
-                    # Optional: Speichere das Ergebnis in st.session_state, um es später zu verwenden
-                    st.session_state['marked_rows_count'] = marked_rows_count
+                    # Aktualisiere die Anzahl der aktivierten Checkboxen nach dem Speichern
+                    _, checked_count = self.count_marked_rows()
+                    # Speichere das Ergebnis in st.session_state, um es später zu verwenden
+                    st.session_state['checked_count'] = checked_count
                     st.success(f"Auswahl erfolgreich gespeichert!")
+                    self.save_session_state()
+                    
+                    # Aktualisiere die Benutzeroberfläche sofort
+                    st.write(f"Anzahl der aktivierten Checkboxen: {checked_count}")
+                    
                 else:
                     st.warning("Es darf nur eine Checkbox pro Zeile markiert sein.")
                     self.restore_session_state()
@@ -164,8 +168,21 @@ class YesNoSelection:
 
         return len(rows)
     
-    def count_marked_rows_(self, total_checkboxes, checked_count):
-        st.write(f"Es wurden {checked_count} von {total_checkboxes} Checkboxen ausgewählt.")
+    def count_marked_rows(self):
+        rows = {}
+        total_checkboxes = 93  # Gesamtanzahl der Checkboxen
+        checked_count = 0  # Anzahl der aktivierten Checkboxen
+
+        for key, value in st.session_state['yes_no_selection'].items():
+            if value:
+                checked_count += 1  # Zähle jede aktivierte Checkbox
+                row_key = key.split('_', 1)[1]
+                if row_key in rows:
+                    rows[row_key] += 1
+                else:
+                    rows[row_key] = 1
+
+        return total_checkboxes, checked_count
     
     # Zeigt die Auswahloptionen für Klimawandel an
     def display_E1_Klimawandel(self):
@@ -320,15 +337,17 @@ class YesNoSelection:
 
 # Hauptfunktion zum Anzeigen der Seite mit den verschiedenen Auswahloptionen
 def display_page():
-    col1, col2 = st.columns([5, 1])
+    col1, col2 = st.columns([4, 1])
     with col1:
         st.header("Themenspezifische ESRS") 
     with col2:
         container = st.container(border=True)
         with container:
-            yes_no_selection = YesNoSelection()
-            yes_no_selection.count_marked_rows()
-    
+            with container:
+                yes_no_selection = YesNoSelection()
+                total_checkboxes, checked_count = yes_no_selection.count_marked_rows()
+                st.write(f"Sie haben {checked_count} von {total_checkboxes} Inhalten bearbeitet")
+                
     Text()
     selection = YesNoSelection()
     tabs = st.tabs(["Klimawandel", "Umweltverschmutzung", "Wasser- und Meeressourcen", "Biodiversität", "Kreislaufwirtschaft", "Eigene Belegschaft", "Belegschaft Lieferkette", "Betroffene Gemeinschaften", "Verbraucher und Endnutzer", "Unternehmenspolitik"])

@@ -1,9 +1,10 @@
 import streamlit as st
 from pages.Stakeholder_Management import stakeholder_ranking
 from pages.Externe_Nachhaltigkeitspunkte import calculate_class_size, calculate_selected_rows, display_aggrid
-from pages.Longlist import bewertung_Uebersicht, anzahl_punkte_Longlist, count_top_down_points, count_internal_points, count_stakeholder_points
+from pages.Longlist import  count_bewertete_punkte_übersicht,  bewertung_Uebersicht, anzahl_punkte_Longlist, count_top_down_points, count_internal_points, count_stakeholder_points
 from pages.Shortlist import chart_übersicht_allgemein, chart_auswirkungsbezogen, chart_finanzbezogen
 from pages.Themenspezifische_ESRS import YesNoSelection
+
 
 def display_stakeholder_table():
     class_size = calculate_class_size(st.session_state.stakeholder_punkte_df)
@@ -69,6 +70,7 @@ def display_page():
             count_top_down_points()
             count_internal_points()
             count_stakeholder_points() 
+            count_bewertete_punkte_übersicht()
 
         container_2 = st.container(border=True)
         with container_2:

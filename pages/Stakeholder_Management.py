@@ -32,7 +32,8 @@ if os.path.exists(STATE_FILE):
         loaded_state = pickle.load(f)
         for key, value in loaded_state.items():
             st.session_state[key] = value
-else:
+# Initialisiere den DataFrame, falls er noch nicht existiert
+if 'df' not in st.session_state:
     st.session_state.df = initialize_df()
 
 # Funktion zur Berechnung des Scores für eine Zeile
@@ -185,16 +186,26 @@ def stakeholder_network():
 def check_abgeschlossen_stakeholder_management():
     if 'checkbox_state_1' not in st.session_state:
         st.session_state['checkbox_state_1'] = False
-    # Checkbox erstellen und Zustand in st.session_state speichern
-    st.session_state['checkbox_state_1'] = st.checkbox("Alle Stakeholder hinzugefügt?", value=st.session_state['checkbox_state_1'])
+
+    # Erstelle zwei Spalten
+    col1, col2 = st.columns([4, 1])
+
+    with col1:
+       st.write("Alle Stakeholder hinzugefügt?")
+
+    with col2:
+        # Checkbox erstellen und Zustand in st.session_state speichern
+        st.session_state['checkbox_state_1'] = st.checkbox(" ", value=st.session_state['checkbox_state_1'])
 
 # Hauptfunktion zum Anzeigen der Seite
 def display_page():
-    col1, col2 = st.columns([5, 1])
+    col1, col2 = st.columns([4, 1])
     with col1:
         st.header("Stakeholder-Management")
     with col2:
-        check_abgeschlossen_stakeholder_management()
+        container = st.container(border=True)
+        with container:
+            check_abgeschlossen_stakeholder_management()
     st.markdown("""
         Hier können Sie ihre Stakeholder effektiv verwalten und analysieren. Sie können relevante Informationen über verschiedene Stakeholdergruppen hinzufügen, bearbeiten und visualisieren. Die Daten helfen Ihnen, Strategien für den Umgang mit Ihren Stakeholdern zu entwickeln und zu priorisieren, basierend auf verschiedenen Kriterien wie Engagement-Level und Kommunikationshäufigkeit.          
     """)

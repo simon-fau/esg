@@ -94,15 +94,24 @@ def remove_button_selection():
 def check_abgeschlossen_stakeholder_auswahl():
     if 'checkbox_state_2' not in st.session_state:
         st.session_state['checkbox_state_2'] = False
-    # Checkbox erstellen und Zustand in st.session_state speichern
-    st.session_state['checkbox_state_2'] = st.checkbox("Alle Stakeholder ausgewählt?", value=st.session_state['checkbox_state_2'])
+    
+    col1, col2 = st.columns([4, 1])
+
+    with col1:
+       st.write("Alle Stakeholder ausgewählt?")
+
+    with col2:
+        # Checkbox erstellen und Zustand in st.session_state speichern
+        st.session_state['checkbox_state_2'] = st.checkbox(" ", value=st.session_state['checkbox_state_2'])
 
 def display_page():
-    col1, col2 = st.columns([5, 1])
+    col1, col2 = st.columns([4, 1])
     with col1:
         st.header("Stakeholder Auswahl")
     with col2:
-        check_abgeschlossen_stakeholder_auswahl()
+        container = st.container(border=True)
+        with container:
+            check_abgeschlossen_stakeholder_auswahl()
     st.write("Wählen Sie die Stakeholder aus, die Sie in die Bewertung aufnehmen möchten.")
 
     if not initialize_session_state():

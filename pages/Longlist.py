@@ -689,15 +689,54 @@ def check_abgeschlossen_Longlist():
         st.session_state['checkbox_state_6'] = False
     # Checkbox erstellen und Zustand in st.session_state speichern
     st.session_state['checkbox_state_6'] = st.checkbox("Alle Punkte bewertet?", value=st.session_state['checkbox_state_6'])
- 
+
+# Methode, die die Anzahl der bewerteten Punkte in der Longlist zählt und den Prozentsatz berechnet für die Longlist-Seite
+def count_bewertete_punkte():
+    if 'longlist' in st.session_state:
+        # Erstellen einer Kopie des DataFrames
+        longlist_copy = st.session_state.longlist.copy()
+        # Zählen der Zeilen, die in der Spalte 'Bewertung' den Wert 'Ja' haben
+        yes_count = longlist_copy[longlist_copy['Bewertet'] == 'Ja'].shape[0]
+        # Gesamtanzahl der Zeilen
+        total_count = longlist_copy.shape[0]
+        # Berechnung des Prozentsatzes
+        if total_count > 0:
+            percentage = (yes_count / total_count) * 100
+        else:
+            percentage = 0
+        # Ausgabe des Prozentsatzes als st.metric
+        st.write(f"Sie haben {yes_count} von {total_count} Punkten bewertet.")
+
+# Methode, die die Anzahl der bewerteten Punkte in der Longlist zählt und den Prozentsatz berechnet für die Übersicht
+def count_bewertete_punkte_übersicht():
+    if 'longlist' in st.session_state:
+        # Erstellen einer Kopie des DataFrames
+        longlist_copy_2 = st.session_state.longlist.copy()
+        # Zählen der Zeilen, die in der Spalte 'Bewertung' den Wert 'Ja' haben
+        yes_count = longlist_copy_2[longlist_copy_2['Bewertet'] == 'Ja'].shape[0]
+        # Gesamtanzahl der Zeilen
+        total_count = longlist_copy_2.shape[0]
+        # Berechnung des Prozentsatzes
+        if total_count > 0:
+            percentage = (yes_count / total_count) * 100
+        else:
+            percentage = 0
+        # Ausgabe des Prozentsatzes als st.metric
+        st.metric(label="Prozentsatz der 'Ja'-Bewertungen:", value=f"{percentage:.2f}%")
+
 def display_page():
     col1, col2 = st.columns([5, 1])
     with col1:
         st.header("Bewertung der Nachhaltigkeitspunkte (Longlist)")
     with col2:
-        check_abgeschlossen_Longlist()
+        container = st.container(border = True)
+        with container:
+           count_bewertete_punkte()
     merge_dataframes()
     display_selected_data()
     
     with st.expander("Bewertungen"):
         Bewertungsanzeige()
+    
+
+    

@@ -214,18 +214,21 @@ def excel_upload():
                     else:
                         st.success("Stakeholder Punkte erfolgreich übernommen")
 
-def check_abgeschlossen_extern():
-    if 'checkbox_state_5' not in st.session_state:
-        st.session_state['checkbox_state_5'] = False
-    # Checkbox erstellen und Zustand in st.session_state speichern
-    st.session_state['checkbox_state_5'] = st.checkbox("Alle Dateien hochgeladen?", value=st.session_state['checkbox_state_5'])
+def display_not_in_sidebar_count():
+    # Zähle die Anzahl der Stakeholder, die nicht in der Sidebar sind
+    count = len([opt for opt in st.session_state.table2 if opt not in st.session_state.sidebar_items])
+    # Zeige die Anzahl mit st.write an
+    st.write(f"Anzahl der noch nicht in die Bewertung aufgenommenen Stakeholder: {count}")
+
 
 def display_page():
-    col1, col2 = st.columns([5, 1])
+    col1, col2 = st.columns([3, 1])
     with col1:
         st.header("Stakeholder-Management") 
     with col2:
-        check_abgeschlossen_extern()
+        container = st.container(border=True)
+        with container:
+            display_not_in_sidebar_count()
     st.markdown("""
         Dieses Tool hilft Ihnen, Ihre Stakeholder effektiv zu verwalten und zu analysieren. Sie können relevante Informationen über verschiedene Stakeholdergruppen hinzufügen, bearbeiten und visualisieren. Die Daten helfen Ihnen, Strategien für den Umgang mit Ihren Stakeholdern zu entwickeln und zu priorisieren, basierend auf verschiedenen Kriterien wie Engagement-Level und Kommunikationshäufigkeit.
     """)
@@ -234,6 +237,8 @@ def display_page():
     with tab1:
         excel_upload()
         display_sidebar_items()
+        
+        
     with tab2:
         add_slider()
         stakeholder_punkte()
