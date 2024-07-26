@@ -105,6 +105,7 @@ def check_abgeschlossen_stakeholder_auswahl():
         st.session_state['checkbox_state_2'] = st.checkbox(" ", value=st.session_state['checkbox_state_2'])
 
 def display_page():
+    st.write([st.session_state['checkbox_state_2']])
     col1, col2 = st.columns([4, 1])
     with col1:
         st.header("Stakeholder Auswahl")

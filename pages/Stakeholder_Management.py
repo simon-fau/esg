@@ -197,6 +197,8 @@ def check_abgeschlossen_stakeholder_management():
         # Checkbox erstellen und Zustand in st.session_state speichern
         st.session_state['checkbox_state_1'] = st.checkbox(" ", value=st.session_state['checkbox_state_1'])
 
+    save_state()
+    
 # Hauptfunktion zum Anzeigen der Seite
 def display_page():
     col1, col2 = st.columns([4, 1])

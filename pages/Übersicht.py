@@ -5,7 +5,6 @@ from pages.Longlist import  count_bewertete_punkte_übersicht,  bewertung_Uebers
 from pages.Shortlist import chart_übersicht_allgemein, chart_auswirkungsbezogen, chart_finanzbezogen
 from pages.Themenspezifische_ESRS import YesNoSelection
 
-
 def display_stakeholder_table():
     class_size = calculate_class_size(st.session_state.stakeholder_punkte_df)
     stakeholder_punkte_filtered = calculate_selected_rows(st.session_state.stakeholder_punkte_df, class_size)
@@ -49,6 +48,30 @@ def load_page(page_module):
                     page_function()
                 else:
                     st.error(f"Fehler: Die Seite {page_module.__name__} hat keine Funktion namens 'display_page'.")
+
+# Umwandeln der Daten und erstellen eines session states auf den in def aktueller_stand_wesentlichkeitsanalyse() zugegriffen werden kann
+def aktueller_stand_themenspezifische_esrs():
+    selection = YesNoSelection()
+    total_checkboxes, checked_count = selection.count_marked_rows()
+
+    if checked_count == total_checkboxes:
+        st.session_state['checkbox_state_3'] = "Ja"
+        st.write("erfolgreich")
+    else:
+        st.session_state['checkbox__state_3'] = "Nein"
+        st.write(f"Nicht erfolgreich: {checked_count} von {total_checkboxes} Checkboxen sind aktiviert.")
+
+def aktueller_stand_wesentlichkeitsanalyse():
+    session_states_to_check = [
+        'checkbox_state_1', 'checkbox_state_2', 'checkbox_state_3','checkbox_state_4', 'checkbox_state_7'
+    ]
+    
+    for key in session_states_to_check:
+        if key in st.session_state and st.session_state[key] == True:
+            st.write(f"{key}: ✔")
+        else:
+            st.write(f"{key}: ❌")
+
 
 def display_page():
     # Check if all relevant session states are empty
@@ -115,3 +138,8 @@ def display_page():
         with container_7:
             st.markdown('#### Stakeholder Ranking')
             stakeholder_ranking()
+        
+        container_8 = st.container(border=True)
+        with container_8:
+            st.markdown('#### WA')
+            aktueller_stand_wesentlichkeitsanalyse()

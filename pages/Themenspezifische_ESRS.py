@@ -346,7 +346,7 @@ def display_page():
             with container:
                 yes_no_selection = YesNoSelection()
                 total_checkboxes, checked_count = yes_no_selection.count_marked_rows()
-                st.write(f"Sie haben {checked_count} von {total_checkboxes} Inhalten bearbeitet")
+                
                 
     Text()
     selection = YesNoSelection()

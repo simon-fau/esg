@@ -228,11 +228,13 @@ def check_abgeschlossen_intern():
     col1, col2 = st.columns([4, 1])
 
     with col1:
-       st.write("Alle internen Punkte hinzugefügt und Excel heruntergeladen?")
+       st.write("Alle internen Punkte hinzugefügt und die Excel heruntergeladen?")
 
     with col2:
         # Checkbox erstellen und Zustand in st.session_state speichern
         st.session_state['checkbox_state_4'] = st.checkbox(" ", value=st.session_state['checkbox_state_4'])
+
+    save_session_state({'checkbox_state_4': st.session_state['checkbox_state_4']})
 
 def display_page():
     col1, col2 = st.columns([3, 1])

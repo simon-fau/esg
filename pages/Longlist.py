@@ -479,10 +479,27 @@ content_id_map = {}
 # Dies ist die nächste ID, die zugewiesen werden soll
 next_id = 1
 
+# Define the nested function
+def count_bewertete_punkte():
+    if 'longlist' in st.session_state:
+        # Erstellen einer Kopie des DataFrames
+        longlist_copy = st.session_state.longlist.copy()
+        # Zählen der Zeilen, die in der Spalte 'Bewertung' den Wert 'Ja' haben
+        yes_count = longlist_copy[longlist_copy['Bewertet'] == 'Ja'].shape[0]
+        # Gesamtanzahl der Zeilen
+        total_count = longlist_copy.shape[0]
+        # Berechnung des Prozentsatzes
+        if total_count > 0:
+            percentage = (yes_count / total_count) * 100
+        else:
+            percentage = 0
+        # Ausgabe des Prozentsatzes als st.metric
+        st.write(f"Sie haben {yes_count} von {total_count} Punkten bewertet.")
+
 def merge_dataframes():
-    global next_id  # Zugriff auf die globale Variable next_id
+    global next_id
+
     # Abrufen der Daten von verschiedenen Quellen
-   
     selected_points_df = Top_down_Nachhaltigkeitspunkte()
     selected_rows_st = stakeholder_Nachhaltigkeitspunkte()
     df4 = eigene_Nachhaltigkeitspunkte()
@@ -610,10 +627,34 @@ def merge_dataframes():
         "ausmass_finanziell": ausmass_finanziell,
         "auswirkung_finanziell": auswirkung_finanziell
     }
+    # Define the nested function
+    def count_bewertete_punkte():
+        if 'longlist' in st.session_state:
+            # Zählen der Zeilen, die in der Spalte 'Bewertung' den Wert 'Ja' haben
+            yes_count = longlist[longlist['Bewertet'] == 'Ja'].shape[0]
+            # Gesamtanzahl der Zeilen
+            total_count = longlist.shape[0]
+            # Berechnung des Prozentsatzes
+            if total_count > 0:
+                percentage = (yes_count / total_count) * 100
+            else:
+                percentage = 0
+            # Ausgabe des Prozentsatzes als st.metric
+            st.write(f"Sie haben {yes_count} von {total_count} Punkten bewertet.")
 
     # Proceed with the rest of the logic
     longlist = submit_bewertung(longlist, ausgewaehlte_werte)
     longlist = delete_bewertung(longlist)
+    
+    # Anzeige und Struktur der Seite in merge_dataframes, um immer aktuelle session states zu haben und dabei korrekte übergabe von Daten
+    col1, col2 = st.columns([5, 1])
+    with col1:
+        st.header("Bewertung der Nachhaltigkeitspunkte (Longlist)")
+    with col2:
+        container = st.container(border=True)
+        with container:
+                count_bewertete_punkte()
+                
     display_grid(longlist)
     save_state()
 
@@ -684,29 +725,6 @@ def count_stakeholder_points():
         # Ausgabe der Anzahl als st.metric
         st.metric(label="davon externe Punkte:", value=count)
 
-def check_abgeschlossen_Longlist():
-    if 'checkbox_state_6' not in st.session_state:
-        st.session_state['checkbox_state_6'] = False
-    # Checkbox erstellen und Zustand in st.session_state speichern
-    st.session_state['checkbox_state_6'] = st.checkbox("Alle Punkte bewertet?", value=st.session_state['checkbox_state_6'])
-
-# Methode, die die Anzahl der bewerteten Punkte in der Longlist zählt und den Prozentsatz berechnet für die Longlist-Seite
-def count_bewertete_punkte():
-    if 'longlist' in st.session_state:
-        # Erstellen einer Kopie des DataFrames
-        longlist_copy = st.session_state.longlist.copy()
-        # Zählen der Zeilen, die in der Spalte 'Bewertung' den Wert 'Ja' haben
-        yes_count = longlist_copy[longlist_copy['Bewertet'] == 'Ja'].shape[0]
-        # Gesamtanzahl der Zeilen
-        total_count = longlist_copy.shape[0]
-        # Berechnung des Prozentsatzes
-        if total_count > 0:
-            percentage = (yes_count / total_count) * 100
-        else:
-            percentage = 0
-        # Ausgabe des Prozentsatzes als st.metric
-        st.write(f"Sie haben {yes_count} von {total_count} Punkten bewertet.")
-
 # Methode, die die Anzahl der bewerteten Punkte in der Longlist zählt und den Prozentsatz berechnet für die Übersicht
 def count_bewertete_punkte_übersicht():
     if 'longlist' in st.session_state:
@@ -725,13 +743,7 @@ def count_bewertete_punkte_übersicht():
         st.metric(label="Prozentsatz der 'Ja'-Bewertungen:", value=f"{percentage:.2f}%")
 
 def display_page():
-    col1, col2 = st.columns([5, 1])
-    with col1:
-        st.header("Bewertung der Nachhaltigkeitspunkte (Longlist)")
-    with col2:
-        container = st.container(border = True)
-        with container:
-           count_bewertete_punkte()
+
     merge_dataframes()
     display_selected_data()
     
