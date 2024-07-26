@@ -63,15 +63,20 @@ def aktueller_stand_themenspezifische_esrs():
 
 def aktueller_stand_wesentlichkeitsanalyse():
     session_states_to_check = [
-        'checkbox_state_1', 'checkbox_state_2', 'checkbox_state_3','checkbox_state_4', 'checkbox_state_7'
+        ('checkbox_state_1', '1. Stakeholder Management'),
+        ('checkbox_state_2', '2. Stakeholder Auswahl'),
+        ('checkbox_state_3', '3. Themenspezifische ESRS'),
+        ('checkbox_state_4', '4. Interne Nachhaltigkeitspunkte'),
+        ('checkbox_state_5', '5. Externe Nachhaltigkeitspunkte'),
+        ('checkbox_state_6', '6. Bewertung der Longlist'),
+        ('checkbox_state_7', '7. Shortlist')
     ]
     
-    for key in session_states_to_check:
+    for key, name in session_states_to_check:
         if key in st.session_state and st.session_state[key] == True:
-            st.write(f"{key}: ✔")
+            st.write(f"{name}: ✔")
         else:
-            st.write(f"{key}: ❌")
-
+            st.write(f"{name}: ✘")
 
 def display_page():
     # Check if all relevant session states are empty
@@ -82,64 +87,61 @@ def display_page():
     if all(key not in st.session_state or st.session_state[key].empty for key in session_states_to_check):
         st.info("Es wurden noch keine Inhalte hinzugefügt.")
         return
-
-    col = st.columns((1.5, 4.5, 1.5), gap='medium')
     
-    with col[0]:
-        container = st.container(border=True)
-        with container:
-            st.markdown('#### Longlist')
-            anzahl_punkte_Longlist()
-            count_top_down_points()
-            count_internal_points()
-            count_stakeholder_points() 
-            count_bewertete_punkte_übersicht()
+    tab1, tab2 = st.tabs(["Allgemeine Übersicht", "Graphiken"])
+    with tab1:
 
-        container_2 = st.container(border=True)
-        with container_2:
-            st.markdown('#### Fortschritt Bewertungen')
-            bewertung_Uebersicht()
-
-        container_3 = st.container(border=True)
-        with container_3:
-            st.markdown('#### Themenbezogene ESRS')
-            yes_no_selection = YesNoSelection()
-            yes_no_selection.count_marked_rows_übersicht()
-            
-    with col[1]:
-        container_4 = st.container(border=True)
-        with container_4:
-            col1, col2 = st.columns([1, 2])
-            with col1:
-                chart_options = ["Allgemeine Graphik", "Auswirkungsbezoge Graphik", "Finanzbezoge Graphik"]
-                selected_chart = st.selectbox("Wähle eine Grafik aus:", chart_options)
-            with col2:
-                pass
-            # Anzeigen der ausgewählten Grafik
-            if selected_chart == "Allgemeine Graphik":
-                chart_übersicht_allgemein(width=900, height=800)
-            elif selected_chart == "Auswirkungsbezoge Graphik":
-                chart_auswirkungsbezogen(width=900, height=800)
-            elif selected_chart == "Finanzbezoge Graphik":
-                chart_finanzbezogen(width=900, height=800)
-
-    with col[2]:
-        container_5 = st.container(border=True)
-        with container_5:
-            st.markdown('#### Shortlist')
-            count_shortlist_points()
-
-        container_6 = st.container(border=True)
-        with container_6:
-            st.markdown('#### Stakeholder')
-            companies_in_stakeholder_table()
-
-        container_7 = st.container(border=True)
-        with container_7:
-            st.markdown('#### Stakeholder Ranking')
-            stakeholder_ranking()
+        col = st.columns((2, 2), gap='medium')
         
-        container_8 = st.container(border=True)
-        with container_8:
-            st.markdown('#### WA')
-            aktueller_stand_wesentlichkeitsanalyse()
+        with col[0]:
+            container = st.container(border=True)
+            with container:
+                st.markdown('#### Fortschritt Wesentlichkeitsanalyse')
+                aktueller_stand_wesentlichkeitsanalyse()
+                
+               # anzahl_punkte_Longlist()
+               # count_top_down_points()
+               # count_internal_points()
+               # count_stakeholder_points() 
+               # count_bewertete_punkte_übersicht()
+
+            container_2 = st.container(border=True)
+            with container_2:
+                st.markdown('#### Fortschritt Bewertungen')
+                bewertung_Uebersicht()
+
+            container_3 = st.container(border=True)
+            with container_3:
+                st.markdown('#### Themenbezogene ESRS')
+                yes_no_selection = YesNoSelection()
+                yes_no_selection.count_marked_rows_übersicht()
+    
+
+        with col[1]:
+            container_5 = st.container(border=True)
+            with container_5:
+                st.markdown('#### Shortlist')
+                count_shortlist_points()
+
+            container_6 = st.container(border=True)
+            with container_6:
+                st.markdown('#### Stakeholder')
+                companies_in_stakeholder_table()
+
+            container_7 = st.container(border=True)
+            with container_7:
+                st.markdown('#### Stakeholder Ranking')
+                stakeholder_ranking()
+
+    with tab2:
+       
+        chart_options = ["Allgemeine Graphik", "Auswirkungsbezoge Graphik", "Finanzbezoge Graphik"]
+        selected_chart = st.selectbox("Wähle eine Grafik aus:", chart_options)
+                   
+        # Anzeigen der ausgewählten Grafik
+        if selected_chart == "Allgemeine Graphik":
+            chart_übersicht_allgemein(width=900, height=800)
+        elif selected_chart == "Auswirkungsbezoge Graphik":
+            chart_auswirkungsbezogen(width=900, height=800)
+        elif selected_chart == "Finanzbezoge Graphik":
+            chart_finanzbezogen(width=900, height=800)

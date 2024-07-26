@@ -627,20 +627,27 @@ def merge_dataframes():
         "ausmass_finanziell": ausmass_finanziell,
         "auswirkung_finanziell": auswirkung_finanziell
     }
+
     # Define the nested function
     def count_bewertete_punkte():
         if 'longlist' in st.session_state:
             # Zählen der Zeilen, die in der Spalte 'Bewertung' den Wert 'Ja' haben
-            yes_count = longlist[longlist['Bewertet'] == 'Ja'].shape[0]
+            yes_count = st.session_state.longlist[st.session_state.longlist['Bewertet'] == 'Ja'].shape[0]
             # Gesamtanzahl der Zeilen
-            total_count = longlist.shape[0]
+            total_count = st.session_state.longlist.shape[0]
             # Berechnung des Prozentsatzes
             if total_count > 0:
                 percentage = (yes_count / total_count) * 100
             else:
                 percentage = 0
-            # Ausgabe des Prozentsatzes als st.metric
-            st.write(f"Sie haben {yes_count} von {total_count} Punkten bewertet.")
+            
+            # Überprüfen, ob yes_count gleich total_count ist
+            if yes_count == total_count:
+                st.write("Abgeschlossen ✔")
+                st.session_state['checkbox_state_6'] = True
+            else:
+                st.write(f"Sie haben {yes_count} von {total_count} Punkten bewertet.")
+                st.session_state['checkbox_state_6'] = False
 
     # Proceed with the rest of the logic
     longlist = submit_bewertung(longlist, ausgewaehlte_werte)

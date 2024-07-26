@@ -215,11 +215,22 @@ def excel_upload():
                         st.success("Stakeholder Punkte erfolgreich übernommen")
 
 def display_not_in_sidebar_count():
-    # Zähle die Anzahl der Stakeholder, die nicht in der Sidebar sind
+    # Überprüfen, ob table2 leer ist
+    if not st.session_state.get('table2'):
+        st.write("Keine Stakeholder in der Bewertung aufgenommen.")
+        return
+    
+    # Zähle die Anzahl der Stakeholder, deren Excel noch nihct hochgeladen wurde
     count = len([opt for opt in st.session_state.table2 if opt not in st.session_state.sidebar_items])
+    
     # Zeige die Anzahl mit st.write an
     st.write(f"Anzahl der noch nicht in die Bewertung aufgenommenen Stakeholder: {count}")
-
+    
+    # Überprüfen, ob count auf 0 steht und table2 gefüllt ist
+    if count == 0:
+        st.session_state['checkbox_state_5'] = True
+    else:
+        st.session_state['checkbox_state_5'] = False
 
 def display_page():
     col1, col2 = st.columns([3, 1])
