@@ -692,7 +692,7 @@ def bewertung_Uebersicht():
     ja_prozent = int((ja_bewertungen / total_bewertungen) * 100) if total_bewertungen > 0 else 0
 
     # Anzeigen des Prozentsatzes mit einer Fortschrittsleiste
-    st.write(f'{ja_prozent}% der Inhalte der Longlist wurden bewertet.')
+    st.write(f'davon wurden {ja_prozent}% bewertet')
     st.progress(ja_prozent)
 
 # Anzahl der Punkte in der Longlist für die Darstellung in der Übersicht

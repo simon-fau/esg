@@ -62,6 +62,9 @@ def aktueller_stand_themenspezifische_esrs():
         st.write(f"Nicht erfolgreich: {checked_count} von {total_checkboxes} Checkboxen sind aktiviert.")
 
 def aktueller_stand_wesentlichkeitsanalyse():
+
+    completed_count = 0
+    
     session_states_to_check = [
         ('checkbox_state_1', '1. Stakeholder Management'),
         ('checkbox_state_2', '2. Stakeholder Auswahl'),
@@ -74,9 +77,10 @@ def aktueller_stand_wesentlichkeitsanalyse():
     
     for key, name in session_states_to_check:
         if key in st.session_state and st.session_state[key] == True:
-            st.write(f"{name}: ✔")
+            completed_count += 1
+            st.write(f" {name}: ✔")
         else:
-            st.write(f"{name}: ✘")
+            st.write(f" {name}: ✘")
 
 def display_page():
     # Check if all relevant session states are empty
@@ -91,37 +95,32 @@ def display_page():
     tab1, tab2 = st.tabs(["Allgemeine Übersicht", "Graphiken"])
     with tab1:
 
-        col = st.columns((2, 2), gap='medium')
+        col = st.columns((1, 2, 1), gap='medium')
         
         with col[0]:
             container = st.container(border=True)
             with container:
                 st.markdown('#### Fortschritt Wesentlichkeitsanalyse')
                 aktueller_stand_wesentlichkeitsanalyse()
-                
-               # anzahl_punkte_Longlist()
-               # count_top_down_points()
-               # count_internal_points()
-               # count_stakeholder_points() 
-               # count_bewertete_punkte_übersicht()
-
-            container_2 = st.container(border=True)
-            with container_2:
-                st.markdown('#### Fortschritt Bewertungen')
+            container_4 = st.container(border=True)
+            with container_4:
+                anzahl_punkte_Longlist()
                 bewertung_Uebersicht()
+            container_5 = st.container(border=True)
+            with container_5:
+                count_shortlist_points()
+            
+        with col[1]:        
+
+                pass
+    
+        with col[2]:
 
             container_3 = st.container(border=True)
             with container_3:
                 st.markdown('#### Themenbezogene ESRS')
                 yes_no_selection = YesNoSelection()
                 yes_no_selection.count_marked_rows_übersicht()
-    
-
-        with col[1]:
-            container_5 = st.container(border=True)
-            with container_5:
-                st.markdown('#### Shortlist')
-                count_shortlist_points()
 
             container_6 = st.container(border=True)
             with container_6:
