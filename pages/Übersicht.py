@@ -1,8 +1,10 @@
 import streamlit as st
+import altair as alt
+import pandas as pd
 from pages.Stakeholder_Management import stakeholder_ranking
 from pages.Externe_Nachhaltigkeitspunkte import calculate_class_size, calculate_selected_rows, display_aggrid
 from pages.Longlist import  count_bewertete_punkte_übersicht,  bewertung_Uebersicht, anzahl_punkte_Longlist, count_top_down_points, count_internal_points, count_stakeholder_points
-from pages.Shortlist import chart_übersicht_allgemein, chart_auswirkungsbezogen, chart_finanzbezogen
+from pages.Shortlist import chart_übersicht_allgemein, chart_auswirkungsbezogen, chart_finanzbezogen, test
 from pages.Themenspezifische_ESRS import YesNoSelection
 
 def display_stakeholder_table():
@@ -94,6 +96,7 @@ def display_page():
     
     tab1, tab2 = st.tabs(["Allgemeine Übersicht", "Graphiken"])
     with tab1:
+       
 
         col = st.columns((1, 2, 1), gap='medium')
         
@@ -112,8 +115,13 @@ def display_page():
             
         with col[1]:        
 
-                pass
-    
+            container_1 = st.container(border=True)
+            with container_1:
+                test()
+                st.markdown('Graphik')
+                st.write(st.session_state['selected_columns'])
+                st.write(st.session_state['stakeholder_punkte_df'])
+                
         with col[2]:
 
             container_3 = st.container(border=True)

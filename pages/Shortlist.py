@@ -457,3 +457,36 @@ def chart_finanzbezogen(width, height):
         st.altair_chart(scatter)
     else:
         st.info("Keine Daten ausgewählt.")
+
+def test():
+    # Beispiel-Session-State (ersetzen durch den tatsächlichen Session-State in der Implementierung)
+    selected_columns = st.session_state.get('selected_columns', pd.DataFrame())
+
+    # Überprüfen, ob die notwendigen Spalten vorhanden sind
+    if not {'Score Auswirkung', 'Unter-Unterthema', 'Unterthema', 'Thema'}.issubset(selected_columns.columns):
+        st.error("Die notwendigen Spalten sind nicht im DataFrame vorhanden.")
+        return
+
+    # Daten extrahieren und transformieren
+    selected_columns['Name'] = (selected_columns['Thema'] + ' - ' +
+                                selected_columns['Unterthema'] + ' - ' +
+                                selected_columns['Unter-Unterthema'])
+
+    filtered_df = selected_columns[selected_columns['Score Auswirkung'] > 1]
+
+    # Wähle die Top 30 Datensätze basierend auf 'Score Auswirkung' und sortiere sie
+    top_30_df = filtered_df.nlargest(30, 'Score Auswirkung').sort_values('Score Auswirkung')
+
+    # Bar-Chart erstellen
+    if not top_30_df.empty:
+        chart = alt.Chart(top_30_df).mark_bar().encode(
+            x=alt.X('Name', sort=None, title='Name'),
+            y=alt.Y('Score Auswirkung', title='Score Auswirkung'),
+            tooltip=['Thema', 'Unterthema', 'Unter-Unterthema', 'Score Auswirkung']
+        ).properties(
+            width=600,
+            height=400
+        )
+        st.altair_chart(chart)
+    else:
+        st.warning("Keine Daten verfügbar nach Anwendung der Filter.")
