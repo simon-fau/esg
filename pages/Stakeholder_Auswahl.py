@@ -8,7 +8,7 @@ STATE_FILE = 'a.pkl'
 def save_state():
     with open(STATE_FILE, 'wb') as f:
         pickle.dump(dict(st.session_state), f)
-  
+
 def initialize_session_state():
     if 'ranking_table' not in st.session_state:
         st.error("No ranking table found in session state")
@@ -19,6 +19,8 @@ def initialize_session_state():
         st.session_state.table1 = st.session_state['ranking_table']['Gruppe'].tolist()
     else:
         update_table1()
+    if 'checkbox_state_2' not in st.session_state:
+        st.session_state['checkbox_state_2'] = False
     return True
 
 def update_table1():
@@ -81,7 +83,6 @@ def add_button_selection():
         st.experimental_rerun()
 
 def remove_button_selection():
-
     selected_table2 = st.multiselect(
         "Wählen Sie Stakeholder zum Entfernen aus:",
         st.session_state.table2,
@@ -94,7 +95,6 @@ def remove_button_selection():
 def check_abgeschlossen_stakeholder_auswahl():
     if 'checkbox_state_2' not in st.session_state:
         st.session_state['checkbox_state_2'] = False
-    
     col1, col2 = st.columns([4, 1])
 
     with col1:
@@ -105,7 +105,6 @@ def check_abgeschlossen_stakeholder_auswahl():
         st.session_state['checkbox_state_2'] = st.checkbox(" ", value=st.session_state['checkbox_state_2'])
 
 def display_page():
-    st.write([st.session_state['checkbox_state_2']])
     col1, col2 = st.columns([4, 1])
     with col1:
         st.header("Stakeholder Auswahl")

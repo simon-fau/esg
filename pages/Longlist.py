@@ -498,6 +498,9 @@ def count_bewertete_punkte():
 
 def merge_dataframes():
     global next_id
+    if 'content_id_map' not in st.session_state:
+        st.session_state.content_id_map = {}
+    content_id_map = st.session_state.content_id_map
 
     # Abrufen der Daten von verschiedenen Quellen
     selected_points_df = Top_down_Nachhaltigkeitspunkte()
@@ -528,7 +531,7 @@ def merge_dataframes():
     combined_df = combined_df.drop_duplicates(subset=['Thema', 'Unterthema', 'Unter-Unterthema'])
 
     # Hinzufügen einer 'ID'-Spalte
-    combined_df.insert(0, 'ID', range(1, 1 + len(combined_df)))
+    combined_df.insert(0, 'ID', None)
 
     # Hinzufügen einer 'ID'-Spalte
     for index, row in combined_df.iterrows():
@@ -664,6 +667,12 @@ def merge_dataframes():
                 
     display_grid(longlist)
     save_state()
+
+# Set initial next_id if not present
+if 'next_id' not in st.session_state:
+    st.session_state.next_id = 1
+
+next_id = st.session_state.next_id
 
 def reset_session_state_keys():
     keys_to_reset = [

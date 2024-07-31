@@ -4,7 +4,7 @@ import pandas as pd
 from pages.Stakeholder_Management import stakeholder_ranking
 from pages.Externe_Nachhaltigkeitspunkte import calculate_class_size, calculate_selected_rows, display_aggrid
 from pages.Longlist import  count_bewertete_punkte_übersicht,  bewertung_Uebersicht, anzahl_punkte_Longlist, count_top_down_points, count_internal_points, count_stakeholder_points
-from pages.Shortlist import chart_übersicht_allgemein, chart_auswirkungsbezogen, chart_finanzbezogen, test
+from pages.Shortlist import chart_übersicht_allgemein, chart_auswirkungsbezogen, chart_finanzbezogen, Balken_Auswirkungsbezogen
 from pages.Themenspezifische_ESRS import YesNoSelection
 
 def display_stakeholder_table():
@@ -117,10 +117,9 @@ def display_page():
 
             container_1 = st.container(border=True)
             with container_1:
-                test()
+                Balken_Auswirkungsbezogen()
                 st.markdown('Graphik')
-                st.write(st.session_state['selected_columns'])
-                st.write(st.session_state['stakeholder_punkte_df'])
+                
                 
         with col[2]:
 

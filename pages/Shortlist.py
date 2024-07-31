@@ -8,13 +8,10 @@ import shutil
 import io
 from openpyxl import load_workbook
 
-
-
 # Funktion zum Speichern des Zustands
 def save_state():
     with open('a.pkl', 'wb') as f:
         pickle.dump(dict(st.session_state), f)
-
 
 # Set initial session state values if they are not already set
 if 'intersection_value' not in st.session_state:
@@ -23,7 +20,6 @@ if 'stakeholder_importance_value' not in st.session_state:
     st.session_state['stakeholder_importance_value'] = 500
 if 'filtered_df' not in st.session_state:
     st.session_state['filtered_df'] = pd.DataFrame()  # Initialize as an empty DataFrame
-
 
 def Chart(intersection_value, stakeholder_importance_value):
     st.header("Graphische Übersicht")
@@ -458,7 +454,7 @@ def chart_finanzbezogen(width, height):
     else:
         st.info("Keine Daten ausgewählt.")
 
-def test():
+def Balken_Auswirkungsbezogen():
     # Beispiel-Session-State (ersetzen durch den tatsächlichen Session-State in der Implementierung)
     selected_columns = st.session_state.get('selected_columns', pd.DataFrame())
 
@@ -469,7 +465,7 @@ def test():
 
     # Erstellen der neuen Spalte 'Name'
     def create_name(row):
-        # Überprüfen, ob 'Unter-Unterthema' oder 'Unterthema' mehrfach vorkommt
+        # Überprüfen, ob 'Unter-Unterthema' oder 'Unterthema' mehrfach vorkommt, wenn identisch wird Thema hinten angehängt für Einzigartigkeit
         unter_unterthema_count = selected_columns['Unter-Unterthema'].value_counts().get(row['Unter-Unterthema'], 0)
         unterthema_count = selected_columns['Unterthema'].value_counts().get(row['Unterthema'], 0)
         
@@ -498,7 +494,7 @@ def test():
             y=alt.Y('Score Auswirkung', title='Score Auswirkung', stack=None),
             tooltip=['ID', 'Thema', 'Unterthema', 'Unter-Unterthema', 'Score Auswirkung']
         ).properties(
-            width=600,
+            width=800,
             height=400
         )
         st.altair_chart(chart)
