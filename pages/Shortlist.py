@@ -467,10 +467,24 @@ def test():
         st.error("Die notwendigen Spalten sind nicht im DataFrame vorhanden.")
         return
 
-    # Daten extrahieren und transformieren
-    selected_columns['Name'] = (selected_columns['Thema'] + ' - ' +
-                                selected_columns['Unterthema'] + ' - ' +
-                                selected_columns['Unter-Unterthema'])
+    # Erstellen der neuen Spalte 'Name'
+    def create_name(row):
+        # Überprüfen, ob 'Unter-Unterthema' oder 'Unterthema' mehrfach vorkommt
+        unter_unterthema_count = selected_columns['Unter-Unterthema'].value_counts().get(row['Unter-Unterthema'], 0)
+        unterthema_count = selected_columns['Unterthema'].value_counts().get(row['Unterthema'], 0)
+        
+        if row['Unter-Unterthema']:
+            if unter_unterthema_count > 1:
+                return row['Unter-Unterthema'] + '_' + row['Thema']
+            else:
+                return row['Unter-Unterthema']
+        else:
+            if unterthema_count > 1:
+                return row['Unterthema'] + '_' + row['Thema']
+            else:
+                return row['Unterthema']
+
+    selected_columns['Name'] = selected_columns.apply(create_name, axis=1)
 
     filtered_df = selected_columns[selected_columns['Score Auswirkung'] > 1]
 
@@ -481,8 +495,8 @@ def test():
     if not top_30_df.empty:
         chart = alt.Chart(top_30_df).mark_bar().encode(
             x=alt.X('Name', sort=None, title='Name'),
-            y=alt.Y('Score Auswirkung', title='Score Auswirkung'),
-            tooltip=['Thema', 'Unterthema', 'Unter-Unterthema', 'Score Auswirkung']
+            y=alt.Y('Score Auswirkung', title='Score Auswirkung', stack=None),
+            tooltip=['ID', 'Thema', 'Unterthema', 'Unter-Unterthema', 'Score Auswirkung']
         ).properties(
             width=600,
             height=400
@@ -490,3 +504,11 @@ def test():
         st.altair_chart(chart)
     else:
         st.warning("Keine Daten verfügbar nach Anwendung der Filter.")
+
+
+
+
+
+
+
+
