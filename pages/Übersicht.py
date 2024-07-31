@@ -98,7 +98,7 @@ def display_page():
     with tab1:
        
 
-        col = st.columns((1, 2, 1), gap='medium')
+        col = st.columns((1, 2.5, 1), gap='medium')
         
         with col[0]:
             container = st.container(border=True)
@@ -119,6 +119,7 @@ def display_page():
             with container_1:
                 Balken_Auswirkungsbezogen()
                 st.markdown('Graphik')
+                st.write(st.session_state['selected_columns'])
                 
                 
         with col[2]:

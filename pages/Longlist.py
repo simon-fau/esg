@@ -476,15 +476,12 @@ def display_grid(longlist):
 # Erstellen Sie ein leeres Wörterbuch zur Speicherung von Inhalt-ID-Zuordnungen
 content_id_map = {}
 
-# Dies ist die nächste ID, die zugewiesen werden soll
-next_id = 1
-
 # Define the nested function
 def count_bewertete_punkte():
     if 'longlist' in st.session_state:
         # Erstellen einer Kopie des DataFrames
         longlist_copy = st.session_state.longlist.copy()
-        # Zählen der Zeilen, die in der Spalte 'Bewertung' den Wert 'Ja' haben
+        # Zählen der Zeilen, die in der Spalte 'Bewertung' den Wert 'Ja' haben 
         yes_count = longlist_copy[longlist_copy['Bewertet'] == 'Ja'].shape[0]
         # Gesamtanzahl der Zeilen
         total_count = longlist_copy.shape[0]
@@ -533,6 +530,13 @@ def merge_dataframes():
     # Hinzufügen einer 'ID'-Spalte
     combined_df.insert(0, 'ID', None)
 
+    # Bestimmen der nächsten verfügbaren ID
+    if 'combined_df' in st.session_state and not st.session_state.combined_df.empty:
+        max_existing_id = st.session_state.combined_df['ID'].max()
+        next_id = max(max_existing_id + 1, next_id)
+    else:
+        next_id = 1
+
     # Hinzufügen einer 'ID'-Spalte
     for index, row in combined_df.iterrows():
         content = (row['Thema'], row['Unterthema'], row['Unter-Unterthema'])
@@ -552,13 +556,11 @@ def merge_dataframes():
     
     # Erstellen eines session_state von combined_df
     st.session_state.combined_df = combined_df
-    
 
     # Erstellung einer Kopie von combined_df ohne Stakeholder Gesamtbew. und Quelle zur Darstellung der Longlist mit lediglich relevanten Spalten
     combined_df_without_numerical_rating_and_source = st.session_state.combined_df.drop(columns=['Stakeholder Gesamtbew.', 'Quelle'])
     # Speichern Sie die neue DataFrame in 'st.session_state'
     st.session_state['combined_df_without_numerical_rating_and_source'] = combined_df_without_numerical_rating_and_source
-    
 
     # Erstellen eines neuen DataFrame 'longlist', um Probleme mit der Zuordnung von 'selected_rows' zu vermeiden
     longlist = pd.DataFrame(combined_df_without_numerical_rating_and_source)
@@ -668,10 +670,9 @@ def merge_dataframes():
     display_grid(longlist)
     save_state()
 
-# Set initial next_id if not present
+# Ensure next_id is maintained across sessions
 if 'next_id' not in st.session_state:
     st.session_state.next_id = 1
-
 next_id = st.session_state.next_id
 
 def reset_session_state_keys():
