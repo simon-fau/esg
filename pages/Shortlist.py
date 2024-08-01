@@ -230,8 +230,15 @@ def display_page():
         Chart(100, 500)  # Display initial chart without any filter
     Excel_button()
     save_state()
+    
+    
+
+    
+
 
 #---- Abschnitt zur Erstellung von unterschiedlichen Charts für die Übersicht ----#
+
+
 
 def chart_übersicht_allgemein(width, height):
 
@@ -411,7 +418,6 @@ def chart_finanzbezogen(width, height):
             else:
                 return None  # Ignore "Keine Relevanz"
 
-
         # Filter out rows with "Keine Relevanz"
         df['color'] = df['Finanziell'].apply(determine_color)
         df = df[df['color'].notnull()]
@@ -455,10 +461,7 @@ def chart_finanzbezogen(width, height):
         st.info("Keine Daten ausgewählt.")
 
 def Balken_Auswirkungsbezogen():
-    import streamlit as st
-    import pandas as pd
-    import altair as alt
-
+    
     # Beispiel-Session-State (ersetzen durch den tatsächlichen Session-State in der Implementierung)
     selected_columns = st.session_state.get('selected_columns', pd.DataFrame())
 
@@ -477,6 +480,9 @@ def Balken_Auswirkungsbezogen():
         return None
 
     selected_columns['Extracted_Auswirkung'] = selected_columns['Auswirkung'].apply(extract_impact)
+
+    # Filtere Daten mit "Keine Auswirkung" aus
+    selected_columns = selected_columns[selected_columns['Auswirkung'] != 'Keine Auswirkung']
 
     # Erstellen der neuen Spalte 'Name'
     def create_name(row):
@@ -521,14 +527,72 @@ def Balken_Auswirkungsbezogen():
     else:
         st.warning("Keine Daten verfügbar nach Anwendung der Filter.")
 
+def Balken_Finanzbezogen():
 
+    # Beispiel-Session-State (ersetzen durch den tatsächlichen Session-State in der Implementierung)
+    selected_columns = st.session_state.get('selected_columns', pd.DataFrame())
 
-    
+    # Überprüfen, ob die notwendigen Spalten vorhanden sind
+    if not {'Score Finanzen', 'Unter-Unterthema', 'Unterthema', 'Thema', 'Finanziell'}.issubset(selected_columns.columns):
+        st.error("Die notwendigen Spalten sind nicht im DataFrame vorhanden.")
+        return
 
+    # Funktion zur Extraktion der relevanten Finanziell-Angabe
+    def extract_financial(value):
+        if pd.isna(value):
+            return None
+        for financial in ['Chance', 'Risiko']:
+            if financial in value:
+                return financial
+        return None
 
+    selected_columns['Extracted_Finanziell'] = selected_columns['Finanziell'].apply(extract_financial)
 
+    # Filtere Daten mit "Keine Auswirkung" aus
+    selected_columns = selected_columns[selected_columns['Finanziell'] != 'Keine Auswirkung']
 
+    # Erstellen der neuen Spalte 'Name'
+    def create_name(row):
+        unter_unterthema_count = selected_columns['Unter-Unterthema'].value_counts().get(row['Unter-Unterthema'], 0)
+        unterthema_count = selected_columns['Unterthema'].value_counts().get(row['Unterthema'], 0)
 
+        if row['Unter-Unterthema']:
+            if unter_unterthema_count > 1:
+                return row['Unter-Unterthema'] + '_' + row['Thema']
+            else:
+                return row['Unter-Unterthema']
+        else:
+            if unterthema_count > 1:
+                return row['Unterthema'] + '_' + row['Thema']
+            else:
+                return row['Unterthema']
+
+    selected_columns['Name'] = selected_columns.apply(create_name, axis=1)
+
+    filtered_df = selected_columns[selected_columns['Score Finanzen'] > 1]
+
+    # Wähle die Top 30 Datensätze basierend auf 'Score Finanzen' und sortiere sie
+    top_30_df = filtered_df.nlargest(30, 'Score Finanzen').sort_values('Score Finanzen')
+
+    # Bar-Chart erstellen
+    if not top_30_df.empty:
+        color_scale = alt.Scale(
+            domain=['Chance', 'Risiko'],
+            range=['green', 'red']
+        )
+
+        chart = alt.Chart(top_30_df).mark_bar().encode(
+            x=alt.X('Name', sort=None, title='Nachhaltigkeitspunkt'),
+            y=alt.Y('Score Finanzen', title='Score Finanzen', stack=None),
+            color=alt.Color('Extracted_Finanziell', title='Art der finanziellen Auswirkung', scale=color_scale),
+            tooltip=['ID', 'Thema', 'Unterthema', 'Unter-Unterthema', 'Score Finanzen']
+        ).properties(
+            width=900,
+            height=400
+        )
+        st.altair_chart(chart)
+    else:
+        st.warning("Keine Daten verfügbar nach Anwendung der Filter.")
 
 
 

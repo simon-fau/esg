@@ -327,3 +327,26 @@ def display_page():
     with tabs[9]:
         st.subheader("Unternehmenspolitik")
         selection.display_G1_Unternehmenspolitik()
+
+
+
+def count_marked_rows_übersicht():
+    rows = {}
+    total_checkboxes = 93  # Gesamtanzahl der Checkboxen
+    checked_count = 0  # Anzahl der aktivierten Checkboxen
+
+    for key, value in st.session_state['yes_no_selection'].items():
+        if value:
+            checked_count += 1  # Zähle jede aktivierte Checkbox
+            row_key = key.split('_', 1)[1]
+            if row_key in rows:
+                rows[row_key] += 1
+            else:
+                rows[row_key] = 1
+
+    missing = total_checkboxes - checked_count
+    progress = checked_count / total_checkboxes  # Berechne den Fortschritt
+    st.write(f"{progress:.0%} der Inhalte wurden ausgewählt. Es fehlen noch {missing}.")
+    st.progress(progress)  # Zeige die Fortschrittsanzeige an
+
+    return len(rows)

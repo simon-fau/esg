@@ -2,382 +2,206 @@ import streamlit as st
 import pickle
 import os
 
+def initialize_state():
+    options = {
+        'Relevance_Klimawandel': None,
+        'Relevance_Klimawandel_2': None,
+        'Relevance_Luftverschmutzung': None,
+        'Relevance_Wasserverschmutzung': None,
+        'Relevance_Bodenverschmutzung': None,
+        'Relevance_Verschmutzung_von_lebenden_Organismen_und_Nahrungsressourcen': None,
+        'Relevance_Besorgniserregende_Stoffe': None,
+        'Relevance_Besonders_besorgniserregende_Stoffe': None,
+        'Relevance_Mikroplastik': None,
+        'Relevance_Wasserverbrauch': None,
+        'Relevance_Wasserentnahme': None,
+        'Relevance_Ableitung_von_Wasser': None,
+        'Relevance_Ableitung_von_Wasser_in_die_Ozeane': None,
+        'Relevance_Gewinnung_und_Nutzung_von_Meeresressourcen': None,
+        'Relevance_Klimawandel_E4': None,
+        'Relevance_Land-_Süßwasser-_und_Meeresnutzungsänderungen': None,
+        'Relevance_Direkte_Ausbeutung': None,
+        'Relevance_Invasive_gebietsfremde_Arten': None,
+        'Relevance_Umweltverschmutzung_E4': None,
+        'Relevance_Sonstige': None,
+        'Relevance_Populationsgröße_von_Arten': None,
+        'Relevance_Globales_Ausrottungsrisiko_von_Arten': None,
+        'Relevance_Landdegradation': None,
+        'Relevance_Wüstenbildung': None,
+        'Relevance_Bodenversiegelung': None,
+        'Relevance_Auswirkungen_und_Abhängigkeiten_von_Ökosystemdienstleistungen': None
+    }
+    if 'yes_no_selection' not in st.session_state:
+        st.session_state['yes_no_selection'] = options
+
+def save_session_state():
+    with open('session_states_top_down.pkl', 'wb') as f:
+        pickle.dump(st.session_state['yes_no_selection'], f)
+
+def load_session_state():
+    if os.path.exists('session_states_top_down.pkl'):
+        with open('session_states_top_down.pkl', 'rb') as f:
+            st.session_state['yes_no_selection'] = pickle.load(f)
+    else:
+        initialize_state()
+
 def Text():
     st.markdown("""
         Bitte bewerten Sie die Themengebiete anhand ihrer Relevanz für Ihr Unternehmen. Dabei gilt folgende Definition für die verschiedenen Auswahlmöglichkeiten:
-        - **Wesentlich**:  Ein Aspekt ist wesentlich, wenn er signifikante tatsächliche oder potenzielle Auswirkungen auf Menschen oder die Umwelt hat oder wesentliche finanzielle Auswirkungen auf das Unternehmen nach sich zieht bzw. zu erwarten sind.
-        - **Eher Wesentlich**: Ein Aspekt ist eher wesentlich, wenn er bedeutende, aber nicht unbedingt kritische Auswirkungen auf Menschen oder die Umwelt hat oder wenn finanzielle Auswirkungen wahrscheinlich, aber nicht zwingend erheblich sind.
-        - **Eher nicht Wesentlich**: Ein Aspekt ist eher nicht wesentlich, wenn die Auswirkungen auf Menschen oder die Umwelt begrenzt sind oder die finanziellen Auswirkungen gering oder unwahrscheinlich sind.
-        - **Nicht Wesentlich**: Ein Aspekt ist nicht wesentlich, wenn er keine oder nur vernachlässigbare Auswirkungen auf Menschen, die Umwelt oder die Finanzen des Unternehmens hat.
+        - **Relevant für Bewertung**: Ein Aspekt ist relevant für die Bewertung, wenn er signifikante tatsächliche oder potenzielle Auswirkungen auf Menschen oder die Umwelt hat oder wesentliche finanzielle Auswirkungen auf das Unternehmen nach sich zieht bzw. zu erwarten sind.
+        - **Unrelevant für Bewertung**: Ein Aspekt ist unrelevant für die Bewertung, wenn die Auswirkungen auf Menschen oder die Umwelt begrenzt sind oder die finanziellen Auswirkungen gering oder unwahrscheinlich sind.
     """)
 
-import streamlit as st
-import pickle
-import os
+def display_section(topics, section_key):
+    current_selection = {}
 
-class YesNoSelection:
-    def __init__(self):
-        self.load_session_state()
-        self.initialize_state()
-        self.backup_state = None
+    for topic, key in topics:
+        cols = st.columns([4, 2])
+        cols[0].write(f"{topic}:")
+        radio_key = f"Relevance_{key}_{section_key}"
+        selected_option = st.session_state['yes_no_selection'].get(radio_key, None)
+        option = cols[1].radio("", options=["Ja", "Nein"], index=0 if selected_option == "Relevant für Bewertung" else 1 if selected_option == "Unrelevant für Bewertung" else None, key=radio_key, label_visibility='collapsed', horizontal=True)
+        current_selection[radio_key] = option
 
-    # Initialisiert den Zustand der Auswahloptionen
-    def initialize_state(self):
-        options = {
-            'Wesentlich_Klimawandel': False,
-            'Eher_Wesentlich_Klimawandel': False,
-            'Eher_nicht_wesentlich': False,
-            'Nicht_Wesentlich_Klimawandel': False,
-            'Wesentlich_Klimawandel_2': False,
-            'Eher_Wesentlich_Klimawandel_2': False,
-            'Eher_nicht_wesentlich_2': False,
-            'Nicht_Wesentlich_Klimawandel_2': False
-        }
-        if 'yes_no_selection' not in st.session_state:
-            st.session_state['yes_no_selection'] = options
+    st.session_state['yes_no_selection'] = {**st.session_state['yes_no_selection'], **current_selection}
+    return True
 
-    # Speichert den aktuellen Zustand der Auswahloptionen in eine Pickle-Datei
-    def save_session_state(self):
-        with open('session_states_top_down.pkl', 'wb') as f:
-            pickle.dump(st.session_state['yes_no_selection'], f)
+def display_complex_section(sections, section_key):
 
-    # Lädt den Zustand der Auswahloptionen aus einer Pickle-Datei
-    def load_session_state(self):
-        if os.path.exists('session_states_top_down.pkl'):
-            with open('session_states_top_down.pkl', 'rb') as f:
-                st.session_state['yes_no_selection'] = pickle.load(f)
-
-    # Speichert eine Sicherungskopie des aktuellen Zustands
-    def backup_session_state(self):
-        self.backup_state = st.session_state['yes_no_selection'].copy()
-
-    # Stellt den Zustand aus der Sicherungskopie wieder her
-    def restore_session_state(self):
-        if self.backup_state is not None:
-            st.session_state['yes_no_selection'] = self.backup_state
-
-    # Definiert die Struktur für Auswahlsektionen ohne Untersektionen z.B für Klimawandel
-    def display_section(self, topics, section_key):
-        headers = ["Wesentlich", "Eher Wesentlich", "Eher nicht Wesentlich", "Nicht Wesentlich"]
-        header_row = st.columns([4, 1, 1, 1, 1])
-        for i, header in enumerate(headers):
-            header_row[i + 1].write(header)
-        
+    def create_section(title, topics):
+        st.markdown(f"**{title}**")
         current_selection = {}
-        validation_passed = True
-
         for topic, key in topics:
-            cols = st.columns([4, 1, 1, 1, 1])
+            cols = st.columns([4, 2])
             cols[0].write(f"{topic}:")
-            selected_count = 0
-            for i, header in enumerate(headers):
-                checkbox_key = f"{header}_{key}_{section_key}"
-                # Initialize checkbox without setting its value directly
-                checked = st.session_state['yes_no_selection'].get(checkbox_key, False)
-                checkbox_state = cols[i + 1].checkbox("Select", key=checkbox_key, value=checked, label_visibility='collapsed')
-                current_selection[checkbox_key] = checkbox_state
-                if checkbox_state:
-                    selected_count += 1
-            if selected_count > 1:
-                validation_passed = False
+            radio_key = f"Relevance_{key}_{section_key}"
+            selected_option = st.session_state['yes_no_selection'].get(radio_key, None)
+            option = cols[1].radio("", options=["Ja", "Nein"], index=0 if selected_option == "Relevant für Bewertung" else 1 if selected_option == "Unrelevant für Bewertung" else None, key=radio_key, label_visibility='collapsed', horizontal=True)
+            current_selection[radio_key] = option
+        return current_selection
 
-        # Update the session state with the current selection
-        st.session_state['yes_no_selection'] = {**st.session_state['yes_no_selection'], **current_selection}
-        return validation_passed
+    for section_title, topics in sections:
+        current_selection = create_section(section_title, topics)
+        st.session_state['yes_no_selection'] = {
+            **st.session_state['yes_no_selection'],
+            **current_selection
+        }
 
-    # Definiert die Struktur für komplexe Auswahlsektionen mit mehreren Untersektionen z.B für Biodiversität
-    def display_complex_section(self, sections, section_key):
-        headers = ["Wesentlich", "Eher Wesentlich", "Eher nicht Wesentlich", "Nicht Wesentlich"]
-        header_row = st.columns([4, 1, 1, 1, 1])
-        for i, header in enumerate(headers):
-            header_row[i + 1].write(header)
+    return True
 
-        def create_section(title, topics):
-            st.markdown(f"**{title}**")
-            current_selection = {}
-            validation_passed = True
-            for topic, key in topics:
-                cols = st.columns([4, 1, 1, 1, 1])
-                cols[0].write(f"{topic}:")
-                selected_count = 0
-                for i, header in enumerate(headers):
-                    checkbox_key = f"{header}_{key}_{section_key}"
-                    # Initialize checkbox without setting its value directly
-                    checked = st.session_state['yes_no_selection'].get(checkbox_key, False)
-                    checkbox_state = cols[i + 1].checkbox("Select", key=checkbox_key, value=checked, label_visibility='collapsed')
-                    current_selection[checkbox_key] = checkbox_state
-                    if checkbox_state:
-                        selected_count += 1
-                if selected_count > 1:
-                    validation_passed = False
-            return current_selection, validation_passed
+def display_save_button(section_name):
+    col1, col2 = st.columns([4, 2])
+    with col2:
+        st.write("")  # Platzhalter
+        st.write("")    
+        st.write("")
+        if st.button(f"💾 Auswahl speichern", key=f'Button_{section_name}'):
+            st.success(f"Auswahl erfolgreich gespeichert!")
+            save_session_state()
+                
+def display_E1_Klimawandel():
+    topics = [("Anpassung an Klimawandel", "Anpassung_an_den_Klimawandel"), ("Klimaschutz", "Klimaschutz"), ("Energie", "Energie")]
+    display_section(topics, "E1")
+    display_save_button("Klimawandel")
 
-        all_validation_passed = True
-        for section_title, topics in sections:
-            current_selection, validation_passed = create_section(section_title, topics)
-            st.session_state['yes_no_selection'] = {
-                **st.session_state['yes_no_selection'],
-                **current_selection
-            }
-            if not validation_passed:
-                all_validation_passed = False
+def display_E2_Umweltverschmutzung():
+    topics = [
+        ("Luftverschmutzung", "Luftverschmutzung"), ("Wasserverschmutzung", "Wasserverschmutzung"), ("Bodenverschmutzung", "Bodenverschmutzung"),
+        ("Verschmutzung von lebenden Organismen und Nahrungsressourcen", "Verschmutzung_von_lebenden_Organismen_und_Nahrungsressourcen"),
+        ("Besorgniserregende Stoffe", "Besorgniserregende_Stoffe"), ("Besonders besorgniserregende Stoffe", "Besonders_besorgniserregende_Stoffe"), ("Mikroplastik", "Mikroplastik")
+    ]
+    display_section(topics, "E2")
+    display_save_button("Umweltverschmutzung")
 
-        return all_validation_passed
+def display_E3_Wasser_und_Meeresressourcen():
+    topics = [
+        ("Wasserverbrauch", "Wasserverbrauch"), ("Wasserentnahme", "Wasserentnahme"), ("Ableitung von Wasser", "Ableitung_von_Wasser"),
+        ("Ableitung von Wasser in die Ozeane", "Ableitung_von_Wasser_in_die_Ozeane"), ("Gewinnung und Nutzung von Meeresressourcen", "Gewinnung_und_Nutzung_von_Meeresressourcen")
+    ]
+    display_section(topics, "E3")
+    display_save_button("WasserundMeeresressourcen")
 
-    # Zeigt einen Speicher-Button an und speichert den Zustand, wenn dieser gedrückt wird
-    def display_save_button(self, section_name, validation_passed):
-        col1, col2 = st.columns([4, 1])
-        with col2:
-            st.write("")  # Platzhalter
-            st.write("")    
-            st.write("")
-            if st.button(f"💾 Auswahl speichern", key=f'Button_{section_name}'):
-                if validation_passed:
-                    # Aktualisiere die Anzahl der aktivierten Checkboxen nach dem Speichern
-                    _, checked_count = self.count_marked_rows()
-                    # Speichere das Ergebnis in st.session_state, um es später zu verwenden
-                    st.session_state['checked_count'] = checked_count
-                    st.success(f"Auswahl erfolgreich gespeichert!")
-                    self.save_session_state()
-                    
-                    # Aktualisiere die Benutzeroberfläche sofort
-                    st.write(f"Anzahl der aktivierten Checkboxen: {checked_count}")
-                    
-                else:
-                    st.warning("Es darf nur eine Checkbox pro Zeile markiert sein.")
-                    self.restore_session_state()
+def display_E4_Biodiversität():
+    sections = [
+        ("Direkte Ursachen des Biodiversitätsverlusts", [
+            ("Klimawandel", "Klimawandel"),
+            ("Land-, Süßwasser- und Meeresnutzungsänderungen", "Land-_Süßwasser-_und_Meeresnutzungsänderungen"),
+            ("Direkte Ausbeutung", "Direkte_Ausbeutung"),
+            ("Invasive gebietsfremde Arten", "Invasive_gebietsfremde_Arten"),
+            ("Umweltverschmutzung", "Umweltverschmutzung"),
+            ("Sonstige", "Sonstige")
+        ]),
+        ("Auswirkungen auf den Zustand der Arten", [
+            ("Populationsgröße von Arten", "Populationsgröße_von_Arten"),
+            ("Globales Ausrottungsrisiko von Arten", "Globales_Ausrottungsrisiko_von_Arten")
+        ]),
+        ("Auswirkungen auf den Umfang und den Zustand von Ökosystemen", [
+            ("Landdegradation", "Landdegradation"),
+            ("Wüstenbildung", "Wüstenbildung"),
+            ("Bodenversiegelung", "Bodenversiegelung")
+        ]),
+        ("Auswirkungen und Abhängigkeiten von Ökosystemdienstleistungen", [
+            ("Auswirkungen und Abhängigkeiten von Ökosystemdienstleistungen", "Auswirkungen_und_Abhängigkeiten_von_Ökosystemdienstleistungen")
+        ])
+    ]
+    display_complex_section(sections, "E4")
+    display_save_button("Biodiversität")
 
-    def count_marked_rows_übersicht(self):
-        rows = {}
-        total_checkboxes = 93  # Gesamtanzahl der Checkboxen
-        checked_count = 0  # Anzahl der aktivierten Checkboxen
+def Placeholder():
+    st.write("")
+    st.write("")
+    st.write("")
+    st.write("")
 
-        for key, value in st.session_state['yes_no_selection'].items():
-            if value:
-                checked_count += 1  # Zähle jede aktivierte Checkbox
-                row_key = key.split('_', 1)[1]
-                if row_key in rows:
-                    rows[row_key] += 1
-                else:
-                    rows[row_key] = 1
-
-        missing = total_checkboxes - checked_count
-        progress = checked_count / total_checkboxes  # Berechne den Fortschritt
-        st.write(f"{progress:.0%} der Inhalte wurden ausgewählt. Es fehlen noch {missing}.")
-        st.progress(progress)  # Zeige die Fortschrittsanzeige an
-
-        return len(rows)
-    
-    def count_marked_rows(self):
-        rows = {}
-        total_checkboxes = 93  # Gesamtanzahl der Checkboxen
-        checked_count = 0  # Anzahl der aktivierten Checkboxen
-
-        for key, value in st.session_state['yes_no_selection'].items():
-            if value:
-                checked_count += 1  # Zähle jede aktivierte Checkbox
-                row_key = key.split('_', 1)[1]
-                if row_key in rows:
-                    rows[row_key] += 1
-                else:
-                    rows[row_key] = 1
-
-        return total_checkboxes, checked_count
-    
-    # Zeigt die Auswahloptionen für Klimawandel an
-    def display_E1_Klimawandel(self):
-        self.backup_session_state()  # Create a backup before displaying the section
-        topics = [("Anpassung an Klimawandel", "Anpassung_an_den_Klimawandel"), ("Klimaschutz", "Klimaschutz"), ("Energie", "Energie")]
-        validation_passed = self.display_section(topics, "E1")
-        self.display_save_button("Klimawandel", validation_passed)
-
-    # Zeigt die Auswahloptionen für Umweltverschmutzung an
-    def display_E2_Umweltverschmutzung(self):
-        self.backup_session_state()  # Create a backup before displaying the section
-        topics = [
-            ("Luftverschmutzung", "Luftverschmutzung"), ("Wasserverschmutzung", "Wasserverschmutzung"), ("Bodenverschmutzung", "Bodenverschmutzung"),
-            ("Verschmutzung von lebenden Organismen und Nahrungsressourcen", "Verschmutzung_von_lebenden_Organismen_und_Nahrungsressourcen"),
-            ("Besorgniserregende Stoffe", "Besorgniserregende_Stoffe"), ("Besonders besorgniserregende Stoffe", "Besonders_besorgniserregende_Stoffe"), ("Mikroplastik", "Mikroplastik")
-        ]
-        validation_passed = self.display_section(topics, "E2")
-        self.display_save_button("Umweltverschmutzung", validation_passed)
-
-    # Zeigt die Auswahloptionen für Wasser- und Meeresressourcen an
-    def display_E3_Wasser_und_Meeresressourcen(self):
-        self.backup_session_state()
-        topics = [
-            ("Wasserverbrauch", "Wasserverbrauch"), ("Wasserentnahme", "Wasserentnahme"), ("Ableitung von Wasser", "Ableitung_von_Wasser"),
-            ("Ableitung von Wasser in die Ozeane", "Ableitung_von_Wasser_in_die_Ozeane"), ("Gewinnung und Nutzung von Meeresressourcen", "Gewinnung_und_Nutzung_von_Meeresressourcen")
-        ]
-        validation_passed = self.display_section(topics, "E3")
-        self.display_save_button("WasserundMeeresressourcen", validation_passed)
-
-    # Zeigt die Auswahloptionen für Biodiversität an
-    def display_E4_Biodiversität(self):
-        self.backup_session_state()
-        sections = [
-            ("Direkte Ursachen des Biodiversitätsverlusts", [
-                ("Klimawandel", "Klimawandel"),
-                ("Land-, Süßwasser- und Meeresnutzungsänderungen", "Land-_Süßwasser-_und_Meeresnutzungsänderungen"),
-                ("Direkte Ausbeutung", "Direkte_Ausbeutung"),
-                ("Invasive gebietsfremde Arten", "Invasive_gebietsfremde_Arten"),
-                ("Umweltverschmutzung", "Umweltverschmutzung"),
-                ("Sonstige", "Sonstige")
-            ]),
-            ("Auswirkungen auf den Zustand der Arten", [
-                ("Populationsgröße von Arten", "Populationsgröße_von_Arten"),
-                ("Globales Ausrottungsrisiko von Arten", "Globales_Ausrottungsrisiko_von_Arten")
-            ]),
-            ("Auswirkungen auf den Umfang und den Zustand von Ökosystemen", [
-                ("Landdegradation", "Landdegradation"),
-                ("Wüstenbildung", "Wüstenbildung"),
-                ("Bodenversiegelung", "Bodenversiegelung")
-            ]),
-            ("Auswirkungen und Abhängigkeiten von Ökosystemdienstleistungen", [
-                ("Auswirkungen und Abhängigkeiten von Ökosystemdienstleistungen", "Auswirkungen_und_Abhängigkeiten_von_Ökosystemdienstleistungen")
-            ])
-        ]
-        validation_passed = self.display_complex_section(sections, "E4")
-        self.display_save_button("Biodiversität", validation_passed)
-
-    # Zeigt die Auswahloptionen für Kreislaufwirtschaft an
-    def display_E5_Kreislaufwirtschaft(self):
-        self.backup_session_state()
-        topics = [("Ressourcenzuflüsse, einschließlich Ressourcennutzung", "Ressourcenzuflüsse,_einschließlich_Ressourcennutzung"), ("Ressourcenabflüsse im Zusammenhang mit Produkten und Dienstleistungen", "Ressourcenabflüsse_im_Zusammenhang_mit_Produkten_und_Dienstleistungen"), ("Abfälle", "Abfälle")]
-        validation_passed = self.display_section(topics, "E5")
-        self.display_save_button("Kreislaufwirtschaft", validation_passed)
-
-    # Zeigt die Auswahloptionen für die eigene Belegschaft an
-    def display_S1_Eigene_Belegschaft(self):
-        self.backup_session_state()
-        sections = [
-            ("Arbeitsbedingungen", [
-                ("Sichere Beschäftigung", "Sichere Beschäftigung"), ("Arbeitszeit", "Arbeitszeit"), ("Angemessene Entlohnung", "Angemessene_Entlohnung"), ("Sozialer Dialog", "Sozialer_Dialog"),
-                ("Vereinigungsfreiheit, Existenz von Betriebsräten und Rechte der Arbeitnehmer auf Information, Anhörung und Mitbestimmung", "Vereinigungsfreiheit,_Existenz_von_Betriebsräten_und_Rechte_der_Arbeitnehmer_auf_Information,_Anhörung_und_Mitbestimmung"),
-                ("Tarifverhandlungen, einschließlich der Quote der durch Tarifverträge abgedeckten Arbeitskräften", "Tarifverhandlungen,_einschließlich_der_Quote_der_durch_Tarifverträge_abgedeckten_Arbeitskräften"),
-                ("Vereinbarkeit von Beruf und Privatleben", "Vereinbarkeit_von_Beruf_und_Privatleben"), ("Gesundheitsschutz und Sicherheit", "Gesundheitsschutz_und_Sicherheit")
-            ]),
-            ("Gleichbehandlung und Chancengleichheit für alle", [
-                ("Gleichstellung der Geschlechter und gleicher Lohn für gleiche Arbeit", "Gleichstellung_der_Geschlechter_und_gleicher_Lohn_für_gleiche_Arbeit"), ("Schulungen und Kompetenzentwicklung", "Schulungen_und_Kompetenzentwicklung"),
-                ("Beschäftigung und Inklusion von Menschen mit Behinderungen", "Beschäftigung_und_Inklusion_von_Menschen_mit_Behinderungen"), ("Maßnahmen gegen Gewalt und Belästigung am Arbeitsplatz", "Maßnahmen_gegen_Gewalt_und_Belästigung_am_Arbeitsplatz"), ("Vielfalt", "Vielfalt")
-            ]),
-            ("Sonstige arbeitsbezogene Rechte", [
-                ("Kinderarbeit", "Kinderarbeit"), ("Zwangarbeit", "Zwangarbeit"), ("Angemessene Unterbringungen", "Angemessene_Unterbringungen"), ("Wasser- und Sanitäreinrichtungen", "Wasser-_und_Sanitäreinrichtungen"), ("Datenschutz", "Datenschutz")
-            ])
-        ]
-        validation_passed = self.display_complex_section(sections, "S1")
-        self.display_save_button("Eigene_Belegschaft", validation_passed)
-
-    # Zeigt die Auswahloptionen für die Belegschaft in der Lieferkette an
-    def display_S2_Belegschaft_Lieferkette(self):
-        self.backup_session_state()
-        sections = [
-            ("Arbeitsbedingungen", [
-                ("Sichere Beschäftigung", "Sichere Beschäftigung"), ("Arbeitszeit", "Arbeitszeit"), ("Angemessene Entlohnung", "Angemessene_Entlohnung"), ("Sozialer Dialog", "Sozialer_Dialog"),
-                ("Vereinigungsfreiheit, Existenz von Betriebsräten und Rechte der Arbeitnehmer auf Information, Anhörung und Mitbestimmung", "Vereinigungsfreiheit,_Existenz_von_Betriebsräten_und_Rechte_der_Arbeitnehmer_auf_Information,_Anhörung_und_Mitbestimmung"),
-                ("Tarifverhandlungen, einschließlich der Quote der durch Tarifverträge abgedeckten Arbeitskräften", "Tarifverhandlungen,_einschließlich_der_Quote_der_durch_Tarifverträge_abgedeckten_Arbeitskräften"),
-                ("Vereinbarkeit von Beruf und Privatleben", "Vereinbarkeit_von_Beruf_und_Privatleben"), ("Gesundheitsschutz und Sicherheit", "Gesundheitsschutz_und_Sicherheit")
-            ]),
-            ("Gleichbehandlung und Chancengleichheit für alle", [
-                ("Gleichstellung der Geschlechter und gleicher Lohn für gleiche Arbeit", "Gleichstellung_der_Geschlechter_und_gleicher_Lohn_für_gleiche_Arbeit"), ("Schulungen und Kompetenzentwicklung", "Schulungen_und_Kompetenzentwicklung"),
-                ("Beschäftigung und Inklusion von Menschen mit Behinderungen", "Beschäftigung_und_Inklusion_von_Menschen_mit_Behinderungen"), ("Maßnahmen gegen Gewalt und Belästigung am Arbeitsplatz", "Maßnahmen_gegen_Gewalt_und_Belästigung_am_Arbeitsplatz"), ("Vielfalt", "Vielfalt")
-            ]),
-            ("Sonstige arbeitsbezogene Rechte", [
-                ("Kinderarbeit", "Kinderarbeit"), ("Zwangarbeit", "Zwangarbeit"), ("Angemessene Unterbringungen", "Angemessene_Unterbringungen"), ("Wasser- und Sanitäreinrichtungen", "Wasser-_und_Sanitäreinrichtungen"), ("Datenschutz", "Datenschutz")
-            ])
-        ]
-        validation_passed = self.display_complex_section(sections, "S2")
-        self.display_save_button("Belegschaft_Lieferkette", validation_passed)
-
-    # Zeigt die Auswahloptionen für betroffene Gemeinschaften an
-    def display_S3_Betroffene_Gemeinschaften(self):
-        self.backup_session_state()
-        sections = [
-            ("Wirtschaftliche, soziale und kulturelle Rechte von Gemeinschaften", [
-                ("Angemessene Unterbringungen", "Angemessene_Unterbringungen"), ("Angemessene Ernährung", "Angemessene_Ernährung"), ("Wasser- und Sanitäreinrichtungen", "Wasser-_und_Sanitäreinrichtungen"),
-                ("Bodenbezogene Auswirkungen", "Bodenbezogene_Auswirkungen"), ("Sicherheitsbezogene Auswirkungen", "Sicherheitsbezogene_Auswirkungen")
-            ]),
-            ("Bürgerrechte und politische Rechte von Gemeinschaften", [
-                ("Meinungsfreiheit", "Meinungsfreiheit"), ("Versammlungsfreiheit", "Versammlungsfreiheit"), ("Auswirkungen auf Menschenrechtsverteidiger", "Auswirkungen_auf_Menschenrechtsverteidiger")
-            ]),
-            ("Rechte von indigenen Völkern", [
-                ("Freiwillige und in Kenntnis der Sachlage erteilte vorherige Zustimmung", "Freiwillige_und_in_Kenntnis_der_Sachlage_erteilte_vorherige_Zustimmung"), ("Selbstbestimmung", "Selbstbestimmung"), ("Kulturelle Rechte", "Kulturelle_Rechte")
-            ])
-        ]
-        validation_passed = self.display_complex_section(sections, "S3")
-        self.display_save_button("Betroffene_Gemeinschaften", validation_passed)
-            
-    # Zeigt die Auswahloptionen für Verbraucher und Endnutzer an
-    def display_S4_Verbraucher_und_Endnutzer(self):
-        self.backup_session_state()
-        sections = [
-            ("Informationsbezogene Auswirkungen für Verbraucher und/oder Endnutzer", [
-                ("Datenschutz", "Datenschutz"), ("Meinungsfreiheit", "Meinungsfreiheit"), ("Zugang zu (hochwertigen) Informationen", "Zugang_zu_(hochwertigen)_Informationen")
-            ]),
-            ("Persönliche Sicherheit von Verbrauchern und/oder Endnutzern", [
-                ("Gesundheitsschutz und Sicherheit", "Gesundheitsschutz_und_Sicherheit"), ("Persönliche Sicherheit", "Persönliche_Sicherheit"), ("Kinderschutz", "Kinderschutz")
-            ]),
-            ("Soziale Inklusion von Verbrauchern und/oder Endnutzern", [
-                ("Nichtdiskriminierung", "Nichtdiskriminierung"), ("Zugang zu Produkten und Dienstleistungen", "Zugang_zu_Produkten_und_Dienstleistungen"), ("Verantwortliche Vermarktungspraktiken", "Verantwortliche_Vermarktungspraktiken")
-            ])
-        ]
-        validation_passed = self.display_complex_section(sections, "S4")
-        self.display_save_button("Verbraucher_und_Endnutzer", validation_passed)
-
-    # Zeigt die Auswahloptionen für Unternehmenspolitik an
-    def display_G1_Unternehmenspolitik(self):
-        self.backup_session_state()
-        topics = [
-            ("Unternehmenskultur", "Unternehmenskultur"), ("Schutz von Hinweisgebern (Whistleblowers)", "Schutz_von_Hinweisgebern_(Whistleblowers)"), ("Tierschutz", "Tierschutz"),
-            ("Politisches Engagement und Lobbytätigkeiten", "Politisches_Engagement_und_Lobbytätigkeiten"), ("Management der Beziehungen zu Lieferanten, einschließlich Zahlungspraktiken", "Management_der_Beziehungen_zu_Lieferanten,_einschließlich_Zahlungspraktiken"),
-            ("Vermeidung und Aufdeckung einschließlich Schulung", "Vermeidung_und_Aufdeckung_einschließlich_Schulung"), ("Vorkommnisse", "Vorkommnisse")
-        ]
-        validation_passed = self.display_section(topics, "G1")
-        self.display_save_button("Unternehmenspolitik", validation_passed)
-
-# Hauptfunktion zum Anzeigen der Seite mit den verschiedenen Auswahloptionen
 def display_page():
+    load_session_state()
+    initialize_state()
     col1, col2 = st.columns([4, 1])
     with col1:
         st.header("Themenspezifische ESRS") 
     with col2:
-        container = st.container(border=True)
-        with container:
-            with container:
-                yes_no_selection = YesNoSelection()
-                total_checkboxes, checked_count = yes_no_selection.count_marked_rows()
-                
-                
+        pass
+                     
     Text()
-    selection = YesNoSelection()
-    tabs = st.tabs(["Klimawandel", "Umweltverschmutzung", "Wasser- und Meeressourcen", "Biodiversität", "Kreislaufwirtschaft", "Eigene Belegschaft", "Belegschaft Lieferkette", "Betroffene Gemeinschaften", "Verbraucher und Endnutzer", "Unternehmenspolitik"])
+
+    tabs = st.tabs(["Klimawandel", "Umweltverschmutzung", "Wasser- und Meeressourcen", "Biodiversität"])
+    
     with tabs[0]:
-        st.subheader("Klimawandel")
-        selection.display_E1_Klimawandel()
+        col1, col2 = st.columns([1, 4])
+        with col1:
+            st.subheader("Klimawandel - Sind die folgenden Themen relevant für Ihre Bewertung?")
+        with col2:
+            pass
+        Placeholder()
+        display_E1_Klimawandel()
+    
     with tabs[1]:
-        st.subheader("Umweltverschmutzung")
-        selection.display_E2_Umweltverschmutzung()
+        col1, col2 = st.columns([2, 1.5])
+        with col1:
+            st.subheader("Umweltverschmutzung")
+        with col2:
+            Placeholder()
+            st.write("**Sind die folgenden Themen relevant für Ihre Bewertung?**")
+        Placeholder()
+        display_E2_Umweltverschmutzung()
+    
     with tabs[2]:
-        st.subheader("Meeres- und Wasserressourcen")
-        selection.display_E3_Wasser_und_Meeresressourcen()
+        col1, col2 = st.columns([2, 1.5])
+        with col1:
+            st.subheader("Meeres- und Wasserressourcen")
+        with col2:
+            Placeholder()
+            st.write("**Sind die folgenden Themen relevant für Ihre Bewertung?**")
+        Placeholder()
+        display_E3_Wasser_und_Meeresressourcen()
+    
     with tabs[3]:
-        st.subheader("Biodiversität")
-        selection.display_E4_Biodiversität()  
-    with tabs[4]:
-        st.subheader("Kreislaufwirtschaft")
-        selection.display_E5_Kreislaufwirtschaft()
-    with tabs[5]:
-        st.subheader("Eigene Belegschaft")
-        selection.display_S1_Eigene_Belegschaft()
-    with tabs[6]:
-        st.subheader("Belegschaft Lieferkette")
-        selection.display_S2_Belegschaft_Lieferkette()
-    with tabs[7]:
-        st.subheader("Betroffene Gemeinschaften")
-        selection.display_S3_Betroffene_Gemeinschaften()
-    with tabs[8]:
-        st.subheader("Verbraucher und Endnutzer")
-        selection.display_S4_Verbraucher_und_Endnutzer()
-    with tabs[9]:
-        st.subheader("Unternehmenspolitik")
-        selection.display_G1_Unternehmenspolitik()
+        col1, col2 = st.columns([2, 1.5])
+        with col1:
+            st.subheader("Biodiversität")
+        with col2:
+            Placeholder()
+            st.write("**Sind die folgenden Themen relevant für Ihre Bewertung?**")
+        Placeholder()
+        display_E4_Biodiversität()
+

@@ -4,7 +4,7 @@ import pandas as pd
 from pages.Stakeholder_Management import stakeholder_ranking
 from pages.Externe_Nachhaltigkeitspunkte import calculate_class_size, calculate_selected_rows, display_aggrid
 from pages.Longlist import  count_bewertete_punkte_übersicht,  bewertung_Uebersicht, anzahl_punkte_Longlist, count_top_down_points, count_internal_points, count_stakeholder_points
-from pages.Shortlist import chart_übersicht_allgemein, chart_auswirkungsbezogen, chart_finanzbezogen, Balken_Auswirkungsbezogen
+from pages.Shortlist import Balken_Finanzbezogen, chart_übersicht_allgemein, chart_auswirkungsbezogen, chart_finanzbezogen, Balken_Auswirkungsbezogen
 from pages.Themenspezifische_ESRS import YesNoSelection
 
 def display_stakeholder_table():
@@ -78,11 +78,15 @@ def aktueller_stand_wesentlichkeitsanalyse():
     ]
     
     for key, name in session_states_to_check:
-        if key in st.session_state and st.session_state[key] == True:
-            completed_count += 1
-            st.write(f" {name}: ✔")
-        else:
-            st.write(f" {name}: ✘")
+        col1, col2 = st.columns([4, 1])
+        with col1:
+            st.write(name)
+        with col2:
+            if key in st.session_state and st.session_state[key] == True:
+                completed_count += 1
+                st.write("✔")
+            else:
+                st.write("✘")
 
 def display_page():
     # Check if all relevant session states are empty
@@ -117,9 +121,23 @@ def display_page():
 
             container_1 = st.container(border=True)
             with container_1:
-                Balken_Auswirkungsbezogen()
-                st.markdown('Graphik')
-                st.write(st.session_state['selected_columns'])
+                
+                on = st.toggle ("Änderung der Darstellung", True)
+                if on:
+                    st.write(" ")
+                    st.write(" ")
+                    st.write("**Auswirkungsbezogene Darstellung**")
+                    st.write(" ")
+                    st.write(" ")
+                    Balken_Auswirkungsbezogen()
+                else:
+                    st.write(" ")
+                    st.write(" ")
+                    st.write("**Finanzbezogene Darstellung**")
+                    st.write(" ")
+                    st.write(" ")
+                    Balken_Finanzbezogen()
+                
                 
                 
         with col[2]:
@@ -152,3 +170,4 @@ def display_page():
             chart_auswirkungsbezogen(width=900, height=800)
         elif selected_chart == "Finanzbezoge Graphik":
             chart_finanzbezogen(width=900, height=800)
+        
