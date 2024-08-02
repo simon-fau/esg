@@ -14,18 +14,15 @@ def Text():
 if 'relevance_selection' not in st.session_state:
     st.session_state['relevance_selection'] = {}
 
-# Speichert den aktuellen Zustand der Auswahloptionen in eine Pickle-Datei
 def save_session_state():
     with open('session_states_top_down.pkl', 'wb') as f:
         pickle.dump(st.session_state['relevance_selection'], f)
 
-# Lädt den Zustand der Auswahloptionen aus einer Pickle-Datei
 def load_session_state():
     if os.path.exists('session_states_top_down.pkl'):
         with open('session_states_top_down.pkl', 'rb') as f:
             st.session_state['relevance_selection'] = pickle.load(f)
 
-# Definiert die Struktur für Auswahlsektionen ohne Untersektionen z.B für Klimawandel
 def display_section(topics, section_key, section_title):
     form_key = f'form_{section_key}'
     with st.form(key=form_key, border=False):
@@ -54,19 +51,16 @@ def display_section(topics, section_key, section_title):
 
         submitted = st.form_submit_button("💾 Auswahl speichern")
         if submitted:
-            st.session_state['relevance_selection'] = {**st.session_state['relevance_selection'], **current_selection}
             if validation_passed:
+                st.session_state['relevance_selection'] = {**st.session_state['relevance_selection'], **current_selection}
                 st.success("Auswahl erfolgreich gespeichert!")
                 save_session_state()
             else:
                 st.warning("Es darf nur eine Checkbox pro Zeile markiert sein.")
 
-    return validation_passed
-
-# Definiert die Struktur für komplexe Auswahlsektionen mit mehreren Untersektionen z.B für Biodiversität
 def display_complex_section(sections, section_key, section_title):
     form_key = f'form_{section_key}'
-    with st.form(key=form_key):
+    with st.form(key=form_key, border=False):
         st.subheader(section_title)
         headers = ["Relevant", "Nicht Relevant"]
         header_row = st.columns([4, 1, 1])
@@ -110,31 +104,25 @@ def display_complex_section(sections, section_key, section_title):
             else:
                 st.warning("Es darf nur eine Checkbox pro Zeile markiert sein.")
 
-    return all_validation_passed
-
-# Zeigt die Auswahloptionen für Klimawandel an
 def display_E1_Klimawandel():
     topics = [("Anpassung an Klimawandel", "Anpassung_an_den_Klimawandel"), ("Klimaschutz", "Klimaschutz"), ("Energie", "Energie")]
-    validation_passed = display_section(topics, "E1", "Klimawandel")
+    display_section(topics, "E1", "Klimawandel")
 
-# Zeigt die Auswahloptionen für Umweltverschmutzung an
 def display_E2_Umweltverschmutzung():
     topics = [
         ("Luftverschmutzung", "Luftverschmutzung"), ("Wasserverschmutzung", "Wasserverschmutzung"), ("Bodenverschmutzung", "Bodenverschmutzung"),
         ("Verschmutzung von lebenden Organismen und Nahrungsressourcen", "Verschmutzung_von_lebenden_Organismen_und_Nahrungsressourcen"),
         ("Besorgniserregende Stoffe", "Besorgniserregende_Stoffe"), ("Besonders besorgniserregende Stoffe", "Besonders_besorgniserregende_Stoffe"), ("Mikroplastik", "Mikroplastik")
     ]
-    validation_passed = display_section(topics, "E2", "Umweltverschmutzung")
+    display_section(topics, "E2", "Umweltverschmutzung")
 
-# Zeigt die Auswahloptionen für Wasser- und Meeresressourcen an
 def display_E3_Wasser_und_Meeresressourcen():
     topics = [
         ("Wasserverbrauch", "Wasserverbrauch"), ("Wasserentnahme", "Wasserentnahme"), ("Ableitung von Wasser", "Ableitung_von_Wasser"),
         ("Ableitung von Wasser in die Ozeane", "Ableitung_von_Wasser_in_die_Ozeane"), ("Gewinnung und Nutzung von Meeresressourcen", "Gewinnung_und_Nutzung_von_Meeresressourcen")
     ]
-    validation_passed = display_section(topics, "E3", "Wasser- und Meeresressourcen")
+    display_section(topics, "E3", "Wasser- und Meeresressourcen")
 
-# Zeigt die Auswahloptionen für Biodiversität an
 def display_E4_Biodiversität():
     sections = [
         ("Direkte Ursachen des Biodiversitätsverlusts", [
@@ -158,14 +146,12 @@ def display_E4_Biodiversität():
             ("Auswirkungen und Abhängigkeiten von Ökosystemdienstleistungen", "Auswirkungen_und_Abhängigkeiten_von_Ökosystemdienstleistungen")
         ])
     ]
-    validation_passed = display_complex_section(sections, "E4", "Biodiversität")
+    display_complex_section(sections, "E4", "Biodiversität")
 
-# Zeigt die Auswahloptionen für Kreislaufwirtschaft an
 def display_E5_Kreislaufwirtschaft():
     topics = [("Ressourcenzuflüsse, einschließlich Ressourcennutzung", "Ressourcenzuflüsse,_einschließlich_Ressourcennutzung"), ("Ressourcenabflüsse im Zusammenhang mit Produkten und Dienstleistungen", "Ressourcenabflüsse_im_Zusammenhang_mit_Produkten_und_Dienstleistungen"), ("Abfälle", "Abfälle")]
-    validation_passed = display_section(topics, "E5", "Kreislaufwirtschaft")
+    display_section(topics, "E5", "Kreislaufwirtschaft")
 
-# Zeigt die Auswahloptionen für die eigene Belegschaft an
 def display_S1_Eigene_Belegschaft():
     sections = [
         ("Arbeitsbedingungen", [
@@ -182,9 +168,8 @@ def display_S1_Eigene_Belegschaft():
             ("Kinderarbeit", "Kinderarbeit"), ("Zwangarbeit", "Zwangarbeit"), ("Angemessene Unterbringungen", "Angemessene_Unterbringungen"), ("Wasser- und Sanitäreinrichtungen", "Wasser-_und_Sanitäreinrichtungen"), ("Datenschutz", "Datenschutz")
         ])
     ]
-    validation_passed = display_complex_section(sections, "S1", "Eigene Belegschaft")
+    display_complex_section(sections, "S1", "Eigene Belegschaft")
 
-# Zeigt die Auswahloptionen für die Belegschaft in der Lieferkette an
 def display_S2_Belegschaft_Lieferkette():
     sections = [
         ("Arbeitsbedingungen", [
@@ -201,9 +186,8 @@ def display_S2_Belegschaft_Lieferkette():
             ("Kinderarbeit", "Kinderarbeit"), ("Zwangarbeit", "Zwangarbeit"), ("Angemessene Unterbringungen", "Angemessene_Unterbringungen"), ("Wasser- und Sanitäreinrichtungen", "Wasser-_und_Sanitäreinrichtungen"), ("Datenschutz", "Datenschutz")
         ])
     ]
-    validation_passed = display_complex_section(sections, "S2", "Belegschaft in der Lieferkette")
+    display_complex_section(sections, "S2", "Belegschaft in der Lieferkette")
 
-# Zeigt die Auswahloptionen für betroffene Gemeinschaften an
 def display_S3_Betroffene_Gemeinschaften():
     sections = [
         ("Wirtschaftliche, soziale und kulturelle Rechte von Gemeinschaften", [
@@ -217,9 +201,8 @@ def display_S3_Betroffene_Gemeinschaften():
             ("Freiwillige und in Kenntnis der Sachlage erteilte vorherige Zustimmung", "Freiwillige_und_in_Kenntnis_der_Sachlage_erteilte_vorherige_Zustimmung"), ("Selbstbestimmung", "Selbstbestimmung"), ("Kulturelle Rechte", "Kulturelle_Rechte")
         ])
     ]
-    validation_passed = display_complex_section(sections, "S3", "Betroffene Gemeinschaften")
+    display_complex_section(sections, "S3", "Betroffene Gemeinschaften")
         
-# Zeigt die Auswahloptionen für Verbraucher und Endnutzer an
 def display_S4_Verbraucher_und_Endnutzer():
     sections = [
         ("Informationsbezogene Auswirkungen für Verbraucher und/oder Endnutzer", [
@@ -232,18 +215,16 @@ def display_S4_Verbraucher_und_Endnutzer():
             ("Nichtdiskriminierung", "Nichtdiskriminierung"), ("Zugang zu Produkten und Dienstleistungen", "Zugang_zu_Produkten_und_Dienstleistungen"), ("Verantwortliche Vermarktungspraktiken", "Verantwortliche_Vermarktungspraktiken")
         ])
     ]
-    validation_passed = display_complex_section(sections, "S4", "Verbraucher und Endnutzer")
+    display_complex_section(sections, "S4", "Verbraucher und Endnutzer")
 
-# Zeigt die Auswahloptionen für Unternehmenspolitik an
 def display_G1_Unternehmenspolitik():
     topics = [
         ("Unternehmenskultur", "Unternehmenskultur"), ("Schutz von Hinweisgebern (Whistleblowers)", "Schutz_von_Hinweisgebern_(Whistleblowers)"), ("Tierschutz", "Tierschutz"),
         ("Politisches Engagement und Lobbytätigkeiten", "Politisches_Engagement_und_Lobbytätigkeiten"), ("Management der Beziehungen zu Lieferanten, einschließlich Zahlungspraktiken", "Management_der_Beziehungen_zu_Lieferanten,_einschließlich_Zahlungspraktiken"),
         ("Vermeidung und Aufdeckung einschließlich Schulung", "Vermeidung_und_Aufdeckung_einschließlich_Schulung"), ("Vorkommnisse", "Vorkommnisse")
     ]
-    validation_passed = display_section(topics, "G1", "Unternehmenspolitik")
+    display_section(topics, "G1", "Unternehmenspolitik")
 
-# Hauptfunktion zum Anzeigen der Seite mit den verschiedenen Auswahloptionen
 def display_page():
     load_session_state()
     
@@ -278,5 +259,3 @@ def display_page():
         display_S4_Verbraucher_und_Endnutzer()
     with tabs[9]:
         display_G1_Unternehmenspolitik()
-
-

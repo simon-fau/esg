@@ -73,7 +73,7 @@ def determine_key_suffix(key):
     suffixes = ['E1', 'E2', 'E3', 'E4', 'E5', 'S1', 'S2', 'S3', 'S4', 'G1']
     for suffix in suffixes:
         if key.endswith(suffix):
-            start = key.find('Relevant_') + len('Relevant_') if 'Relevant_' in key else -1
+            start = key.find('Relevant_') + len('Relevant_') 
             end = key.find(f'_{suffix}')
             return start, end, suffix
     return None, None, None
