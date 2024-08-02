@@ -117,10 +117,134 @@ def display_E1_Klimawandel():
     topics = [("Anpassung an Klimawandel", "Anpassung_an_den_Klimawandel"), ("Klimaschutz", "Klimaschutz"), ("Energie", "Energie")]
     validation_passed = display_section(topics, "E1", "Klimawandel")
 
+# Zeigt die Auswahloptionen für Umweltverschmutzung an
+def display_E2_Umweltverschmutzung():
+    topics = [
+        ("Luftverschmutzung", "Luftverschmutzung"), ("Wasserverschmutzung", "Wasserverschmutzung"), ("Bodenverschmutzung", "Bodenverschmutzung"),
+        ("Verschmutzung von lebenden Organismen und Nahrungsressourcen", "Verschmutzung_von_lebenden_Organismen_und_Nahrungsressourcen"),
+        ("Besorgniserregende Stoffe", "Besorgniserregende_Stoffe"), ("Besonders besorgniserregende Stoffe", "Besonders_besorgniserregende_Stoffe"), ("Mikroplastik", "Mikroplastik")
+    ]
+    validation_passed = display_section(topics, "E2", "Umweltverschmutzung")
+
+# Zeigt die Auswahloptionen für Wasser- und Meeresressourcen an
+def display_E3_Wasser_und_Meeresressourcen():
+    topics = [
+        ("Wasserverbrauch", "Wasserverbrauch"), ("Wasserentnahme", "Wasserentnahme"), ("Ableitung von Wasser", "Ableitung_von_Wasser"),
+        ("Ableitung von Wasser in die Ozeane", "Ableitung_von_Wasser_in_die_Ozeane"), ("Gewinnung und Nutzung von Meeresressourcen", "Gewinnung_und_Nutzung_von_Meeresressourcen")
+    ]
+    validation_passed = display_section(topics, "E3", "Wasser- und Meeresressourcen")
+
+# Zeigt die Auswahloptionen für Biodiversität an
+def display_E4_Biodiversität():
+    sections = [
+        ("Direkte Ursachen des Biodiversitätsverlusts", [
+            ("Klimawandel", "Klimawandel"),
+            ("Land-, Süßwasser- und Meeresnutzungsänderungen", "Land-_Süßwasser-_und_Meeresnutzungsänderungen"),
+            ("Direkte Ausbeutung", "Direkte_Ausbeutung"),
+            ("Invasive gebietsfremde Arten", "Invasive_gebietsfremde_Arten"),
+            ("Umweltverschmutzung", "Umweltverschmutzung"),
+            ("Sonstige", "Sonstige")
+        ]),
+        ("Auswirkungen auf den Zustand der Arten", [
+            ("Populationsgröße von Arten", "Populationsgröße_von_Arten"),
+            ("Globales Ausrottungsrisiko von Arten", "Globales_Ausrottungsrisiko_von_Arten")
+        ]),
+        ("Auswirkungen auf den Umfang und den Zustand von Ökosystemen", [
+            ("Landdegradation", "Landdegradation"),
+            ("Wüstenbildung", "Wüstenbildung"),
+            ("Bodenversiegelung", "Bodenversiegelung")
+        ]),
+        ("Auswirkungen und Abhängigkeiten von Ökosystemdienstleistungen", [
+            ("Auswirkungen und Abhängigkeiten von Ökosystemdienstleistungen", "Auswirkungen_und_Abhängigkeiten_von_Ökosystemdienstleistungen")
+        ])
+    ]
+    validation_passed = display_complex_section(sections, "E4", "Biodiversität")
+
+# Zeigt die Auswahloptionen für Kreislaufwirtschaft an
+def display_E5_Kreislaufwirtschaft():
+    topics = [("Ressourcenzuflüsse, einschließlich Ressourcennutzung", "Ressourcenzuflüsse,_einschließlich_Ressourcennutzung"), ("Ressourcenabflüsse im Zusammenhang mit Produkten und Dienstleistungen", "Ressourcenabflüsse_im_Zusammenhang_mit_Produkten_und_Dienstleistungen"), ("Abfälle", "Abfälle")]
+    validation_passed = display_section(topics, "E5", "Kreislaufwirtschaft")
+
+# Zeigt die Auswahloptionen für die eigene Belegschaft an
+def display_S1_Eigene_Belegschaft():
+    sections = [
+        ("Arbeitsbedingungen", [
+            ("Sichere Beschäftigung", "Sichere Beschäftigung"), ("Arbeitszeit", "Arbeitszeit"), ("Angemessene Entlohnung", "Angemessene_Entlohnung"), ("Sozialer Dialog", "Sozialer_Dialog"),
+            ("Vereinigungsfreiheit, Existenz von Betriebsräten und Rechte der Arbeitnehmer auf Information, Anhörung und Mitbestimmung", "Vereinigungsfreiheit,_Existenz_von_Betriebsräten_und_Rechte_der_Arbeitnehmer_auf_Information,_Anhörung_und_Mitbestimmung"),
+            ("Tarifverhandlungen, einschließlich der Quote der durch Tarifverträge abgedeckten Arbeitskräften", "Tarifverhandlungen,_einschließlich_der_Quote_der_durch_Tarifverträge_abgedeckten_Arbeitskräften"),
+            ("Vereinbarkeit von Beruf und Privatleben", "Vereinbarkeit_von_Beruf_und_Privatleben"), ("Gesundheitsschutz und Sicherheit", "Gesundheitsschutz_und_Sicherheit")
+        ]),
+        ("Gleichbehandlung und Chancengleichheit für alle", [
+            ("Gleichstellung der Geschlechter und gleicher Lohn für gleiche Arbeit", "Gleichstellung_der_Geschlechter_und_gleicher_Lohn_für_gleiche_Arbeit"), ("Schulungen und Kompetenzentwicklung", "Schulungen_und_Kompetenzentwicklung"),
+            ("Beschäftigung und Inklusion von Menschen mit Behinderungen", "Beschäftigung_und_Inklusion_von_Menschen_mit_Behinderungen"), ("Maßnahmen gegen Gewalt und Belästigung am Arbeitsplatz", "Maßnahmen_gegen_Gewalt_und_Belästigung_am_Arbeitsplatz"), ("Vielfalt", "Vielfalt")
+        ]),
+        ("Sonstige arbeitsbezogene Rechte", [
+            ("Kinderarbeit", "Kinderarbeit"), ("Zwangarbeit", "Zwangarbeit"), ("Angemessene Unterbringungen", "Angemessene_Unterbringungen"), ("Wasser- und Sanitäreinrichtungen", "Wasser-_und_Sanitäreinrichtungen"), ("Datenschutz", "Datenschutz")
+        ])
+    ]
+    validation_passed = display_complex_section(sections, "S1", "Eigene Belegschaft")
+
+# Zeigt die Auswahloptionen für die Belegschaft in der Lieferkette an
+def display_S2_Belegschaft_Lieferkette():
+    sections = [
+        ("Arbeitsbedingungen", [
+            ("Sichere Beschäftigung", "Sichere Beschäftigung"), ("Arbeitszeit", "Arbeitszeit"), ("Angemessene Entlohnung", "Angemessene_Entlohnung"), ("Sozialer Dialog", "Sozialer_Dialog"),
+            ("Vereinigungsfreiheit, Existenz von Betriebsräten und Rechte der Arbeitnehmer auf Information, Anhörung und Mitbestimmung", "Vereinigungsfreiheit,_Existenz_von_Betriebsräten_und_Rechte_der_Arbeitnehmer_auf_Information,_Anhörung_und_Mitbestimmung"),
+            ("Tarifverhandlungen, einschließlich der Quote der durch Tarifverträge abgedeckten Arbeitskräften", "Tarifverhandlungen,_einschließlich_der_Quote_der_durch_Tarifverträge_abgedeckten_Arbeitskräften"),
+            ("Vereinbarkeit von Beruf und Privatleben", "Vereinbarkeit_von_Beruf_und_Privatleben"), ("Gesundheitsschutz und Sicherheit", "Gesundheitsschutz_und_Sicherheit")
+        ]),
+        ("Gleichbehandlung und Chancengleichheit für alle", [
+            ("Gleichstellung der Geschlechter und gleicher Lohn für gleiche Arbeit", "Gleichstellung_der_Geschlechter_und_gleicher_Lohn_für_gleiche_Arbeit"), ("Schulungen und Kompetenzentwicklung", "Schulungen_und_Kompetenzentwicklung"),
+            ("Beschäftigung und Inklusion von Menschen mit Behinderungen", "Beschäftigung_und_Inklusion_von_Menschen_mit_Behinderungen"), ("Maßnahmen gegen Gewalt und Belästigung am Arbeitsplatz", "Maßnahmen_gegen_Gewalt_und_Belästigung_am_Arbeitsplatz"), ("Vielfalt", "Vielfalt")
+        ]),
+        ("Sonstige arbeitsbezogene Rechte", [
+            ("Kinderarbeit", "Kinderarbeit"), ("Zwangarbeit", "Zwangarbeit"), ("Angemessene Unterbringungen", "Angemessene_Unterbringungen"), ("Wasser- und Sanitäreinrichtungen", "Wasser-_und_Sanitäreinrichtungen"), ("Datenschutz", "Datenschutz")
+        ])
+    ]
+    validation_passed = display_complex_section(sections, "S2", "Belegschaft in der Lieferkette")
+
+# Zeigt die Auswahloptionen für betroffene Gemeinschaften an
+def display_S3_Betroffene_Gemeinschaften():
+    sections = [
+        ("Wirtschaftliche, soziale und kulturelle Rechte von Gemeinschaften", [
+            ("Angemessene Unterbringungen", "Angemessene_Unterbringungen"), ("Angemessene Ernährung", "Angemessene_Ernährung"), ("Wasser- und Sanitäreinrichtungen", "Wasser-_und_Sanitäreinrichtungen"),
+            ("Bodenbezogene Auswirkungen", "Bodenbezogene_Auswirkungen"), ("Sicherheitsbezogene Auswirkungen", "Sicherheitsbezogene_Auswirkungen")
+        ]),
+        ("Bürgerrechte und politische Rechte von Gemeinschaften", [
+            ("Meinungsfreiheit", "Meinungsfreiheit"), ("Versammlungsfreiheit", "Versammlungsfreiheit"), ("Auswirkungen auf Menschenrechtsverteidiger", "Auswirkungen_auf_Menschenrechtsverteidiger")
+        ]),
+        ("Rechte von indigenen Völkern", [
+            ("Freiwillige und in Kenntnis der Sachlage erteilte vorherige Zustimmung", "Freiwillige_und_in_Kenntnis_der_Sachlage_erteilte_vorherige_Zustimmung"), ("Selbstbestimmung", "Selbstbestimmung"), ("Kulturelle Rechte", "Kulturelle_Rechte")
+        ])
+    ]
+    validation_passed = display_complex_section(sections, "S3", "Betroffene Gemeinschaften")
+        
+# Zeigt die Auswahloptionen für Verbraucher und Endnutzer an
+def display_S4_Verbraucher_und_Endnutzer():
+    sections = [
+        ("Informationsbezogene Auswirkungen für Verbraucher und/oder Endnutzer", [
+            ("Datenschutz", "Datenschutz"), ("Meinungsfreiheit", "Meinungsfreiheit"), ("Zugang zu (hochwertigen) Informationen", "Zugang_zu_(hochwertigen)_Informationen")
+        ]),
+        ("Persönliche Sicherheit von Verbrauchern und/oder Endnutzern", [
+            ("Gesundheitsschutz und Sicherheit", "Gesundheitsschutz_und_Sicherheit"), ("Persönliche Sicherheit", "Persönliche_Sicherheit"), ("Kinderschutz", "Kinderschutz")
+        ]),
+        ("Soziale Inklusion von Verbrauchern und/oder Endnutzern", [
+            ("Nichtdiskriminierung", "Nichtdiskriminierung"), ("Zugang zu Produkten und Dienstleistungen", "Zugang_zu_Produkten_und_Dienstleistungen"), ("Verantwortliche Vermarktungspraktiken", "Verantwortliche_Vermarktungspraktiken")
+        ])
+    ]
+    validation_passed = display_complex_section(sections, "S4", "Verbraucher und Endnutzer")
+
+# Zeigt die Auswahloptionen für Unternehmenspolitik an
+def display_G1_Unternehmenspolitik():
+    topics = [
+        ("Unternehmenskultur", "Unternehmenskultur"), ("Schutz von Hinweisgebern (Whistleblowers)", "Schutz_von_Hinweisgebern_(Whistleblowers)"), ("Tierschutz", "Tierschutz"),
+        ("Politisches Engagement und Lobbytätigkeiten", "Politisches_Engagement_und_Lobbytätigkeiten"), ("Management der Beziehungen zu Lieferanten, einschließlich Zahlungspraktiken", "Management_der_Beziehungen_zu_Lieferanten,_einschließlich_Zahlungspraktiken"),
+        ("Vermeidung und Aufdeckung einschließlich Schulung", "Vermeidung_und_Aufdeckung_einschließlich_Schulung"), ("Vorkommnisse", "Vorkommnisse")
+    ]
+    validation_passed = display_section(topics, "G1", "Unternehmenspolitik")
 
 # Hauptfunktion zum Anzeigen der Seite mit den verschiedenen Auswahloptionen
 def display_page():
-    
     load_session_state()
     
     col1, col2 = st.columns([4, 1])
@@ -130,10 +254,29 @@ def display_page():
         container = st.container(border=True)
         with container:
             pass
-            
+                
     Text()
-
-    tabs = st.tabs(["Klimawandel"])
+    
+    tabs = st.tabs(["Klimawandel", "Umweltverschmutzung", "Wasser- und Meeressourcen", "Biodiversität", "Kreislaufwirtschaft", "Eigene Belegschaft", "Belegschaft Lieferkette", "Betroffene Gemeinschaften", "Verbraucher und Endnutzer", "Unternehmenspolitik"])
     with tabs[0]:
         display_E1_Klimawandel()
-    
+    with tabs[1]:    
+        display_E2_Umweltverschmutzung()
+    with tabs[2]:  
+        display_E3_Wasser_und_Meeresressourcen()
+    with tabs[3]:  
+        display_E4_Biodiversität()  
+    with tabs[4]: 
+        display_E5_Kreislaufwirtschaft()
+    with tabs[5]:
+        display_S1_Eigene_Belegschaft()
+    with tabs[6]:
+        display_S2_Belegschaft_Lieferkette()
+    with tabs[7]:
+        display_S3_Betroffene_Gemeinschaften()
+    with tabs[8]:
+        display_S4_Verbraucher_und_Endnutzer()
+    with tabs[9]:
+        display_G1_Unternehmenspolitik()
+
+
