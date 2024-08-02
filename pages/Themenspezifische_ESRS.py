@@ -1,224 +1,139 @@
 import streamlit as st
 import pickle
 import os
-import time
-
-def initialize_state():
-    if 'yes_no_selection' not in st.session_state:
-        st.session_state['yes_no_selection'] 
-
-def save_session_state():
-    with open('session_states_top_down.pkl', 'wb') as f:
-        pickle.dump(st.session_state['yes_no_selection'], f)
-
-def load_session_state():
-    if os.path.exists('session_states_top_down.pkl'):
-        with open('session_states_top_down.pkl', 'rb') as f:
-            st.session_state['yes_no_selection'] = pickle.load(f)
-    else:
-        initialize_state()
 
 def Text():
     st.markdown("""
         Bitte bewerten Sie die Themengebiete anhand ihrer Relevanz für Ihr Unternehmen. Dabei gilt folgende Definition für die verschiedenen Auswahlmöglichkeiten:
-        - **Relevant für Bewertung**: Ein Aspekt ist relevant für die Bewertung, wenn er signifikante tatsächliche oder potenzielle Auswirkungen auf Menschen oder die Umwelt hat oder wesentliche finanzielle Auswirkungen auf das Unternehmen nach sich zieht bzw. zu erwarten sind.
-        - **Unrelevant für Bewertung**: Ein Aspekt ist unrelevant für die Bewertung, wenn die Auswirkungen auf Menschen oder die Umwelt begrenzt sind oder die finanziellen Auswirkungen gering oder unwahrscheinlich sind.
+        - **Wesentlich**:  Ein Aspekt ist wesentlich, wenn er signifikante tatsächliche oder potenzielle Auswirkungen auf Menschen oder die Umwelt hat oder wesentliche finanzielle Auswirkungen auf das Unternehmen nach sich zieht bzw. zu erwarten sind.
+        - **Eher Wesentlich**: Ein Aspekt ist eher wesentlich, wenn er bedeutende, aber nicht unbedingt kritische Auswirkungen auf Menschen oder die Umwelt hat oder wenn finanzielle Auswirkungen wahrscheinlich, aber nicht zwingend erheblich sind.
+        - **Eher nicht Wesentlich**: Ein Aspekt ist eher nicht wesentlich, wenn die Auswirkungen auf Menschen oder die Umwelt begrenzt sind oder die finanziellen Auswirkungen gering oder unwahrscheinlich sind.
+        - **Nicht Wesentlich**: Ein Aspekt ist nicht wesentlich, wenn er keine oder nur vernachlässigbare Auswirkungen auf Menschen, die Umwelt oder die Finanzen des Unternehmens hat.
     """)
 
-def display_section(topics, section_key):
-    current_selection = {}
+if 'relevance_selection' not in st.session_state:
+    st.session_state['relevance_selection'] = {}
 
-    # CSS to increase the horizontal spacing between radio buttons
-    st.markdown(
-        """
-        <style>
-        .stRadio > div {
-            display: flex;
-            gap: 155px; /* Adjust the value as needed */
-        }
-        </style>
-        """,
-        unsafe_allow_html=True
-    )
+# Speichert den aktuellen Zustand der Auswahloptionen in eine Pickle-Datei
+def save_session_state():
+    with open('session_states_top_down.pkl', 'wb') as f:
+        pickle.dump(st.session_state['relevance_selection'], f)
 
-    for topic, key in topics:
-        cols = st.columns([3.35, 1])
-        cols[0].write(f"{topic}:")
-        radio_key = f"Relevance_{key}_{section_key}"
-        selected_option = st.session_state['yes_no_selection'].get(radio_key, None)
-        option = cols[1].radio("", options=[" ", " "],index=0 if selected_option == "Relevant für Bewertung" else 1 if selected_option == "Unrelevant für Bewertung" else None, key=radio_key, label_visibility='collapsed', horizontal=True)
-        current_selection[radio_key] = option
+# Lädt den Zustand der Auswahloptionen aus einer Pickle-Datei
+def load_session_state():
+    if os.path.exists('session_states_top_down.pkl'):
+        with open('session_states_top_down.pkl', 'rb') as f:
+            st.session_state['relevance_selection'] = pickle.load(f)
 
-    st.session_state['yes_no_selection'] = {**st.session_state['yes_no_selection'], **current_selection}
-    return True
+# Definiert die Struktur für Auswahlsektionen ohne Untersektionen z.B für Klimawandel
+def display_section(topics, section_key, section_title):
+    form_key = f'form_{section_key}'
+    with st.form(key=form_key, border=False):
+        st.subheader(section_title)
+        headers = ["Relevant", "Nicht Relevant"]
+        header_row = st.columns([4, 1, 1])
+        for i, header in enumerate(headers):
+            header_row[i + 1].write(header)
 
-def display_complex_section(sections, section_key):
-
-    def create_section(title, topics):
-        st.markdown(f"**{title}**")
         current_selection = {}
+        validation_passed = True
+
         for topic, key in topics:
-            cols = st.columns([3.35, 1])
+            cols = st.columns([4, 1, 1])
             cols[0].write(f"{topic}:")
-            radio_key = f"Relevance_{key}_{section_key}"
-            selected_option = st.session_state['yes_no_selection'].get(radio_key, None)
-            option = cols[1].radio("", options=[" ", " "], index=0 if selected_option == "Relevant für Bewertung" else 1 if selected_option == "Unrelevant für Bewertung" else None, key=radio_key, label_visibility='collapsed', horizontal=True)
-            current_selection[radio_key] = option
-        return current_selection
+            selected_count = 0
+            for i, header in enumerate(headers):
+                checkbox_key = f"{header}_{key}_{section_key}"
+                checked = st.session_state['relevance_selection'].get(checkbox_key, False)
+                checkbox_state = cols[i + 1].checkbox("Select", key=checkbox_key, value=checked, label_visibility='collapsed')
+                current_selection[checkbox_key] = checkbox_state
+                if checkbox_state:
+                    selected_count += 1
+            if selected_count > 1:
+                validation_passed = False
 
-    for section_title, topics in sections:
-        current_selection = create_section(section_title, topics)
-        st.session_state['yes_no_selection'] = {
-            **st.session_state['yes_no_selection'],
-            **current_selection
-        }
+        submitted = st.form_submit_button("💾 Auswahl speichern")
+        if submitted:
+            st.session_state['relevance_selection'] = {**st.session_state['relevance_selection'], **current_selection}
+            if validation_passed:
+                st.success("Auswahl erfolgreich gespeichert!")
+                save_session_state()
+            else:
+                st.warning("Es darf nur eine Checkbox pro Zeile markiert sein.")
 
-    return True
+    return validation_passed
 
-def display_save_button(section_name):
-    Placeholder()
-    col1, col2 = st.columns([5, 1.5])
-    with col2:
-        Placeholder()
-        # CSS für rechtsbündige Anzeige des Buttons
-        st.markdown(
-            """
-            <style>
-            .stButton button {
-                float: right;
+# Definiert die Struktur für komplexe Auswahlsektionen mit mehreren Untersektionen z.B für Biodiversität
+def display_complex_section(sections, section_key, section_title):
+    form_key = f'form_{section_key}'
+    with st.form(key=form_key):
+        st.subheader(section_title)
+        headers = ["Relevant", "Nicht Relevant"]
+        header_row = st.columns([4, 1, 1])
+        for i, header in enumerate(headers):
+            header_row[i + 1].write(header)
+
+        def create_section(title, topics):
+            st.markdown(f"**{title}**")
+            current_selection = {}
+            validation_passed = True
+            for topic, key in topics:
+                cols = st.columns([4, 1, 1])
+                cols[0].write(f"{topic}:")
+                selected_count = 0
+                for i, header in enumerate(headers):
+                    checkbox_key = f"{header}_{key}_{section_key}"
+                    checked = st.session_state['relevance_selection'].get(checkbox_key, False)
+                    checkbox_state = cols[i + 1].checkbox("Select", key=checkbox_key, value=checked, label_visibility='collapsed')
+                    current_selection[checkbox_key] = checkbox_state
+                    if checkbox_state:
+                        selected_count += 1
+                if selected_count > 1:
+                    validation_passed = False
+            return current_selection, validation_passed
+
+        all_validation_passed = True
+        for section_title, topics in sections:
+            current_selection, validation_passed = create_section(section_title, topics)
+            st.session_state['relevance_selection'] = {
+                **st.session_state['relevance_selection'],
+                **current_selection
             }
-            </style>
-            """,
-            unsafe_allow_html=True
-        )
-        if st.button(f"💾 Auswahl speichern", key=f'Button_{section_name}'):
-            success_placeholder = st.empty()
-            success_placeholder.success(f"Auswahl erfolgreich gespeichert!")
-            save_session_state()
-            time.sleep(3)
-            success_placeholder.empty()
-                
+            if not validation_passed:
+                all_validation_passed = False
+
+        submitted = st.form_submit_button("💾 Auswahl speichern")
+        if submitted:
+            if all_validation_passed:
+                st.success("Auswahl erfolgreich gespeichert!")
+                save_session_state()
+            else:
+                st.warning("Es darf nur eine Checkbox pro Zeile markiert sein.")
+
+    return all_validation_passed
+
+# Zeigt die Auswahloptionen für Klimawandel an
 def display_E1_Klimawandel():
     topics = [("Anpassung an Klimawandel", "Anpassung_an_den_Klimawandel"), ("Klimaschutz", "Klimaschutz"), ("Energie", "Energie")]
-    display_section(topics, "E1")
-    display_save_button("Klimawandel")
+    validation_passed = display_section(topics, "E1", "Klimawandel")
 
-def display_E2_Umweltverschmutzung():
-    topics = [
-        ("Luftverschmutzung", "Luftverschmutzung"), ("Wasserverschmutzung", "Wasserverschmutzung"), ("Bodenverschmutzung", "Bodenverschmutzung"),
-        ("Verschmutzung von lebenden Organismen und Nahrungsressourcen", "Verschmutzung_von_lebenden_Organismen_und_Nahrungsressourcen"),
-        ("Besorgniserregende Stoffe", "Besorgniserregende_Stoffe"), ("Besonders besorgniserregende Stoffe", "Besonders_besorgniserregende_Stoffe"), ("Mikroplastik", "Mikroplastik")
-    ]
-    display_section(topics, "E2")
-    display_save_button("Umweltverschmutzung")
 
-def display_E3_Wasser_und_Meeresressourcen():
-    topics = [
-        ("Wasserverbrauch", "Wasserverbrauch"), ("Wasserentnahme", "Wasserentnahme"), ("Ableitung von Wasser", "Ableitung_von_Wasser"),
-        ("Ableitung von Wasser in die Ozeane", "Ableitung_von_Wasser_in_die_Ozeane"), ("Gewinnung und Nutzung von Meeresressourcen", "Gewinnung_und_Nutzung_von_Meeresressourcen")
-    ]
-    display_section(topics, "E3")
-    display_save_button("WasserundMeeresressourcen")
-
-def display_E4_Biodiversität():
-    sections = [
-        ("Direkte Ursachen des Biodiversitätsverlusts", [
-            ("Klimawandel", "Klimawandel"),
-            ("Land-, Süßwasser- und Meeresnutzungsänderungen", "Land-_Süßwasser-_und_Meeresnutzungsänderungen"),
-            ("Direkte Ausbeutung", "Direkte_Ausbeutung"),
-            ("Invasive gebietsfremde Arten", "Invasive_gebietsfremde_Arten"),
-            ("Umweltverschmutzung", "Umweltverschmutzung"),
-            ("Sonstige", "Sonstige")
-        ]),
-        ("Auswirkungen auf den Zustand der Arten", [
-            ("Populationsgröße von Arten", "Populationsgröße_von_Arten"),
-            ("Globales Ausrottungsrisiko von Arten", "Globales_Ausrottungsrisiko_von_Arten")
-        ]),
-        ("Auswirkungen auf den Umfang und den Zustand von Ökosystemen", [
-            ("Landdegradation", "Landdegradation"),
-            ("Wüstenbildung", "Wüstenbildung"),
-            ("Bodenversiegelung", "Bodenversiegelung")
-        ]),
-        ("Auswirkungen und Abhängigkeiten von Ökosystemdienstleistungen", [
-            ("Auswirkungen und Abhängigkeiten von Ökosystemdienstleistungen", "Auswirkungen_und_Abhängigkeiten_von_Ökosystemdienstleistungen")
-        ])
-    ]
-    display_complex_section(sections, "E4")
-    display_save_button("Biodiversität")
-
-def Placeholder():
-    st.write("")
-    st.write("")
-    st.write("")
-    st.write("")
-
+# Hauptfunktion zum Anzeigen der Seite mit den verschiedenen Auswahloptionen
 def display_page():
-
+    
     load_session_state()
-    initialize_state()
+    
     col1, col2 = st.columns([4, 1])
     with col1:
         st.header("Themenspezifische ESRS") 
     with col2:
-        pass
-                     
+        container = st.container(border=True)
+        with container:
+            pass
+            
     Text()
 
-    tabs = st.tabs(["Klimawandel", "Umweltverschmutzung", "Wasser- und Meeressourcen", "Biodiversität"])
-    
+    tabs = st.tabs(["Klimawandel"])
     with tabs[0]:
-        col1, col2, col3, col4 = st.columns([4, 1, 1, 1])
-        with col1:
-            st.subheader("Klimawandel")
-        with col2:
-            pass
-        with col3:
-            st.write("**Relevant für Bewertung**")
-        with col4:
-            st.write("**Unrelevant für Bewertung**")
-            
-        Placeholder()
         display_E1_Klimawandel()
     
-    with tabs[1]:
-        col1, col2, col3, col4 = st.columns([4, 1, 1, 1])
-        with col1:
-            st.subheader("Umweltverschmutzung")
-        with col2:
-            pass
-        with col3:
-            st.write("**Relevant für Bewertung**")
-        with col4:
-            st.write("**Unrelevant für Bewertung**")
-
-        Placeholder()
-        display_E2_Umweltverschmutzung()
-    
-    with tabs[2]:
-        col1, col2, col3, col4 = st.columns([4, 1, 1, 1])
-        with col1:
-            st.subheader("Meeres- und Wasserressourcen")
-        with col2:
-            pass
-        with col3:
-            st.write("**Relevant für Bewertung**")
-        with col4:
-            st.write("**Unrelevant für Bewertung**")
-
-        Placeholder()
-        display_E3_Wasser_und_Meeresressourcen()
-    
-    with tabs[3]:
-        col1, col2, col3, col4 = st.columns([4, 1, 1, 1])
-        with col1:
-            st.subheader("Biodiversität")
-        with col2:
-            pass
-        with col3:
-            st.write("**Relevant für Bewertung**")
-        with col4:
-            st.write("**Unrelevant für Bewertung**")
-            
-        Placeholder()
-        display_E4_Biodiversität()
-
