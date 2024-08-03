@@ -27,11 +27,13 @@ def save_state():
         pickle.dump(dict(st.session_state), f)
 
 # Initialisierung des Sitzungszustands
-if os.path.exists(STATE_FILE):
+if os.path.exists(STATE_FILE) and os.path.getsize(STATE_FILE) > 0:
     with open(STATE_FILE, 'rb') as f:
         loaded_state = pickle.load(f)
         for key, value in loaded_state.items():
-            st.session_state[key] = value
+            if key not in st.session_state:
+                st.session_state[key] = value
+
 # Initialisiere den DataFrame, falls er noch nicht existiert
 if 'df' not in st.session_state:
     st.session_state.df = initialize_df()
@@ -88,29 +90,22 @@ def sidebar():
     if 'zeithorizont' not in st.session_state:
         st.session_state.zeithorizont = ''
 
-    gruppe = st.text_input("Gruppe", value=st.session_state.gruppe)
-    bestehende_beziehung = st.selectbox("Bestehende Beziehung", ['', 'Ja', 'Nein'], index=0 if st.session_state.bestehende_beziehung == '' else ['','Ja','Nein'].index(st.session_state.bestehende_beziehung))
-    auswirkung = st.selectbox("Auswirkung auf Interessen", ['', 'Hoch', 'Mittel', 'Niedrig'], index=0 if st.session_state.auswirkung == '' else ['', 'Hoch', 'Mittel', 'Niedrig'].index(st.session_state.auswirkung))
-    level_des_engagements = st.selectbox("Level des Engagements", ['', 'Hoch', 'Mittel', 'Niedrig'], index=0 if st.session_state.level_des_engagements == '' else ['', 'Hoch', 'Mittel', 'Niedrig'].index(st.session_state.level_des_engagements))
-    stakeholdergruppe = st.selectbox("Stakeholdergruppe", ['', 'Intern', 'Extern'], index=0 if st.session_state.stakeholdergruppe == '' else ['', 'Intern', 'Extern'].index(st.session_state.stakeholdergruppe))
-    kommunikation = st.selectbox("Kommunikation", ['', 'Regelmäßig', 'Gelegentlich', 'Nie'], index=0 if st.session_state.kommunikation == '' else ['', 'Regelmäßig', 'Gelegentlich', 'Nie'].index(st.session_state.kommunikation))
-    art_der_betroffenheit = st.selectbox("Art der Betroffenheit", ['', 'Direkt', 'Indirekt', 'Keine'], index=0 if st.session_state.art_der_betroffenheit == '' else ['', 'Direkt', 'Indirekt', 'Keine'].index(st.session_state.art_der_betroffenheit))
-    zeithorizont = st.selectbox("Zeithorizont", ['', 'Kurzfristig', 'Mittelfristig', 'Langfristig'], index=0 if st.session_state.zeithorizont == '' else ['', 'Kurzfristig', 'Mittelfristig', 'Langfristig'].index(st.session_state.zeithorizont))
+    with st.form(key='stakeholder_form', clear_on_submit=True):
+        gruppe = st.text_input("Gruppe", value=st.session_state.gruppe)
+        bestehende_beziehung = st.selectbox("Bestehende Beziehung", ['', 'Ja', 'Nein'], index=0 if st.session_state.bestehende_beziehung == '' else ['','Ja','Nein'].index(st.session_state.bestehende_beziehung))
+        auswirkung = st.selectbox("Auswirkung auf Interessen", ['', 'Hoch', 'Mittel', 'Niedrig'], index=0 if st.session_state.auswirkung == '' else ['', 'Hoch', 'Mittel', 'Niedrig'].index(st.session_state.auswirkung))
+        level_des_engagements = st.selectbox("Level des Engagements", ['', 'Hoch', 'Mittel', 'Niedrig'], index=0 if st.session_state.level_des_engagements == '' else ['', 'Hoch', 'Mittel', 'Niedrig'].index(st.session_state.level_des_engagements))
+        stakeholdergruppe = st.selectbox("Stakeholdergruppe", ['', 'Intern', 'Extern'], index=0 if st.session_state.stakeholdergruppe == '' else ['', 'Intern', 'Extern'].index(st.session_state.stakeholdergruppe))
+        kommunikation = st.selectbox("Kommunikation", ['', 'Regelmäßig', 'Gelegentlich', 'Nie'], index=0 if st.session_state.kommunikation == '' else ['', 'Regelmäßig', 'Gelegentlich', 'Nie'].index(st.session_state.kommunikation))
+        art_der_betroffenheit = st.selectbox("Art der Betroffenheit", ['', 'Direkt', 'Indirekt', 'Keine'], index=0 if st.session_state.art_der_betroffenheit == '' else ['', 'Direkt', 'Indirekt', 'Keine'].index(st.session_state.art_der_betroffenheit))
+        zeithorizont = st.selectbox("Zeithorizont", ['', 'Kurzfristig', 'Mittelfristig', 'Langfristig'], index=0 if st.session_state.zeithorizont == '' else ['', 'Kurzfristig', 'Mittelfristig', 'Langfristig'].index(st.session_state.zeithorizont))
 
-    add_row = st.button('➕ Hinzufügen')
+        add_row = st.form_submit_button('Hinzufügen')
 
-    if add_row:
-        st.session_state.gruppe = ''
-        st.session_state.bestehende_beziehung = ''
-        st.session_state.auswirkung = ''
-        st.session_state.level_des_engagements = ''
-        st.session_state.stakeholdergruppe = ''
-        st.session_state.kommunikation = ''
-        st.session_state.art_der_betroffenheit = ''
-        st.session_state.zeithorizont = ''
+        if add_row:
+            add_new_row(gruppe, bestehende_beziehung, auswirkung, level_des_engagements, stakeholdergruppe, kommunikation, art_der_betroffenheit, zeithorizont)
 
     return gruppe, bestehende_beziehung, auswirkung, level_des_engagements, stakeholdergruppe, kommunikation, art_der_betroffenheit, zeithorizont, add_row
-
 
 # Funktion zur Anzeige der AgGrid und Rückgabe der GridResponse
 def display_grid():

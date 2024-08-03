@@ -249,7 +249,6 @@ def display_page():
         excel_upload()
         display_sidebar_items()
         
-        
     with tab2:
         add_slider()
         stakeholder_punkte()
