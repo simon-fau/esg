@@ -214,10 +214,10 @@ def check_abgeschlossen_shortlist():
     if 'checkbox_state_7' not in st.session_state:
         st.session_state['checkbox_state_7'] = False
     # Checkbox erstellen und Zustand in st.session_state speichern
-    st.session_state['checkbox_state_7'] = st.checkbox("Shortlist fertig?", value=st.session_state['checkbox_state_7'])
+    st.session_state['checkbox_state_7'] = st.checkbox("Abgeschlossen", value=st.session_state['checkbox_state_7'])
 
 def display_page():
-    col1, col2 = st.columns([5, 1])
+    col1, col2 = st.columns([7, 1])
     with col1:
         st.header("Erstellung der Shortlist")
     with col2:

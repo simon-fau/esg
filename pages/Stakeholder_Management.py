@@ -49,21 +49,6 @@ def calculate_score(row):
              zeithorizont_mapping.get(row['Zeithorizont'], 0)) / 9 * 100
     return round(score)
 
-# Funktion zum Generieren des Stakeholder-Rankings
-def stakeholder_ranking():
-    score_table = st.session_state['namen_tabelle'][['Gruppe', 'Score']].copy()
-    if not score_table.empty:
-        score_table['Ranking'] = range(1, len(score_table) + 1)
-        score_table = score_table.sort_values(by='Score', ascending=False).reset_index(drop=True)
-        st.session_state['ranking_table'] = score_table
-        save_state()
-        st.dataframe(score_table[['Ranking', 'Gruppe', 'Score']], 
-                     column_config={"Score": st.column_config.ProgressColumn(min_value=0, max_value=100, format="%f")}, 
-                     hide_index=True, 
-                     width=800)
-    else:
-        st.write("Keine Stakeholder-Daten vorhanden.")
-
 # Funktion zum Abrufen der Knotenfarbe basierend auf dem Score
 def get_node_color(score):
     if score <= 33:
@@ -90,7 +75,7 @@ def sidebar():
     if 'zeithorizont' not in st.session_state:
         st.session_state.zeithorizont = ''
 
-    with st.form(key='stakeholder_form', clear_on_submit=True):
+    with st.form(key='stakeholder_form',border=False, clear_on_submit=True):
         gruppe = st.text_input("Gruppe", value=st.session_state.gruppe)
         bestehende_beziehung = st.selectbox("Bestehende Beziehung", ['', 'Ja', 'Nein'], index=0 if st.session_state.bestehende_beziehung == '' else ['','Ja','Nein'].index(st.session_state.bestehende_beziehung))
         auswirkung = st.selectbox("Auswirkung auf Interessen", ['', 'Hoch', 'Mittel', 'Niedrig'], index=0 if st.session_state.auswirkung == '' else ['', 'Hoch', 'Mittel', 'Niedrig'].index(st.session_state.auswirkung))
@@ -112,8 +97,12 @@ def display_grid():
     gb = GridOptionsBuilder.from_dataframe(st.session_state.df)
     gb.configure_default_column(editable=True, resizable=True, sortable=True, filterable=True)
     gb.configure_grid_options(domLayout='autoHeight', enableRowId=True, rowId='index')
+    
+    # Konfiguration der Spalten, um die "Score"-Spalte auszublenden
     grid_options = gb.build()
-    grid_options['columnDefs'] = [{'checkboxSelection': True, 'headerCheckboxSelection': True, 'width': 50}] + grid_options['columnDefs']
+    grid_options['columnDefs'] = [{'checkboxSelection': True, 'headerCheckboxSelection': True, 'width': 50}] + [
+        col for col in grid_options['columnDefs'] if col['field'] != 'Score'
+    ]
 
     return AgGrid(
         st.session_state.df.reset_index(),
@@ -166,15 +155,32 @@ def display_stakeholder_management():
     if inputs[-1]:  # add_row is the last element in the tuple 'inputs'
         add_new_row(*inputs[:-1])
 
+# Function to generate stakeholder ranking
+def stakeholder_ranking():
+    if not st.session_state.df.empty:
+        st.session_state.df['Score'] = st.session_state.df.apply(calculate_score, axis=1)
+        score_table = st.session_state.df[['Gruppe', 'Score']].copy()
+        score_table['Ranking'] = score_table['Score'].rank(ascending=False, method='min').astype(int)
+        score_table = score_table.sort_values(by='Ranking').reset_index(drop=True)
+        st.session_state['ranking_table'] = score_table
+        save_state()
+        st.dataframe(score_table[['Ranking', 'Gruppe', 'Score']], 
+                     column_config={"Score": st.column_config.ProgressColumn(min_value=0, max_value=100, format="%f")}, 
+                     hide_index=True, 
+                     width=800)
+    else:
+        st.write("Keine Stakeholder-Daten vorhanden.")
+
 def stakeholder_network():
-    net = Network(height="500px", width="100%", bgcolor="white", font_color="black")
+    net = Network(height="500px", width="100%", bgcolor="white", font_color="black", notebook=True, directed=False)
     net.add_node("Mein Unternehmen", color="black", label="", title="")
-    if 'namen_tabelle' in st.session_state:
-        for _, row in st.session_state['namen_tabelle'].iterrows():
+    if 'ranking_table' in st.session_state:
+        for _, row in st.session_state['ranking_table'].iterrows():
             size = row['Score'] / 100 * 10 + 15
             color = get_node_color(row['Score'])
             net.add_node(row['Gruppe'], color=color, label=row['Gruppe'], title=row['Gruppe'], size=size)
             net.add_edge("Mein Unternehmen", row['Gruppe'])
+    net.repulsion(node_distance=100, central_gravity=0.3, spring_length=200, spring_strength=0.05, damping=0.09)
     net.save_graph("network.html")
     st.components.v1.html(open("network.html", "r").read(), height=600)
 
@@ -182,25 +188,18 @@ def check_abgeschlossen_stakeholder_management():
     if 'checkbox_state_1' not in st.session_state:
         st.session_state['checkbox_state_1'] = False
 
-    # Erstelle zwei Spalten
-    col1, col2 = st.columns([4, 1])
-
-    with col1:
-       st.write("Alle Stakeholder hinzugefügt?")
-
-    with col2:
-        # Checkbox erstellen und Zustand in st.session_state speichern
-        st.session_state['checkbox_state_1'] = st.checkbox(" ", value=st.session_state['checkbox_state_1'])
+    # Checkbox erstellen und Zustand in st.session_state speichern
+    st.session_state['checkbox_state_1'] = st.checkbox("Abgeschlossen", value=st.session_state['checkbox_state_1'])
 
     save_state()
     
 # Hauptfunktion zum Anzeigen der Seite
 def display_page():
-    col1, col2 = st.columns([4, 1])
+    col1, col2 = st.columns([7, 1])
     with col1:
         st.header("Stakeholder-Management")
     with col2:
-        container = st.container(border=True)
+        container = st.container(border=False)
         with container:
             check_abgeschlossen_stakeholder_management()
     st.markdown("""
@@ -212,16 +211,12 @@ def display_page():
         display_stakeholder_management()
 
     with tab2:
-        if 'df' in st.session_state and not st.session_state.df.empty:
-            df_temp = st.session_state.df.copy()
-            df_temp['Score'] = df_temp.apply(calculate_score, axis=1)
-            st.session_state['namen_tabelle'] = df_temp.sort_values(by='Score', ascending=False).reset_index(drop=True)
-            col1, col2 = st.columns([1, 1])
-            with col1:
-                st.subheader("Ranking")
-                stakeholder_ranking()
-            with col2:
-                st.subheader("Netzwerkdiagramm")
-                stakeholder_network()
-        else:
-            st.write("Keine Stakeholder-Daten vorhanden.")
+        
+        col1, col2 = st.columns([1, 1])
+        with col1:
+            st.subheader("Ranking")
+            stakeholder_ranking()
+        with col2:
+            st.subheader("Netzwerkdiagramm")
+            stakeholder_network()
+       

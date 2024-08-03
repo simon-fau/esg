@@ -95,21 +95,16 @@ def remove_button_selection():
 def check_abgeschlossen_stakeholder_auswahl():
     if 'checkbox_state_2' not in st.session_state:
         st.session_state['checkbox_state_2'] = False
-    col1, col2 = st.columns([4, 1])
-
-    with col1:
-       st.write("Alle Stakeholder ausgewählt?")
-
-    with col2:
-        # Checkbox erstellen und Zustand in st.session_state speichern
-        st.session_state['checkbox_state_2'] = st.checkbox(" ", value=st.session_state['checkbox_state_2'])
+    
+    # Checkbox erstellen und Zustand in st.session_state speichern
+    st.session_state['checkbox_state_2'] = st.checkbox("Abgeschlossen", value=st.session_state['checkbox_state_2'])
 
 def display_page():
-    col1, col2 = st.columns([4, 1])
+    col1, col2 = st.columns([7, 1])
     with col1:
         st.header("Stakeholder Auswahl")
     with col2:
-        container = st.container(border=True)
+        container = st.container(border=False)
         with container:
             check_abgeschlossen_stakeholder_auswahl()
     st.write("Wählen Sie die Stakeholder aus, die Sie in die Bewertung aufnehmen möchten.")
@@ -117,7 +112,7 @@ def display_page():
     if not initialize_session_state():
         return
 
-    col1, col2 = st.columns([1, 1])
+    col1, col_placeholder, col2 = st.columns([1, 1, 1])
 
     with col1:
         st.write(" ")
@@ -129,6 +124,9 @@ def display_page():
         st.write(" ")
 
         display_not_in_evaluation()
+    
+    with col_placeholder:
+        pass
 
     with col2:
         st.write(" ")

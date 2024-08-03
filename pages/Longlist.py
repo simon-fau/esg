@@ -476,23 +476,6 @@ def display_grid(longlist):
 # Erstellen Sie ein leeres Wörterbuch zur Speicherung von Inhalt-ID-Zuordnungen
 content_id_map = {}
 
-# Define the nested function
-def count_bewertete_punkte():
-    if 'longlist' in st.session_state:
-        # Erstellen einer Kopie des DataFrames
-        longlist_copy = st.session_state.longlist.copy()
-        # Zählen der Zeilen, die in der Spalte 'Bewertung' den Wert 'Ja' haben 
-        yes_count = longlist_copy[longlist_copy['Bewertet'] == 'Ja'].shape[0]
-        # Gesamtanzahl der Zeilen
-        total_count = longlist_copy.shape[0]
-        # Berechnung des Prozentsatzes
-        if total_count > 0:
-            percentage = (yes_count / total_count) * 100
-        else:
-            percentage = 0
-        # Ausgabe des Prozentsatzes als st.metric
-        st.write(f"Sie haben {yes_count} von {total_count} Punkten bewertet.")
-
 def merge_dataframes():
     global next_id
     if 'content_id_map' not in st.session_state:
@@ -651,7 +634,7 @@ def merge_dataframes():
                 st.write("Abgeschlossen ✔")
                 st.session_state['checkbox_state_6'] = True
             else:
-                st.write(f"Sie haben {yes_count} von {total_count} Punkten bewertet.")
+                st.write(f"{yes_count} von {total_count} Punkten bewertet.")
                 st.session_state['checkbox_state_6'] = False
 
     # Proceed with the rest of the logic
@@ -663,7 +646,7 @@ def merge_dataframes():
     with col1:
         st.header("Bewertung der Nachhaltigkeitspunkte (Longlist)")
     with col2:
-        container = st.container(border=True)
+        container = st.container(border=False)
         with container:
                 count_bewertete_punkte()
                 

@@ -5,7 +5,7 @@ from pages.Stakeholder_Management import stakeholder_ranking
 from pages.Externe_Nachhaltigkeitspunkte import calculate_class_size, calculate_selected_rows, display_aggrid
 from pages.Longlist import  count_bewertete_punkte_übersicht,  bewertung_Uebersicht, anzahl_punkte_Longlist, count_top_down_points, count_internal_points, count_stakeholder_points
 from pages.Shortlist import Balken_Finanzbezogen, chart_übersicht_allgemein, chart_auswirkungsbezogen, chart_finanzbezogen, Balken_Auswirkungsbezogen
-from pages.Themenspezifische_ESRS import YesNoSelection
+from pages.Themenspezifische_ESRS import display_checkbox_count_for_übersicht, count_checkboxes
 
 def display_stakeholder_table():
     class_size = calculate_class_size(st.session_state.stakeholder_punkte_df)
@@ -51,22 +51,10 @@ def load_page(page_module):
                 else:
                     st.error(f"Fehler: Die Seite {page_module.__name__} hat keine Funktion namens 'display_page'.")
 
-# Umwandeln der Daten und erstellen eines session states auf den in def aktueller_stand_wesentlichkeitsanalyse() zugegriffen werden kann
-def aktueller_stand_themenspezifische_esrs():
-    selection = YesNoSelection()
-    total_checkboxes, checked_count = selection.count_marked_rows()
-
-    if checked_count == total_checkboxes:
-        st.session_state['checkbox_state_3'] = "Ja"
-        st.write("erfolgreich")
-    else:
-        st.session_state['checkbox__state_3'] = "Nein"
-        st.write(f"Nicht erfolgreich: {checked_count} von {total_checkboxes} Checkboxen sind aktiviert.")
 
 def aktueller_stand_wesentlichkeitsanalyse():
-
     completed_count = 0
-    
+
     session_states_to_check = [
         ('checkbox_state_1', '1. Stakeholder Management'),
         ('checkbox_state_2', '2. Stakeholder Auswahl'),
@@ -76,17 +64,38 @@ def aktueller_stand_wesentlichkeitsanalyse():
         ('checkbox_state_6', '6. Bewertung der Longlist'),
         ('checkbox_state_7', '7. Shortlist')
     ]
-    
+
     for key, name in session_states_to_check:
-        col1, col2 = st.columns([4, 1])
+        col1, col2 = st.columns([1, 1])
         with col1:
             st.write(name)
         with col2:
-            if key in st.session_state and st.session_state[key] == True:
-                completed_count += 1
-                st.write("✔")
+            if key == 'checkbox_state_5':
+                if 'table2' in st.session_state and 'sidebar_items' in st.session_state:
+                    if not st.session_state['table2']:
+                        st.write("✔")
+                    else:
+                        count = len([opt for opt in st.session_state['table2'] if opt not in st.session_state['sidebar_items']])
+                        if st.session_state.get(key) == True:
+                            completed_count += 1
+                            st.write("✔")
+                        else:
+                            st.write(f"Es fehlt noch die Bewertung von {count} Stakeholdern.")
+                else:
+                    st.write("✘")
+            elif key == 'checkbox_state_3':
+                if st.session_state.get(key) == True:
+                    completed_count += 1
+                    st.write("✔")
+                else:
+                    percentage_missing = count_checkboxes()
+                    st.write(f"Es fehlen noch {percentage_missing}")
             else:
-                st.write("✘")
+                if st.session_state.get(key) == True:
+                    completed_count += 1
+                    st.write("✔")
+                else:
+                    st.write("✘")
 
 def display_page():
     # Check if all relevant session states are empty
@@ -102,7 +111,7 @@ def display_page():
     with tab1:
        
 
-        col = st.columns((1, 2.5, 1), gap='medium')
+        col = st.columns((2, 2.5, 1), gap='medium')
         
         with col[0]:
             container = st.container(border=True)
@@ -137,16 +146,12 @@ def display_page():
                     st.write(" ")
                     st.write(" ")
                     Balken_Finanzbezogen()
-                
-                
-                
+                       
         with col[2]:
 
             container_3 = st.container(border=True)
             with container_3:
-                st.markdown('#### Themenbezogene ESRS')
-                yes_no_selection = YesNoSelection()
-                yes_no_selection.count_marked_rows_übersicht()
+                display_checkbox_count_for_übersicht()      
 
             container_6 = st.container(border=True)
             with container_6:

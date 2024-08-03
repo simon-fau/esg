@@ -88,8 +88,8 @@
                   
 
                   // parsing and collecting nodes and edges from the python
-                  nodes = new vis.DataSet([{"color": "black", "font": {"color": "black"}, "id": "Mein Unternehmen", "label": "Mein Unternehmen", "shape": "dot", "title": ""}, {"color": "red", "font": {"color": "black"}, "id": "Bewohner", "label": "Bewohner", "shape": "dot", "size": 15.0, "title": "Bewohner"}, {"color": "red", "font": {"color": "black"}, "id": "Mitarbeiter", "label": "Mitarbeiter", "shape": "dot", "size": 15.0, "title": "Mitarbeiter"}]);
-                  edges = new vis.DataSet([{"from": "Mein Unternehmen", "to": "Bewohner"}, {"from": "Mein Unternehmen", "to": "Mitarbeiter"}]);
+                  nodes = new vis.DataSet([{"color": "black", "font": {"color": "black"}, "id": "Mein Unternehmen", "label": "Mein Unternehmen", "shape": "dot", "title": ""}]);
+                  edges = new vis.DataSet([]);
 
                   nodeColors = {};
                   allNodes = nodes.get({ returnType: "Object" });
@@ -120,6 +120,14 @@
     },
     "physics": {
         "enabled": true,
+        "repulsion": {
+            "centralGravity": 0.3,
+            "damping": 0.09,
+            "nodeDistance": 100,
+            "springConstant": 0.05,
+            "springLength": 200
+        },
+        "solver": "repulsion",
         "stabilization": {
             "enabled": true,
             "fit": true,

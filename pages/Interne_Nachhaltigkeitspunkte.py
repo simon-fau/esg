@@ -7,141 +7,81 @@ from openpyxl import load_workbook
 import shutil
 import io
 
-# Datei zum Speichern des Sitzungszustands
-state_file = 'session_state_bottom_up_eigene.pkl'
-# Pfad zur Excel-Vorlage
-template_path = os.path.join(os.path.dirname(__file__), 'Templates', 'Stakeholder_Input_Vorlage_V1.xlsx')
+# Constants
+STATE_FILE = 'session_state_bottom_up_eigene.pkl'
+TEMPLATE_PATH = os.path.join(os.path.dirname(__file__), 'Templates', 'Stakeholder_Input_Vorlage_V1.xlsx')
+TEMP_EXCEL_PATH = 'Stakeholder_Input_Vorlage_V1_Copy.xlsx'
 
-# Funktion zum Laden des Sitzungszustands
+# Session state management
 def load_session_state():
-    if os.path.exists(state_file):
-        with open(state_file, 'rb') as f:
+    if os.path.exists(STATE_FILE):
+        with open(STATE_FILE, 'rb') as f:
             return pickle.load(f)
-    else:
-        return {}
+    return {}
 
-# Funktion zum Speichern des Sitzungszustands
 def save_session_state(state):
-    # Laden des aktuellen Zustands
     current_state = load_session_state()
-    # Hinzufügen des neuen Zustands zum aktuellen Zustand
     combined_state = {**current_state, **state}
-    # Speichern des kombinierten Zustands
-    with open(state_file, 'wb') as f:
+    with open(STATE_FILE, 'wb') as f:
         pickle.dump(combined_state, f)
-    
-# Laden des Sitzungszustands aus der Datei
+
+# Initialize session state
 loaded_state = load_session_state()
-# Überprüfen, ob 'df2' im Sitzungszustand vorhanden ist, und initialisieren Sie ihn andernfalls ohne Zeilen
 if 'df2' not in st.session_state:
     st.session_state.df2 = pd.DataFrame(columns=["Thema", "Unterthema", "Unter-Unterthema"])
 if 'df2' in loaded_state:
     st.session_state.df2 = loaded_state['df2']
 
-def eigene_punkte():
+# UI Functions
+def add_entry_form():
     with st.sidebar:
         st.markdown("---")
         st.write("**Inhalte hinzufügen**")
-        thema = st.selectbox('Thema auswählen',
-        options=[
-            'Klimawandel', 
-            'Umweltverschmutzung', 
-            'Wasser- und Meeresressourcen', 
-            'Biologische Vielfalt und Ökosysteme', 
-            'Kreislaufwirtschaft',
-            'Eigene Belegschaft',
-            'Arbeitskräfte in der Wertschöpfungskette',
-            'Betroffene Gemeinschaften',
-            'Verbraucher und End-nutzer',
-            'Unternehmenspolitik'
-            ], 
-        index=0, 
-        key='thema'
-    )
-    
-        if thema == 'Klimawandel':
-            unterthema_options = ['Anpassung an den Klimawandel', 'Klimaschutz', 'Energie']
-        elif thema == 'Umweltverschmutzung':
-            unterthema_options = [
-                'Luftverschmutzung', 
-                'Wasserverschmutzung', 
-                'Bodenverschmutzung', 
-                'Verschmutzung von lebenden Organismen und Nahrungsressourcen', 
-                'Besorgniserregende Stoffe', 
-                'Mikroplastik'
-            ]
-        elif thema == 'Wasser- und Meeresressourcen':
-            unterthema_options = ['Wasser', 'Meeresressourcen']
-        elif thema == 'Biologische Vielfalt und Ökosysteme':
-            unterthema_options = [
-                'Direkte Ursachen des Biodiversitätsverlusts', 
-                'Auswirkungen auf den Zustand der Arten', 
-                'Auswirkungen auf den Umfang und den Zustand von Ökosystemen'
-            ]
-        elif thema == 'Kreislaufwirtschaft':
-            unterthema_options = [
-                'Auswirkungen und Abhängigkeiten von Ökosystemdienstleistungen', 
-                'Ressourcenzuflüsse, einschließlich Ressourcennutzung', 
-                'Ressourcenabflüsse im Zusammenhang mit Produkten und Dienstleistungen', 
-                'Abfälle'
-            ]
-        elif thema == 'Eigene Belegschaft':
-            unterthema_options = [
-                'Arbeitsbedingungen',
-                'Gleichbehandlung und Chancengleichheit für alle',
-                'Sonstige arbeitsbezogene Rechte'
-            ]
-        elif thema == 'Arbeitskräfte in der Wertschöpfungskette':
-            unterthema_options = [
-                'Arbeitsbedingungen',
-                'Gleichbehandlung und Chancengleichheit für alle',
-                'Sonstige arbeitsbezogene Rechte'
-            ]
-        elif thema == 'Betroffene Gemeinschaften':
-            unterthema_options = [
-                'Wirtschaftliche, soziale und kulturelle Rechte von Gemeinschaften',
-                'Bürgerrechte und politische Rechte von Gemeinschaften',
-                'Rechte indigener Völker'
-            ]
-        elif thema == 'Verbraucher und End-nutzer':
-            unterthema_options = [
-                'Informationsbezogene Auswirkungen für Verbraucher und/oder Endnutzer',
-                'Persönliche Sicherheit von Verbrauchern und/oder Endnutzern',
-                'Soziale Inklusion von Verbrauchern und/oder Endnutzern'
-            ]
+        with st.form(key='add_entry_form', border=False):
+            thema = st.selectbox('Thema auswählen', options=[
+                'Klimawandel', 'Umweltverschmutzung', 'Wasser- und Meeresressourcen', 
+                'Biologische Vielfalt und Ökosysteme', 'Kreislaufwirtschaft', 'Eigene Belegschaft',
+                'Arbeitskräfte in der Wertschöpfungskette', 'Betroffene Gemeinschaften',
+                'Verbraucher und End-nutzer', 'Unternehmenspolitik'
+            ], index=0, key='thema')
+            
+            unterthema_options = get_unterthema_options(thema)
+            unterthema = st.selectbox('Unterthema auswählen', options=unterthema_options, index=0, key='unterthema')
+            unter_unterthema = st.text_input('Unter-Unterthema eingeben', key='unter_unterthema')
+            
+            submitted = st.form_submit_button('➕ Hinzufügen')
+            if submitted:
+                add_row(thema, unterthema, unter_unterthema)
 
-        elif thema == 'Unternehmenspolitik':
-            unterthema_options = [
-                'Unternehmenskultur',
-                'Schutz von Hinweisgebern (Whistleblowers)',
-                'Tierschutz',
-                'Politisches Engagement und Lobbytätigkeiten',
-                'Management der Beziehungen zu Lieferanten, einschließlich Zahlungspraktiken',
-                'Korruption und Bestechung'
-            ]
+def get_unterthema_options(thema):
+    options = {
+        'Klimawandel': ['Anpassung an den Klimawandel', 'Klimaschutz', 'Energie'],
+        'Umweltverschmutzung': ['Luftverschmutzung', 'Wasserverschmutzung', 'Bodenverschmutzung', 'Verschmutzung von lebenden Organismen und Nahrungsressourcen', 'Besorgniserregende Stoffe', 'Mikroplastik'],
+        'Wasser- und Meeresressourcen': ['Wasser', 'Meeresressourcen'],
+        'Biologische Vielfalt und Ökosysteme': ['Direkte Ursachen des Biodiversitätsverlusts', 'Auswirkungen auf den Zustand der Arten', 'Auswirkungen auf den Umfang und den Zustand von Ökosystemen'],
+        'Kreislaufwirtschaft': ['Auswirkungen und Abhängigkeiten von Ökosystemdienstleistungen', 'Ressourcenzuflüsse, einschließlich Ressourcennutzung', 'Ressourcenabflüsse im Zusammenhang mit Produkten und Dienstleistungen', 'Abfälle'],
+        'Eigene Belegschaft': ['Arbeitsbedingungen', 'Gleichbehandlung und Chancengleichheit für alle', 'Sonstige arbeitsbezogene Rechte'],
+        'Arbeitskräfte in der Wertschöpfungskette': ['Arbeitsbedingungen', 'Gleichbehandlung und Chancengleichheit für alle', 'Sonstige arbeitsbezogene Rechte'],
+        'Betroffene Gemeinschaften': ['Wirtschaftliche, soziale und kulturelle Rechte von Gemeinschaften', 'Bürgerrechte und politische Rechte von Gemeinschaften', 'Rechte indigener Völker'],
+        'Verbraucher und End-nutzer': ['Informationsbezogene Auswirkungen für Verbraucher und/oder Endnutzer', 'Persönliche Sicherheit von Verbrauchern und/oder Endnutzern', 'Soziale Inklusion von Verbrauchern und/oder Endnutzern'],
+        'Unternehmenspolitik': ['Unternehmenskultur', 'Schutz von Hinweisgebern (Whistleblowers)', 'Tierschutz', 'Politisches Engagement und Lobbytätigkeiten', 'Management der Beziehungen zu Lieferanten, einschließlich Zahlungspraktiken', 'Korruption und Bestechung']
+    }
+    return options.get(thema, [])
 
-        unterthema = st.selectbox('Unterthema auswählen', options=unterthema_options, index=0, key='unterthema')
-        unter_unterthema = st.text_input('Unter-Unterthema eingeben', key='unter_unterthema')    
-        add_row = st.button('➕ Hinzufügen', key='add_row')
+def add_row(thema, unterthema, unter_unterthema):
+    empty_row_index = st.session_state.df2[(st.session_state.df2["Thema"] == "") & (st.session_state.df2["Unterthema"] == "") & (st.session_state.df2["Unter-Unterthema"] == "")].first_valid_index()
+    if empty_row_index is not None:
+        st.session_state.df2.at[empty_row_index, "Thema"] = thema
+        st.session_state.df2.at[empty_row_index, "Unterthema"] = unterthema
+        st.session_state.df2.at[empty_row_index, "Unter-Unterthema"] = unter_unterthema
+    else:
+        new_row = {"Thema": thema, "Unterthema": unterthema, "Unter-Unterthema": unter_unterthema}
+        st.session_state.df2 = st.session_state.df2._append(new_row, ignore_index=True)
+    save_session_state({'df2': st.session_state.df2})
 
-        if add_row:
-            empty_row_index = st.session_state.df2[(st.session_state.df2["Thema"] == "") & (st.session_state.df2["Unterthema"] == "") & (st.session_state.df2["Unter-Unterthema"] == "")].first_valid_index()
-            if empty_row_index is not None:
-                st.session_state.df2.at[empty_row_index, "Thema"] = thema
-                st.session_state.df2.at[empty_row_index, "Unterthema"] = unterthema
-                st.session_state.df2.at[empty_row_index, "Unter-Unterthema"] = unter_unterthema
-            else:
-                new_row = {"Thema": thema, "Unterthema": unterthema, "Unter-Unterthema": unter_unterthema}
-                st.session_state.df2 = st.session_state.df2._append(new_row, ignore_index=True)
-            save_session_state({'df2': st.session_state.df2})
-    
+def display_data_table():
     if not st.session_state.df2.empty:
-        gb = GridOptionsBuilder.from_dataframe(st.session_state.df2)
-        gb.configure_default_column(editable=True, resizable=True, sortable=True, filterable=True)
-        gb.configure_grid_options(domLayout='autoHeight', enableRowId=True, rowId='index')
-        grid_options = gb.build()
-        grid_options['columnDefs'] = [{'checkboxSelection': True, 'headerCheckboxSelection': True, 'width': 50}] + grid_options['columnDefs']
-    
+        grid_options = configure_grid_options(st.session_state.df2)
         grid_response = AgGrid(
             st.session_state.df2.reset_index(),
             gridOptions=grid_options,
@@ -150,108 +90,99 @@ def eigene_punkte():
             width='100%',
             update_mode=GridUpdateMode.MODEL_CHANGED,
             allow_unsafe_jscode=True,
-            return_mode=DataReturnMode.__members__['AS_INPUT'],  # Adjust the DataReturnMode as per available options
+            return_mode=DataReturnMode.__members__['AS_INPUT'],
             selection_mode='multiple'
         )
     else:
         st.info("Keine Daten vorhanden.")
-
-    add_empty_row = st.button('➕ Leere Zeile hinzufügen', key='add_empty_row')
-    if add_empty_row:
-        empty_row = {"Thema": "", "Unterthema": "", "Unter-Unterthema": ""}
-        st.session_state.df2 = st.session_state.df2._append(empty_row, ignore_index=True)
-        save_session_state({'df2': st.session_state.df2})
-        st.experimental_rerun()
     
-    delete_rows = st.button('🗑️ Ausgewählte Zeilen löschen', key='delete_rows')
-    if delete_rows:
-        selected_rows = grid_response['selected_rows']
-        selected_indices = [row['index'] for row in selected_rows]
-        st.session_state.df2 = st.session_state.df2.drop(selected_indices)
+    if st.button('➕ Leere Zeile hinzufügen', key='add_empty_row'):
+        add_empty_row()
+    
+    if st.button('🗑️ Ausgewählte Zeilen löschen', key='delete_rows'):
+        delete_selected_rows(grid_response)
+    
+    if st.button('💾 Änderungen speichern', key='save_changes'):
+        st.session_state.df2 = grid_response['data'].set_index('index')
         save_session_state({'df2': st.session_state.df2})
-        st.experimental_rerun()
+        st.success('Änderungen erfolgreich gespeichert.')
+    
+def configure_grid_options(dataframe):
+    gb = GridOptionsBuilder.from_dataframe(dataframe)
+    gb.configure_default_column(editable=True, resizable=True, sortable=True, filterable=True)
+    gb.configure_grid_options(domLayout='autoHeight', enableRowId=True, rowId='index')
+    grid_options = gb.build()
+    grid_options['columnDefs'] = [{'checkboxSelection': True, 'headerCheckboxSelection': True, 'width': 50}] + grid_options['columnDefs']
+    return grid_options
 
-    col1, col2 = st.columns([6, 1])
-    with col1:
-        button_col, caption_col = st.columns([2.5, 11], gap="small")
-        with button_col:
-            save_changes = st.button('💾 Änderungen speichern', key='save_changes')
-        with caption_col:
-            # Informationsnachricht unter dem Button
-            st.caption("ℹ️ Sie müssen diesen Button nur drücken, wenn Sie Inhalte direkt in die Tabelle geschrieben haben. Achten Sie darauf, dass Sie die Inhalte mit Enter bestätigen.")
+def add_empty_row():
+    empty_row = {"Thema": "", "Unterthema": "", "Unter-Unterthema": ""}
+    st.session_state.df2 = st.session_state.df2._append(empty_row, ignore_index=True)
+    save_session_state({'df2': st.session_state.df2})
+    st.experimental_rerun()
 
-        if save_changes:
-            st.session_state.df2 = grid_response['data'].set_index('index')
-            save_session_state({'df2': st.session_state.df2})
-    # Button zum Übertragen der Inhalte in die Excel-Datei
-    st.sidebar.markdown("---")
-    st.sidebar.write("**Excel-Datei für Stakeholderumfrage**")
-    if st.sidebar.button('🔃 Excel aktualisieren'):
-        transfer_data_to_excel(st.session_state.df2)
-
+def delete_selected_rows(grid_response):
+    selected_rows = grid_response['selected_rows']
+    selected_indices = [row['index'] for row in selected_rows]
+    st.session_state.df2 = st.session_state.df2.drop(selected_indices)
+    save_session_state({'df2': st.session_state.df2})
+    st.experimental_rerun()
 
 def transfer_data_to_excel(dataframe):
-    # Kopie der Template-Datei erstellen
-    temp_excel_path = 'Stakeholder_Input_Vorlage_V1_Copy.xlsx'
-    shutil.copyfile(template_path, temp_excel_path)
-
-    # Laden der Kopie der Excel-Datei
-    workbook = load_workbook(temp_excel_path)
+    shutil.copyfile(TEMPLATE_PATH, TEMP_EXCEL_PATH)
+    workbook = load_workbook(TEMP_EXCEL_PATH)
     sheet = workbook['Intern']
-
     first_empty_row = 2
-
-    # Übertragen der Daten in die Excel-Datei
+    
     for index, row in dataframe.iterrows():
         sheet[f'A{first_empty_row}'] = row['Thema']
         sheet[f'B{first_empty_row}'] = row['Unterthema']
         sheet[f'C{first_empty_row}'] = row['Unter-Unterthema']
         first_empty_row += 1
 
-    # Speichern der bearbeiteten Kopie der Excel-Datei
-    workbook.save(temp_excel_path)
+    workbook.save(TEMP_EXCEL_PATH)
     st.success('Inhalte erfolgreich zur Excel-Datei hinzugefügt.')
 
 def download_excel():
-    # Pfad zur kopierten und bearbeiteten Excel-Datei
-    temp_excel_path = 'Stakeholder_Input_Vorlage_V1_Copy.xlsx'
-    workbook = load_workbook(temp_excel_path)
+    workbook = load_workbook(TEMP_EXCEL_PATH)
     with io.BytesIO() as virtual_workbook:
         workbook.save(virtual_workbook)
         virtual_workbook.seek(0)
         return virtual_workbook.read()
-    
+
 def check_abgeschlossen_intern():
     if 'checkbox_state_4' not in st.session_state:
         st.session_state['checkbox_state_4'] = False
-    # Erstelle zwei Spalten
-    col1, col2 = st.columns([4, 1])
-
-    with col1:
-       st.write("Alle internen Punkte hinzugefügt und die Excel heruntergeladen?")
-
-    with col2:
-        # Checkbox erstellen und Zustand in st.session_state speichern
-        st.session_state['checkbox_state_4'] = st.checkbox(" ", value=st.session_state['checkbox_state_4'])
-
+    
+    st.session_state['checkbox_state_4'] = st.checkbox("Abgeschlossen", value=st.session_state['checkbox_state_4'])
     save_session_state({'checkbox_state_4': st.session_state['checkbox_state_4']})
 
 def display_page():
-    col1, col2 = st.columns([3, 1])
+    col1, col2 = st.columns([7, 1])
     with col1:
         st.header("Interne Nachhaltigkeitspunkte")
     with col2:
-        container = st.container(border=True)
+        container = st.container()
         with container:
             check_abgeschlossen_intern()
         
     st.markdown("""
         Hier können Sie unternehmensspezifische Nachhaltigkeitspunkte hinzufügen und verwalten. Nutzen Sie die Dropdown-Menüs und Textfelder in der Sidebar oder tragen Sie Inhalte direkt in die Tabelle ein. Achten Sie darauf, die Inhalte mit Enter zu bestätigen und den Speicher-Button zu drücken. Aktualisieren Sie anschließend die Excel-Datei, laden Sie sie herunter und leiten Sie diese an Ihre Stakeholder weiter.
     """)
-    eigene_punkte()
-    # Download-Button für die Excel-Datei
-    if st.sidebar.download_button(label="⬇️ Excel-Datei herunterladen",
-                          data=download_excel(),
-                          file_name="Stakeholder_Input.xlsx",
-                          mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"):
+    add_entry_form()
+    display_data_table()
+    
+    st.sidebar.markdown("---")
+    st.sidebar.write("**Excel-Datei für Stakeholderumfrage**")
+    if st.sidebar.button('🔃 Excel aktualisieren'):
+        transfer_data_to_excel(st.session_state.df2)
+    
+    if st.sidebar.download_button(
+        label="⬇️ Excel-Datei herunterladen",
+        data=download_excel(),
+        file_name="Stakeholder_Input.xlsx",
+        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    ):
         st.success("Download gestartet!")
+
+

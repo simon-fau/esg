@@ -23,6 +23,24 @@ def load_session_state():
         with open('session_states_top_down.pkl', 'rb') as f:
             st.session_state['relevance_selection'] = pickle.load(f)
 
+def count_checkboxes():
+    checkbox_count = sum(st.session_state['relevance_selection'].values())
+    st.session_state['checkbox_count'] = checkbox_count
+
+    total_checkboxes = 93
+
+    percentage_complete = (checkbox_count / total_checkboxes) * 100
+    percentage_missing = 100 - percentage_complete
+
+    # Set the session state value for checkbox_state_3
+    if checkbox_count == 93:
+        st.session_state['checkbox_state_3'] = True
+    else:
+        st.session_state['checkbox_state_3'] = False
+    
+    return checkbox_count, percentage_missing
+
+
 def display_section(topics, section_key, section_title):
     form_key = f'form_{section_key}'
     with st.form(key=form_key, border=False):
@@ -55,6 +73,7 @@ def display_section(topics, section_key, section_title):
                 st.session_state['relevance_selection'] = {**st.session_state['relevance_selection'], **current_selection}
                 st.success("Auswahl erfolgreich gespeichert!")
                 save_session_state()
+                st.experimental_rerun()  # Seite neu laden, um die neuesten Checkbox-Werte anzuzeigen
             else:
                 st.warning("Es darf nur eine Checkbox pro Zeile markiert sein.")
 
@@ -101,8 +120,11 @@ def display_complex_section(sections, section_key, section_title):
             if all_validation_passed:
                 st.success("Auswahl erfolgreich gespeichert!")
                 save_session_state()
+                st.experimental_rerun()  # Seite neu laden, um die neuesten Checkbox-Werte anzuzeigen
             else:
                 st.warning("Es darf nur eine Checkbox pro Zeile markiert sein.")
+    
+    st.write(f"Total selected checkboxes: {count_checkboxes()}/93")
 
 def display_E1_Klimawandel():
     topics = [("Anpassung an Klimawandel", "Anpassung_an_den_Klimawandel"), ("Klimaschutz", "Klimaschutz"), ("Energie", "Energie")]
@@ -202,7 +224,7 @@ def display_S3_Betroffene_Gemeinschaften():
         ])
     ]
     display_complex_section(sections, "S3", "Betroffene Gemeinschaften")
-        
+
 def display_S4_Verbraucher_und_Endnutzer():
     sections = [
         ("Informationsbezogene Auswirkungen für Verbraucher und/oder Endnutzer", [
@@ -227,15 +249,16 @@ def display_G1_Unternehmenspolitik():
 
 def display_page():
     load_session_state()
+    checkbox_count = count_checkboxes()
     
-    col1, col2 = st.columns([4, 1])
+    col1, col2 = st.columns([6, 1])
     with col1:
         st.header("Themenspezifische ESRS") 
     with col2:
-        container = st.container(border=True)
+        container = st.container(border=False)
         with container:
-            pass
-                
+            st.write(f"{checkbox_count} von 93 bewertet")
+                      
     Text()
     
     tabs = st.tabs(["Klimawandel", "Umweltverschmutzung", "Wasser- und Meeressourcen", "Biodiversität", "Kreislaufwirtschaft", "Eigene Belegschaft", "Belegschaft Lieferkette", "Betroffene Gemeinschaften", "Verbraucher und Endnutzer", "Unternehmenspolitik"])
@@ -259,3 +282,6 @@ def display_page():
         display_S4_Verbraucher_und_Endnutzer()
     with tabs[9]:
         display_G1_Unternehmenspolitik()
+    
+   
+
