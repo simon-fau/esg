@@ -688,6 +688,23 @@ def bewertung_Uebersicht():
     st.write(f'davon wurden {ja_prozent}% bewertet')
     st.progress(ja_prozent)
 
+def bewertung_Uebersicht_Nein():
+
+    # Zählen der Anzahl der Bewertungen in der Longlist
+    bewertung_counts = st.session_state['longlist']['Bewertet'].value_counts()
+
+    # Berechnen des Prozentsatzes der "Nein"-Bewertungen
+    total_bewertungen = bewertung_counts.sum()
+    nein_bewertungen = bewertung_counts.get('Nein', 0)
+    nein_prozent = int((nein_bewertungen / total_bewertungen) * 100) if total_bewertungen > 0 else 0
+
+    if nein_prozent == 0 and not st.session_state['longlist'].empty:
+        st.session_state['checkbox_state_6'] = True
+    else:
+        st.session_state['checkbox_state_6'] = False
+    
+    return nein_prozent
+
 # Anzahl der Punkte in der Longlist für die Darstellung in der Übersicht
 def anzahl_punkte_Longlist():
     count = 0  # Standardwert auf 0 setzen
@@ -724,23 +741,6 @@ def count_stakeholder_points():
         count = combined_df[~combined_df['Quelle'].str.contains("Top-Down|Top-Down Bewertung|Top-Down & Top-Down Bewertung|Intern|Eigene|Eigene & Intern", na=False)].shape[0]
         # Ausgabe der Anzahl als st.metric
         st.metric(label="davon externe Punkte:", value=count)
-
-# Methode, die die Anzahl der bewerteten Punkte in der Longlist zählt und den Prozentsatz berechnet für die Übersicht
-def count_bewertete_punkte_übersicht():
-    if 'longlist' in st.session_state:
-        # Erstellen einer Kopie des DataFrames
-        longlist_copy_2 = st.session_state.longlist.copy()
-        # Zählen der Zeilen, die in der Spalte 'Bewertung' den Wert 'Ja' haben
-        yes_count = longlist_copy_2[longlist_copy_2['Bewertet'] == 'Ja'].shape[0]
-        # Gesamtanzahl der Zeilen
-        total_count = longlist_copy_2.shape[0]
-        # Berechnung des Prozentsatzes
-        if total_count > 0:
-            percentage = (yes_count / total_count) * 100
-        else:
-            percentage = 0
-        # Ausgabe des Prozentsatzes als st.metric
-        st.metric(label="Prozentsatz der 'Ja'-Bewertungen:", value=f"{percentage:.2f}%")
 
 def display_page():
 

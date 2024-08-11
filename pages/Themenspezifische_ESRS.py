@@ -27,19 +27,21 @@ def count_checkboxes():
     checkbox_count = sum(st.session_state['relevance_selection'].values())
     st.session_state['checkbox_count'] = checkbox_count
 
-    total_checkboxes = 93
-
-    percentage_complete = (checkbox_count / total_checkboxes) * 100
-    percentage_missing = 100 - percentage_complete
-
     # Set the session state value for checkbox_state_3
     if checkbox_count == 93:
         st.session_state['checkbox_state_3'] = True
     else:
         st.session_state['checkbox_state_3'] = False
     
-    return checkbox_count, percentage_missing
+    return checkbox_count
 
+def calculate_percentages():
+    checkbox_count = st.session_state['checkbox_count']
+    total_checkboxes = 93
+    percentage_complete = round((checkbox_count / total_checkboxes) * 100, 1)
+    percentage_missing = round(100 - percentage_complete, 1)
+    
+    return percentage_missing
 
 def display_section(topics, section_key, section_title):
     form_key = f'form_{section_key}'
@@ -73,7 +75,7 @@ def display_section(topics, section_key, section_title):
                 st.session_state['relevance_selection'] = {**st.session_state['relevance_selection'], **current_selection}
                 st.success("Auswahl erfolgreich gespeichert!")
                 save_session_state()
-                st.experimental_rerun()  # Seite neu laden, um die neuesten Checkbox-Werte anzuzeigen
+                st.experimental_rerun()
             else:
                 st.warning("Es darf nur eine Checkbox pro Zeile markiert sein.")
 
@@ -120,11 +122,9 @@ def display_complex_section(sections, section_key, section_title):
             if all_validation_passed:
                 st.success("Auswahl erfolgreich gespeichert!")
                 save_session_state()
-                st.experimental_rerun()  # Seite neu laden, um die neuesten Checkbox-Werte anzuzeigen
+                st.experimental_rerun() 
             else:
                 st.warning("Es darf nur eine Checkbox pro Zeile markiert sein.")
-    
-    st.write(f"Total selected checkboxes: {count_checkboxes()}/93")
 
 def display_E1_Klimawandel():
     topics = [("Anpassung an Klimawandel", "Anpassung_an_den_Klimawandel"), ("Klimaschutz", "Klimaschutz"), ("Energie", "Energie")]

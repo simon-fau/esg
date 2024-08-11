@@ -3,9 +3,9 @@ import altair as alt
 import pandas as pd
 from pages.Stakeholder_Management import stakeholder_ranking
 from pages.Externe_Nachhaltigkeitspunkte import calculate_class_size, calculate_selected_rows, display_aggrid
-from pages.Longlist import  count_bewertete_punkte_übersicht,  bewertung_Uebersicht, anzahl_punkte_Longlist, count_top_down_points, count_internal_points, count_stakeholder_points
+from pages.Longlist import  bewertung_Uebersicht_Nein,  bewertung_Uebersicht, anzahl_punkte_Longlist, count_top_down_points, count_internal_points, count_stakeholder_points
 from pages.Shortlist import Balken_Finanzbezogen, chart_übersicht_allgemein, chart_auswirkungsbezogen, chart_finanzbezogen, Balken_Auswirkungsbezogen
-from pages.Themenspezifische_ESRS import display_checkbox_count_for_übersicht, count_checkboxes
+from pages.Themenspezifische_ESRS import calculate_percentages, count_checkboxes
 
 def display_stakeholder_table():
     class_size = calculate_class_size(st.session_state.stakeholder_punkte_df)
@@ -80,7 +80,7 @@ def aktueller_stand_wesentlichkeitsanalyse():
                             completed_count += 1
                             st.write("✔")
                         else:
-                            st.write(f"Es fehlt noch die Bewertung von {count} Stakeholdern.")
+                            st.write(f"Es fehlt noch {count} Stakeholder.")
                 else:
                     st.write("✘")
             elif key == 'checkbox_state_3':
@@ -88,8 +88,16 @@ def aktueller_stand_wesentlichkeitsanalyse():
                     completed_count += 1
                     st.write("✔")
                 else:
-                    percentage_missing = count_checkboxes()
-                    st.write(f"Es fehlen noch {percentage_missing}")
+                    percentage_missing = calculate_percentages()
+                    st.write(f"Es fehlen noch {percentage_missing}%.")
+
+            elif key == 'checkbox_state_6':
+                if st.session_state.get(key) == True:
+                    completed_count += 1
+                    st.write("✔")
+                else:
+                    nein_prozent = bewertung_Uebersicht_Nein()
+                    st.write(f"Es fehlen noch {nein_prozent}%.")
             else:
                 if st.session_state.get(key) == True:
                     completed_count += 1
@@ -98,6 +106,7 @@ def aktueller_stand_wesentlichkeitsanalyse():
                     st.write("✘")
 
 def display_page():
+    
     # Check if all relevant session states are empty
     session_states_to_check = [
         'stakeholder_punkte_df', 'filtered_df', 'company_names', 
@@ -110,7 +119,6 @@ def display_page():
     tab1, tab2 = st.tabs(["Allgemeine Übersicht", "Graphiken"])
     with tab1:
        
-
         col = st.columns((2, 2.5, 1), gap='medium')
         
         with col[0]:
@@ -125,6 +133,7 @@ def display_page():
             container_5 = st.container(border=True)
             with container_5:
                 count_shortlist_points()
+                calculate_percentages()
             
         with col[1]:        
 
@@ -151,7 +160,7 @@ def display_page():
 
             container_3 = st.container(border=True)
             with container_3:
-                display_checkbox_count_for_übersicht()      
+                count_checkboxes()      
 
             container_6 = st.container(border=True)
             with container_6:
