@@ -88,16 +88,22 @@ def aktueller_stand_wesentlichkeitsanalyse():
                     completed_count += 1
                     st.write("✔")
                 else:
-                    percentage_missing = calculate_percentages()
-                    st.write(f"Es fehlen noch {percentage_missing}%.")
+                    if 'checkbox_count' in st.session_state and st.session_state['checkbox_count'] > 0:
+                        percentage_missing = calculate_percentages()
+                        st.write(f"Es fehlen noch {percentage_missing}%.")
+                    else:
+                        st.write("✘")  # Zeige ✘, wenn keine Checkbox ausgewählt wurde und checkbox_count leer ist
 
             elif key == 'checkbox_state_6':
-                if st.session_state.get(key) == True:
-                    completed_count += 1
-                    st.write("✔")
+                if 'longlist' in st.session_state and not st.session_state['longlist'].empty:
+                    if st.session_state.get(key) == True:
+                        completed_count += 1
+                        st.write("✔")
+                    else:
+                        nein_prozent = bewertung_Uebersicht_Nein()
+                        st.write(f"Es fehlen noch {nein_prozent}%.")
                 else:
-                    nein_prozent = bewertung_Uebersicht_Nein()
-                    st.write(f"Es fehlen noch {nein_prozent}%.")
+                    st.write("✘")  # Zeige ✘, wenn die Longlist leer ist
             else:
                 if st.session_state.get(key) == True:
                     completed_count += 1

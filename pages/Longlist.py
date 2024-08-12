@@ -689,7 +689,6 @@ def bewertung_Uebersicht():
     st.progress(ja_prozent)
 
 def bewertung_Uebersicht_Nein():
-
     # Zählen der Anzahl der Bewertungen in der Longlist
     bewertung_counts = st.session_state['longlist']['Bewertet'].value_counts()
 
@@ -741,6 +740,8 @@ def count_stakeholder_points():
         count = combined_df[~combined_df['Quelle'].str.contains("Top-Down|Top-Down Bewertung|Top-Down & Top-Down Bewertung|Intern|Eigene|Eigene & Intern", na=False)].shape[0]
         # Ausgabe der Anzahl als st.metric
         st.metric(label="davon externe Punkte:", value=count)
+
+
 
 def display_page():
 
