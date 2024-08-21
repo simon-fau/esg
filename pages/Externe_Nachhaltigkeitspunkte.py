@@ -34,8 +34,8 @@ if 'stakeholder_punkte_df' not in st.session_state:
 if 'uploaded_files' not in st.session_state:
     st.session_state.uploaded_files = []
 
-if 'sidebar_items' not in st.session_state:
-    st.session_state.sidebar_items = []
+if 'sidebar_companies' not in st.session_state:
+    st.session_state.sidebar_companies = []
 
 # Utility functions
 def calculate_class_size(df):
@@ -125,10 +125,10 @@ def stakeholder_punkte():
     
         if st.button("🗑️ Alle Inhalte löschen"):
             st.session_state.stakeholder_punkte_df = st.session_state.stakeholder_punkte_df.iloc[0:0]
-            st.session_state.sidebar_items = []
+            st.session_state.sidebar_companies = []
             save_session_state({
                 'stakeholder_punkte_df': st.session_state.stakeholder_punkte_df,
-                'sidebar_items': st.session_state.sidebar_items
+                'sidebar_companies': st.session_state.sidebar_companies
             })
             st.experimental_rerun()
     else:
@@ -138,7 +138,7 @@ def display_sidebar_items():
     with st.sidebar:
         st.markdown("---")
         st.write("**Bereits in Bewertung aufgenommen:**")
-        for item in st.session_state.sidebar_items:
+        for item in st.session_state.sidebar_companies:
             st.write(item)
 
 # Main Function
@@ -168,7 +168,7 @@ def excel_upload():
             if 'table2' not in st.session_state:
                 st.session_state.table2 = []
 
-            options = [opt for opt in st.session_state.table2 if opt not in st.session_state.sidebar_items]
+            options = [opt for opt in st.session_state.table2 if opt not in st.session_state.sidebar_companies]
             selected_option = st.selectbox('Wählen Sie den zugehörigen Stakeholder aus:', options)
             st.session_state.selected_option = selected_option
             save_session_state({'selected_option': st.session_state.selected_option})
@@ -178,8 +178,8 @@ def excel_upload():
             st.write("")
             if st.button('Punkte übernehmen'):
                 if st.session_state.selected_option:
-                    st.session_state.sidebar_items.append(st.session_state.selected_option)
-                    save_session_state({'sidebar_items': st.session_state.sidebar_items})
+                    st.session_state.sidebar_companies.append(st.session_state.selected_option)
+                    save_session_state({'sidebar_companies': st.session_state.sidebar_companies})
 
                     relevant_columns = ['Thema', 'Unterthema', 'Unter-Unterthema', 'Stakeholder Bew. Auswirkung', 'Stakeholder Bew. Finanzen', 'Stakeholder Gesamtbew.', 'Quelle']
                     new_df = st.session_state.ranking_df[relevant_columns]
@@ -221,7 +221,7 @@ def display_not_in_sidebar_count():
         return
     
     # Zähle die Anzahl der Stakeholder, deren Excel noch nihct hochgeladen wurde
-    count = len([opt for opt in st.session_state.table2 if opt not in st.session_state.sidebar_items])
+    count = len([opt for opt in st.session_state.table2 if opt not in st.session_state.sidebar_companies])
     
     # Zeige die Anzahl mit st.write an
     st.write(f"Anzahl der noch nicht in die Bewertung aufgenommenen Stakeholder: {count}")

@@ -619,7 +619,13 @@ def merge_dataframes():
     # Define the nested function
     def count_bewertete_punkte():
         if 'longlist' in st.session_state:
-            # Zählen der Zeilen, die in der Spalte 'Bewertung' den Wert 'Ja' haben
+            # Überprüfen, ob die Longlist leer ist
+            if st.session_state.longlist.empty:
+                st.write("Keine Inhalte vorhanden")
+                st.session_state['checkbox_state_6'] = False
+                return  # Beendet die Funktion, wenn die Longlist leer ist
+    
+            # Zählen der Zeilen, die in der Spalte 'Bewertet' den Wert 'Ja' haben
             yes_count = st.session_state.longlist[st.session_state.longlist['Bewertet'] == 'Ja'].shape[0]
             # Gesamtanzahl der Zeilen
             total_count = st.session_state.longlist.shape[0]
@@ -628,7 +634,7 @@ def merge_dataframes():
                 percentage = (yes_count / total_count) * 100
             else:
                 percentage = 0
-            
+    
             # Überprüfen, ob yes_count gleich total_count ist
             if yes_count == total_count:
                 st.write("Abgeschlossen ✔")
@@ -636,6 +642,9 @@ def merge_dataframes():
             else:
                 st.write(f"{yes_count} von {total_count} Punkten bewertet.")
                 st.session_state['checkbox_state_6'] = False
+        else:
+            st.write("Keine Inhalte vorhanden")
+            st.session_state['checkbox_state_6'] = False
 
     # Proceed with the rest of the logic
     longlist = submit_bewertung(longlist, ausgewaehlte_werte)
@@ -683,10 +692,13 @@ def bewertung_Uebersicht():
     total_bewertungen = bewertung_counts.sum()
     ja_bewertungen = bewertung_counts.get('Ja', 0)
     ja_prozent = int((ja_bewertungen / total_bewertungen) * 100) if total_bewertungen > 0 else 0
+    nein_bewertung = total_bewertungen - ja_bewertungen
 
     # Anzeigen des Prozentsatzes mit einer Fortschrittsleiste
-    st.write(f'davon wurden {ja_prozent}% bewertet')
+    st.write(f'davon wurden {ja_prozent}% bewertet.')
+    st.write(f'Somit fehlen noch: {nein_bewertung}')
     st.progress(ja_prozent)
+
 
 def bewertung_Uebersicht_Nein():
     # Zählen der Anzahl der Bewertungen in der Longlist
@@ -740,8 +752,6 @@ def count_stakeholder_points():
         count = combined_df[~combined_df['Quelle'].str.contains("Top-Down|Top-Down Bewertung|Top-Down & Top-Down Bewertung|Intern|Eigene|Eigene & Intern", na=False)].shape[0]
         # Ausgabe der Anzahl als st.metric
         st.metric(label="davon externe Punkte:", value=count)
-
-
 
 def display_page():
 

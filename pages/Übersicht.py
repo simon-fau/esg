@@ -7,6 +7,10 @@ from pages.Longlist import  bewertung_Uebersicht_Nein,  bewertung_Uebersicht, an
 from pages.Shortlist import Balken_Finanzbezogen, chart_übersicht_allgemein, chart_auswirkungsbezogen, chart_finanzbezogen, Balken_Auswirkungsbezogen
 from pages.Themenspezifische_ESRS import calculate_percentages, count_checkboxes
 
+# Ensure 'checkbox_count' is initialized
+if 'checkbox_count' not in st.session_state:
+    st.session_state['checkbox_count'] = 0
+
 def display_stakeholder_table():
     class_size = calculate_class_size(st.session_state.stakeholder_punkte_df)
     stakeholder_punkte_filtered = calculate_selected_rows(st.session_state.stakeholder_punkte_df, class_size)
@@ -28,8 +32,6 @@ def display_stakeholder_table():
 
         # Display the table without checkboxes
         grid_response = display_aggrid(stakeholder_punkte_filtered.drop(columns=['_index']), with_checkboxes=False)
-    else:
-        st.info("Es wurden noch keine Inhalte hinzugefügt.")
 
 def count_shortlist_points():
     if 'filtered_df' in st.session_state:
@@ -37,12 +39,13 @@ def count_shortlist_points():
         st.metric("Anzahl der Punkte in der Shortlist:", count)
 
 def companies_in_stakeholder_table():
-    if 'company_names' in st.session_state and not st.session_state.company_names.empty:
-        st.markdown("Nachhaltigkeitspunkte von folgenden Stakeholdern einbezogen:")
-        for index, row in st.session_state.company_names.iterrows():
-            st.markdown(f"- {row['Company Name']}")
+    if 'sidebar_companies' in st.session_state:
+        st.write("Nachhaltigkeitspunkte von folgenden Stakeholdern einbezogen:")
+        for item in st.session_state.sidebar_companies:
+            st.write(f"- {item}")
     else:
-        st.info("Keine Stakeholder einbezogen.")
+        st.write("Keine Stakeholder in Bewertung aufgenommen")
+
 
 def load_page(page_module):
                 page_function = getattr(page_module, 'display_page', None)
@@ -115,17 +118,17 @@ def display_page():
     
     # Check if all relevant session states are empty
     session_states_to_check = [
-        'stakeholder_punkte_df', 'filtered_df', 'company_names', 
+        'stakeholder_punkte_df', 'filtered_df', 'sidebar_companies', 
         'namen_tabelle', 'ranking_table', 'stakeholder_punkte_filtered'
     ]
     if all(key not in st.session_state or st.session_state[key].empty for key in session_states_to_check):
-        st.info("Es wurden noch keine Inhalte hinzugefügt.")
+        st.info("Es wurden noch keine Inhalte hinzugefügt. Starten Sie mit der Wesentlichkeitsanalyse")
         return
     
     tab1, tab2 = st.tabs(["Allgemeine Übersicht", "Graphiken"])
     with tab1:
        
-        col = st.columns((2, 2.5, 1), gap='medium')
+        col = st.columns((1.6, 2.5, 1), gap='small')
         
         with col[0]:
             container = st.container(border=True)

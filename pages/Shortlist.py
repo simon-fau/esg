@@ -514,15 +514,16 @@ def Balken_Auswirkungsbezogen():
             range=['red', 'green']
         )
 
-        chart = alt.Chart(top_30_df).mark_bar().encode(
+        chart = alt.Chart(top_30_df).mark_bar(size=20).encode(  # Setze die maximale Breite der Balken auf 20
             x=alt.X('Name', sort=None, title='Nachhaltigkeitspunkt'),
             y=alt.Y('Score Auswirkung', title='Score Auswirkung', stack=None),
             color=alt.Color('Extracted_Auswirkung', title='Art der Auswirkung', scale=color_scale),
             tooltip=['ID', 'Thema', 'Unterthema', 'Unter-Unterthema', 'Score Auswirkung']
         ).properties(
-            width=900,
+            width=800,
             height=400
         )
+            
         st.altair_chart(chart)
     else:
         st.warning("Keine Daten verfügbar nach Anwendung der Filter.")
@@ -581,13 +582,13 @@ def Balken_Finanzbezogen():
             range=['green', 'red']
         )
 
-        chart = alt.Chart(top_30_df).mark_bar().encode(
+        chart = alt.Chart(top_30_df).mark_bar(size=20).encode(
             x=alt.X('Name', sort=None, title='Nachhaltigkeitspunkt'),
             y=alt.Y('Score Finanzen', title='Score Finanzen', stack=None),
             color=alt.Color('Extracted_Finanziell', title='Art der finanziellen Auswirkung', scale=color_scale),
             tooltip=['ID', 'Thema', 'Unterthema', 'Unter-Unterthema', 'Score Finanzen']
         ).properties(
-            width=900,
+            width=800,
             height=400
         )
         st.altair_chart(chart)

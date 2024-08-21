@@ -15,13 +15,8 @@ if 'relevance_selection' not in st.session_state:
     st.session_state['relevance_selection'] = {}
 
 def save_session_state():
-    with open('session_states_top_down.pkl', 'wb') as f:
+    with open('a.pkl', 'wb') as f:
         pickle.dump(st.session_state['relevance_selection'], f)
-
-def load_session_state():
-    if os.path.exists('session_states_top_down.pkl'):
-        with open('session_states_top_down.pkl', 'rb') as f:
-            st.session_state['relevance_selection'] = pickle.load(f)
 
 def count_checkboxes():
     checkbox_count = sum(st.session_state['relevance_selection'].values())
@@ -248,7 +243,6 @@ def display_G1_Unternehmenspolitik():
     display_section(topics, "G1", "Unternehmenspolitik")
 
 def display_page():
-    load_session_state()
     checkbox_count = count_checkboxes()
     
     col1, col2 = st.columns([6, 1])
