@@ -217,6 +217,7 @@ def check_abgeschlossen_shortlist():
     st.session_state['checkbox_state_7'] = st.checkbox("Abgeschlossen", value=st.session_state['checkbox_state_7'])
 
 def display_page():
+    chart_auswirkungsbezogen_stakeholder()
     col1, col2 = st.columns([7, 1])
     with col1:
         st.header("Erstellung der Shortlist")
@@ -462,7 +463,6 @@ def chart_finanzbezogen(width, height):
 
 def Balken_Auswirkungsbezogen():
     
-    # Beispiel-Session-State (ersetzen durch den tatsächlichen Session-State in der Implementierung)
     selected_columns = st.session_state.get('selected_columns', pd.DataFrame())
 
     # Überprüfen, ob die notwendigen Spalten vorhanden sind
@@ -595,7 +595,50 @@ def Balken_Finanzbezogen():
     else:
         st.warning("Keine Daten verfügbar nach Anwendung der Filter.")
 
+def chart_auswirkungsbezogen_stakeholder():
+    selected_columns = st.session_state.get('selected_columns', pd.DataFrame())
 
+    if not {'Stakeholder Bew. Auswirkung', 'Unter-Unterthema', 'Unterthema', 'Thema', 'Auswirkung'}.issubset(selected_columns.columns):
+        st.error("Die notwendigen Spalten sind nicht im DataFrame vorhanden.")
+        return
+
+    # Keine Filterung oder Einschränkungen
+    selected_columns = selected_columns.dropna(subset=['Stakeholder Bew. Auswirkung'])
+
+    # Erstellung des 'Name'-Feldes
+    def create_name(row):
+        unter_unterthema_count = selected_columns['Unter-Unterthema'].value_counts().get(row['Unter-Unterthema'], 0)
+        unterthema_count = selected_columns['Unterthema'].value_counts().get(row['Unterthema'], 0)
+
+        if row['Unter-Unterthema']:
+            if unter_unterthema_count > 1:
+                return row['Unter-Unterthema'] + '_' + row['Thema']
+            else:
+                return row['Unter-Unterthema']
+        else:
+            if unterthema_count > 1:
+                return row['Unterthema'] + '_' + row['Thema']
+            else:
+                return row['Unterthema']
+
+    selected_columns['Name'] = selected_columns.apply(create_name, axis=1)
+
+    color_scale = alt.Scale(
+        domain=['Negative Auswirkung', 'Positive Auswirkung'],
+        range=['red', 'green']
+    )
+
+    chart = alt.Chart(selected_columns).mark_bar(size=20).encode(
+        x=alt.X('Name', sort=None, title='Nachhaltigkeitspunkt'),
+        y=alt.Y('Stakeholder Bew. Auswirkung', title='Stakeholder Bew. Auswirkung', stack=None),
+        color=alt.Color('Extracted_Auswirkung', title='Art der Auswirkung', scale=color_scale),
+        tooltip=['ID', 'Thema', 'Unterthema', 'Unter-Unterthema', 'Stakeholder Bew. Auswirkung']
+    ).properties(
+        width=800,
+        height=400
+    )
+    
+    st.altair_chart(chart)
 
 
 
