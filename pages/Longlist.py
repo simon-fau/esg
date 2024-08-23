@@ -754,7 +754,6 @@ def count_stakeholder_points():
         st.metric(label="davon externe Punkte:", value=count)
 
 def display_page():
-    st.write(st.session_state.selected_columns)
     merge_dataframes()
     display_selected_data()
     

@@ -4,7 +4,7 @@ import pandas as pd
 from pages.Stakeholder_Management import stakeholder_ranking
 from pages.Externe_Nachhaltigkeitspunkte import calculate_class_size, calculate_selected_rows, display_aggrid
 from pages.Longlist import  bewertung_Uebersicht_Nein,  bewertung_Uebersicht, anzahl_punkte_Longlist, count_top_down_points, count_internal_points, count_stakeholder_points
-from pages.Shortlist import chart_auswirkungsbezogen_stakeholder, Balken_Finanzbezogen, chart_übersicht_allgemein, chart_auswirkungsbezogen, chart_finanzbezogen, Balken_Auswirkungsbezogen
+from pages.Shortlist import chart_übersicht_allgemein_test, Balken_Finanzbezogen, chart_übersicht_allgemein, chart_auswirkungsbezogen, chart_finanzbezogen, Balken_Auswirkungsbezogen
 from pages.Themenspezifische_ESRS import calculate_percentages, count_checkboxes
 
 # Ensure 'checkbox_count' is initialized
@@ -183,13 +183,14 @@ def display_page():
                 stakeholder_ranking()
 
     with tab2:
-        chart_auswirkungsbezogen_stakeholder()
         chart_options = ["Allgemeine Graphik", "Auswirkungsbezoge Graphik", "Finanzbezoge Graphik"]
         selected_chart = st.selectbox("Wähle eine Grafik aus:", chart_options)
                    
         # Anzeigen der ausgewählten Grafik
         if selected_chart == "Allgemeine Graphik":
+            chart_übersicht_allgemein_test(width=900, height=800)
             chart_übersicht_allgemein(width=900, height=800)
+            
         elif selected_chart == "Auswirkungsbezoge Graphik":
             chart_auswirkungsbezogen(width=900, height=800)
         elif selected_chart == "Finanzbezoge Graphik":

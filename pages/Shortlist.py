@@ -217,7 +217,7 @@ def check_abgeschlossen_shortlist():
     st.session_state['checkbox_state_7'] = st.checkbox("Abgeschlossen", value=st.session_state['checkbox_state_7'])
 
 def display_page():
-    chart_auswirkungsbezogen_stakeholder()
+    
     col1, col2 = st.columns([7, 1])
     with col1:
         st.header("Erstellung der Shortlist")
@@ -239,6 +239,83 @@ def display_page():
 
 #---- Abschnitt zur Erstellung von unterschiedlichen Charts für die Übersicht ----#
 
+def chart_übersicht_allgemein_test(width, height):
+    st.write(" ")
+    st.write(" ")
+    st.write(" ")
+    st.write(" ")
+    st.write(" ")
+
+    if 'selected_columns' in st.session_state and len(st.session_state['selected_columns']) > 0:
+        selected_columns = st.session_state['selected_columns']
+
+        # Daten vorbereiten
+        if isinstance(selected_columns, list):
+            selected_columns_df = pd.DataFrame(selected_columns)
+        else:
+            selected_columns_df = selected_columns
+
+        columns_to_display = ['Score Finanzen', 'Score Auswirkung']
+        selected_columns_df = selected_columns_df[columns_to_display]
+        required_columns = ['ID', 'Score Finanzen', 'Score Auswirkung', 'Thema', 'Unterthema', 'Unter-Unterthema', 'Stakeholder Wichtigkeit']
+
+        if selected_columns_df.empty:
+            st.info("Keine Daten vorhanden, um den Chart anzuzeigen.")
+            return
+
+        def assign_color(theme):
+            if theme in ['Klimawandel', 'Umweltverschmutzung', 'Wasser- & Meeresressourcen', 'Biodiversität', 'Kreislaufwirtschaft']:
+                return 'Environmental'
+            elif theme in ['Eigene Belegschaft', 'Belegschaft Lieferkette', 'Betroffene Gemeinschaften', 'Verbraucher und Endnutzer']:
+                return 'Social'
+            elif theme == 'Unternehmenspolitik':
+                return 'Governance'
+            else:
+                return 'Sonstige'
+
+        selected_columns['color'] = selected_columns['Thema'].apply(assign_color)
+
+        min_rating = st.session_state.combined_df['Stakeholder Gesamtbew.'].min()
+        max_rating = st.session_state.combined_df['Stakeholder Gesamtbew.'].max()
+        selected_columns['Stakeholder Wichtigkeit'] = ((selected_columns['Stakeholder Gesamtbew.'] - min_rating) / (max_rating - min_rating)) * (1000 - 100) + 100
+        selected_columns['Stakeholder Wichtigkeit'] = selected_columns['Stakeholder Wichtigkeit'].fillna(100)
+
+        # Interaktiver Selektor für die Legende
+        color_selection = alt.selection_multi(fields=['color'], bind='legend')
+
+        # Basis-Scatter-Chart
+        scatter = alt.Chart(selected_columns, width=width, height=height).mark_circle().encode(
+            x=alt.X('Score Finanzen', scale=alt.Scale(domain=(0, 1000)), title='Finanzielle Wesentlichkeit'),
+            y=alt.Y('Score Auswirkung', scale=alt.Scale(domain=(0, 1000)), title='Auswirkungsbezogene Wesentlichkeit'),
+            color=alt.Color('color:N', scale=alt.Scale(
+                domain=['Environmental', 'Social', 'Governance', 'Sonstige'],
+                range=['green', 'yellow', 'blue', 'gray']
+            ), legend=alt.Legend(
+                title="Thema",
+                orient="right",
+                titleColor='black',
+                labelColor='black',
+                titleFontSize=12,
+                labelFontSize=10,
+                values=['Environmental', 'Social', 'Governance', 'Sonstige']
+            )),
+            size=alt.Size('Stakeholder Wichtigkeit:Q', scale=alt.Scale(range=[100, 1000]), legend=alt.Legend(
+                title="Stakeholder Wichtigkeit",
+                orient="right",
+                titleColor='black',
+                labelColor='black',
+                titleFontSize=12,
+                labelFontSize=10
+            )),
+            tooltip=required_columns,
+            opacity=alt.condition(color_selection, alt.value(1), alt.value(0.2))  # Sichtbarkeit der Punkte basierend auf der Auswahl
+        ).add_selection(
+            color_selection  # Füge die Auswahl zur Legende hinzu
+        )
+
+        st.altair_chart(scatter)
+    else:
+        st.info("Keine Daten ausgewählt.")
 
 
 def chart_übersicht_allgemein(width, height):
@@ -462,11 +539,12 @@ def chart_finanzbezogen(width, height):
         st.info("Keine Daten ausgewählt.")
 
 def Balken_Auswirkungsbezogen():
-    
+
     selected_columns = st.session_state.get('selected_columns', pd.DataFrame())
 
     # Überprüfen, ob die notwendigen Spalten vorhanden sind
-    if not {'Score Auswirkung', 'Unter-Unterthema', 'Unterthema', 'Thema', 'Auswirkung'}.issubset(selected_columns.columns):
+    necessary_columns = {'Score Auswirkung', 'Unter-Unterthema', 'Unterthema', 'Thema', 'Auswirkung', 'Stakeholder Bew. Auswirkung'}
+    if not necessary_columns.issubset(selected_columns.columns):
         st.error("Die notwendigen Spalten sind nicht im DataFrame vorhanden.")
         return
 
@@ -502,9 +580,12 @@ def Balken_Auswirkungsbezogen():
 
     selected_columns['Name'] = selected_columns.apply(create_name, axis=1)
 
+    # Speichere den vorbereiteten DataFrame in der Session-State
+    st.session_state['prepared_df'] = selected_columns
+
+    # Führe die restlichen Schritte durch, um die Top 30 nach Score Auswirkung zu filtern und anzuzeigen
     filtered_df = selected_columns[selected_columns['Score Auswirkung'] > 1]
 
-    # Wähle die Top 30 Datensätze basierend auf 'Score Auswirkung' und sortiere sie
     top_30_df = filtered_df.nlargest(30, 'Score Auswirkung').sort_values('Score Auswirkung')
 
     # Bar-Chart erstellen
@@ -527,6 +608,8 @@ def Balken_Auswirkungsbezogen():
         st.altair_chart(chart)
     else:
         st.warning("Keine Daten verfügbar nach Anwendung der Filter.")
+
+
 
 def Balken_Finanzbezogen():
 
@@ -595,50 +678,4 @@ def Balken_Finanzbezogen():
     else:
         st.warning("Keine Daten verfügbar nach Anwendung der Filter.")
 
-def chart_auswirkungsbezogen_stakeholder():
-    selected_columns = st.session_state.get('selected_columns', pd.DataFrame())
-
-    if not {'Stakeholder Bew. Auswirkung', 'Unter-Unterthema', 'Unterthema', 'Thema', 'Auswirkung'}.issubset(selected_columns.columns):
-        st.error("Die notwendigen Spalten sind nicht im DataFrame vorhanden.")
-        return
-
-    # Keine Filterung oder Einschränkungen
-    selected_columns = selected_columns.dropna(subset=['Stakeholder Bew. Auswirkung'])
-
-    # Erstellung des 'Name'-Feldes
-    def create_name(row):
-        unter_unterthema_count = selected_columns['Unter-Unterthema'].value_counts().get(row['Unter-Unterthema'], 0)
-        unterthema_count = selected_columns['Unterthema'].value_counts().get(row['Unterthema'], 0)
-
-        if row['Unter-Unterthema']:
-            if unter_unterthema_count > 1:
-                return row['Unter-Unterthema'] + '_' + row['Thema']
-            else:
-                return row['Unter-Unterthema']
-        else:
-            if unterthema_count > 1:
-                return row['Unterthema'] + '_' + row['Thema']
-            else:
-                return row['Unterthema']
-
-    selected_columns['Name'] = selected_columns.apply(create_name, axis=1)
-
-    color_scale = alt.Scale(
-        domain=['Negative Auswirkung', 'Positive Auswirkung'],
-        range=['red', 'green']
-    )
-
-    chart = alt.Chart(selected_columns).mark_bar(size=20).encode(
-        x=alt.X('Name', sort=None, title='Nachhaltigkeitspunkt'),
-        y=alt.Y('Stakeholder Bew. Auswirkung', title='Stakeholder Bew. Auswirkung', stack=None),
-        color=alt.Color('Extracted_Auswirkung', title='Art der Auswirkung', scale=color_scale),
-        tooltip=['ID', 'Thema', 'Unterthema', 'Unter-Unterthema', 'Stakeholder Bew. Auswirkung']
-    ).properties(
-        width=800,
-        height=400
-    )
     
-    st.altair_chart(chart)
-
-
-
