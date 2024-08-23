@@ -232,12 +232,166 @@ def display_page():
     Excel_button()
     save_state()
     
-    
-
-    
-
 
 #---- Abschnitt zur Erstellung von unterschiedlichen Charts für die Übersicht ----#
+
+def chart_übersicht_allgemein_test_2(width, height):
+    st.write(" ")
+    st.write(" ")
+    st.write(" ")
+    st.write(" ")
+    st.write(" ")
+
+    if 'selected_columns' in st.session_state and len(st.session_state['selected_columns']) > 0:
+        selected_columns = st.session_state['selected_columns']
+
+        # Daten vorbereiten
+        if isinstance(selected_columns, list):
+            selected_columns_df = pd.DataFrame(selected_columns)
+        else:
+            selected_columns_df = selected_columns
+
+        columns_to_display = ['Score Finanzen', 'Score Auswirkung']
+        selected_columns_df = selected_columns_df[columns_to_display]
+        required_columns = ['ID', 'Score Finanzen', 'Score Auswirkung', 'Thema', 'Unterthema', 'Unter-Unterthema', 
+                            'Stakeholder Wichtigkeit', 'Art der Auswirkung', 'Eigenschaft der Auswirkung', 'Finanzielle Auswirkung']
+
+        if selected_columns_df.empty:
+            st.info("Keine Daten vorhanden, um den Chart anzuzeigen.")
+            return
+
+        def assign_color_by_theme(theme):
+            if theme in ['Klimawandel', 'Umweltverschmutzung', 'Wasser- & Meeresressourcen', 'Biodiversität', 'Kreislaufwirtschaft']:
+                return 'Environmental'
+            elif theme in ['Eigene Belegschaft', 'Belegschaft Lieferkette', 'Betroffene Gemeinschaften', 'Verbraucher und Endnutzer']:
+                return 'Social'
+            elif theme == 'Unternehmenspolitik':
+                return 'Governance'
+            else:
+                return 'Sonstige'
+
+        def assign_color_by_financial_impact(financial_impact):
+            if financial_impact == 'Chance':
+                return 'Chance'
+            elif financial_impact == 'Risiko':
+                return 'Risiko'
+            elif financial_impact == 'Keine Auswirkung':
+                return 'Keine finanzielle Auswirkung'
+            else:
+                return 'Keine finanzielle Auswirkung'
+
+        # Extrahiere 'Art der Auswirkung' und 'Eigenschaft der Auswirkung' aus der Spalte 'Auswirkung'
+        def extract_impact_type(impact):
+            if 'Positive' in impact:
+                return 'Positive Auswirkung'
+            elif 'Negative' in impact:
+                return 'Negative Auswirkung'
+            else:
+                return 'Keine Auswirkung'
+
+        def extract_impact_property(impact):
+            if 'Tatsächliche' in impact:
+                return 'Tatsächliche Auswirkung'
+            elif 'Potentielle' in impact:
+                return 'Potentielle Auswirkung'
+            else:
+                return 'Keine Auswirkung'
+
+        selected_columns['Art der Auswirkung'] = selected_columns['Auswirkung'].apply(extract_impact_type)
+        selected_columns['Eigenschaft der Auswirkung'] = selected_columns['Auswirkung'].apply(extract_impact_property)
+
+        # Extrahiere 'Finanzielle Auswirkung' aus der Spalte 'Finanziell'
+        def extract_financial_impact(financial):
+            if 'Risiko' in financial:
+                return 'Risiko'
+            elif 'Chance' in financial:
+                return 'Chance'
+            elif 'Keine Auswirkung' in financial:
+                return 'Keine finanzielle Auswirkung'
+
+        selected_columns['Finanzielle Auswirkung'] = selected_columns['Finanziell'].apply(extract_financial_impact)
+
+        # Füge eine Option zur Auswahl der Legende hinzu
+        legend_option = st.radio("Legende basierend auf:", ["Thema", "Finanziell"])
+
+        if legend_option == "Thema":
+            selected_columns['color'] = selected_columns['Thema'].apply(assign_color_by_theme)
+            color_scale = alt.Scale(
+                domain=['Environmental', 'Social', 'Governance', 'Sonstige'],
+                range=['green', 'yellow', 'blue', 'gray']
+            )
+            legend_title = "Thema"
+        else:
+            selected_columns['color'] = selected_columns['Finanzielle Auswirkung'].apply(assign_color_by_financial_impact)
+            color_scale = alt.Scale(
+                domain=['Chance', 'Risiko', 'Keine finanzielle Auswirkung'],
+                range=['green', 'red', 'gray']
+            )
+            legend_title = "Finanzielle Auswirkung"
+
+        min_rating = st.session_state.combined_df['Stakeholder Gesamtbew.'].min()
+        max_rating = st.session_state.combined_df['Stakeholder Gesamtbew.'].max()
+        selected_columns['Stakeholder Wichtigkeit'] = ((selected_columns['Stakeholder Gesamtbew.'] - min_rating) / (max_rating - min_rating)) * (1000 - 100) + 100
+        selected_columns['Stakeholder Wichtigkeit'] = selected_columns['Stakeholder Wichtigkeit'].fillna(100)
+
+        # Interaktiver Selektor für die Legende
+        color_selection = alt.selection_multi(fields=['color'], bind='legend')
+
+        # Basis-Scatter-Chart
+        scatter = alt.Chart(selected_columns, width=width, height=height).mark_circle().encode(
+            x=alt.X('Score Finanzen', scale=alt.Scale(domain=(0, 1000)), title='Finanzielle Wesentlichkeit'),
+            y=alt.Y('Score Auswirkung', scale=alt.Scale(domain=(0, 1000)), title='Auswirkungsbezogene Wesentlichkeit'),
+            color=alt.Color('color:N', scale=color_scale, legend=alt.Legend(
+                title=legend_title,
+                orient="right",
+                titleColor='black',
+                labelColor='black',
+                titleFontSize=12,
+                labelFontSize=10
+            )),
+            size=alt.Size('Stakeholder Wichtigkeit:Q', scale=alt.Scale(range=[100, 1000]), legend=alt.Legend(
+                title="Stakeholder Wichtigkeit",
+                orient="right",
+                titleColor='black',
+                labelColor='black',
+                titleFontSize=12,
+                labelFontSize=10
+            )),
+            tooltip=required_columns,
+            opacity=alt.condition(color_selection, alt.value(1), alt.value(0.2))  # Sichtbarkeit der Punkte basierend auf der Auswahl
+        ).add_selection(
+            color_selection  # Füge die Auswahl zur Legende hinzu
+        )
+
+        st.altair_chart(scatter)
+
+        # Bar Chart basierend auf der Auswahl
+        if legend_option == "Thema":
+            bar_data = selected_columns['color'].value_counts().reset_index()
+            bar_data.columns = ['color', 'Anzahl']
+            bar_chart = alt.Chart(bar_data).mark_bar(size=15).encode(
+                x=alt.X('Anzahl:Q', title='Anzahl'),
+                y=alt.Y('color:N', sort='-x', title='Kategorie'),
+                color=alt.Color('color:N', scale=color_scale, legend=None)
+            ).properties(
+                width=700,  # Reduzierte Breite
+                height=200  # Reduzierte Höhe
+            )
+            st.altair_chart(bar_chart)
+        else:
+            bar_data = selected_columns['Finanzielle Auswirkung'].value_counts().reset_index()
+            bar_data.columns = ['Finanzielle Auswirkung', 'Anzahl']
+            bar_chart = alt.Chart(bar_data).mark_bar(size=15).encode(
+                x=alt.X('Anzahl:Q', title='Anzahl'),
+                y=alt.Y('Finanzielle Auswirkung:N', sort='-x', title='Finanzielle Auswirkung'),
+                color=alt.Color('Finanzielle Auswirkung:N', scale=color_scale, legend=None)
+            ).properties(
+                width=700,  # Reduzierte Breite
+                height=200  # Reduzierte Höhe
+            )
+            st.altair_chart(bar_chart)
+    else:
+        st.info("Keine Daten ausgewählt.")
 
 def chart_übersicht_allgemein_test(width, height):
     st.write(" ")

@@ -4,7 +4,7 @@ import pandas as pd
 from pages.Stakeholder_Management import stakeholder_ranking
 from pages.Externe_Nachhaltigkeitspunkte import calculate_class_size, calculate_selected_rows, display_aggrid
 from pages.Longlist import  bewertung_Uebersicht_Nein,  bewertung_Uebersicht, anzahl_punkte_Longlist, count_top_down_points, count_internal_points, count_stakeholder_points
-from pages.Shortlist import chart_übersicht_allgemein_test, Balken_Finanzbezogen, chart_übersicht_allgemein, chart_auswirkungsbezogen, chart_finanzbezogen, Balken_Auswirkungsbezogen
+from pages.Shortlist import chart_übersicht_allgemein_test_2, chart_übersicht_allgemein_test, Balken_Finanzbezogen, chart_übersicht_allgemein, chart_auswirkungsbezogen, chart_finanzbezogen, Balken_Auswirkungsbezogen
 from pages.Themenspezifische_ESRS import calculate_percentages, count_checkboxes
 
 # Ensure 'checkbox_count' is initialized
@@ -188,6 +188,7 @@ def display_page():
                    
         # Anzeigen der ausgewählten Grafik
         if selected_chart == "Allgemeine Graphik":
+            chart_übersicht_allgemein_test_2(width=900, height=800)
             chart_übersicht_allgemein_test(width=900, height=800)
             chart_übersicht_allgemein(width=900, height=800)
             
