@@ -439,6 +439,25 @@ def chart_übersicht_allgemein_test_2(width, height):
                 height=200
             )
 
+            # Zweites Balkendiagramm: Y-Achse nach "Tatsächliche" und "Potenzielle" Auswirkungen, Farben nach "Positive" und "Negative" Auswirkungen
+            bar_data_2 = selected_columns.groupby(['Eigenschaft der Auswirkung', 'Art der Auswirkung']).size().reset_index(name='Anzahl')
+
+            bar_chart_2 = alt.Chart(bar_data_2).mark_bar(size=15).encode(
+                x=alt.X('Anzahl:Q', title='Anzahl'),
+                y=alt.Y('Eigenschaft der Auswirkung:N', sort=['Tatsächliche Auswirkung', 'Potenzielle Auswirkung'], title='Eigenschaft der Auswirkung'),
+                color=alt.Color('Art der Auswirkung:N', scale=alt.Scale(domain=['Positive Auswirkung', 'Negative Auswirkung'], range=['green', 'red']), legend=alt.Legend(
+                    title="Art der Auswirkung",
+                    orient="top",
+                    titleColor='black',
+                    labelColor='black',
+                    titleFontSize=12,
+                    labelFontSize=10
+                ))
+            ).properties(
+                width=650,
+                height=200
+            )
+
         # Daten filtern basierend auf der Mindest-Stakeholder Wichtigkeit
         filtered_columns = selected_columns[selected_columns['Stakeholder Wichtigkeit'] >= min_importance]
 
@@ -523,14 +542,12 @@ def chart_übersicht_allgemein_test_2(width, height):
             st.altair_chart(scatter)
 
         with bottom_col2:
-            # Balkendiagramm anzeigen
+            # Balkendiagramme anzeigen
             st.altair_chart(bar_chart)
+            st.altair_chart(bar_chart_2)
 
     else:
         st.info("Keine Daten ausgewählt.")
-
-    st.write(st.session_state.selected_columns)
-
 
 
 # Graphik zur Darstellung auswikrungsbezogener Punkte. Unterscheidung positiv & negativ, sowie potentiell und tatsächlich
