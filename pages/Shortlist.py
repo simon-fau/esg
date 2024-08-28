@@ -217,7 +217,7 @@ def check_abgeschlossen_shortlist():
     st.session_state['checkbox_state_7'] = st.checkbox("Abgeschlossen", value=st.session_state['checkbox_state_7'])
 
 def display_page():
-    
+   
     col1, col2 = st.columns([7, 1])
     with col1:
         st.header("Erstellung der Shortlist")
@@ -232,7 +232,6 @@ def display_page():
     Excel_button()
     save_state()
     
-
 #---- Abschnitt zur Erstellung von unterschiedlichen Charts für die Übersicht ----#
 
 def chart_übersicht_allgemein_test_2(width, height):
@@ -363,8 +362,11 @@ def chart_übersicht_allgemein_test_2(width, height):
         with top_col3_placeholder:
             st.empty()
 
+        bar_chart_2 = None
+
         # Farbzuteilung und Formen basierend auf der Legendenauswahl
         if legend_option == "Kategorien":
+            # Code für Kategorien
             selected_columns['color'] = selected_columns['Thema'].apply(assign_color_by_theme)
             color_scale = alt.Scale(
                 domain=['Environmental', 'Social', 'Governance', 'Sonstige'],
@@ -384,6 +386,7 @@ def chart_übersicht_allgemein_test_2(width, height):
                 height=200
             )
         elif legend_option == "Finanzbezogene Ansicht":
+            # Code für Finanzbezogene Ansicht
             selected_columns['color'] = selected_columns['Finanzielle Auswirkung'].apply(assign_color_by_financial_impact)
             color_scale = alt.Scale(
                 domain=['Chance', 'Risiko', 'Keine finanzielle Auswirkung'],
@@ -403,11 +406,10 @@ def chart_übersicht_allgemein_test_2(width, height):
                 height=200
             )
         elif legend_option == "Auswirkungsbezogene Ansicht":
-            # Filter out rows with "Keine Auswirkung"
+            # Code für Auswirkungsbezogene Ansicht
             selected_columns['color'] = selected_columns['Art der Auswirkung'].apply(determine_color)
             selected_columns = selected_columns[selected_columns['color'].notnull()]
 
-            # Add shape column
             selected_columns['shape'] = selected_columns['Eigenschaft der Auswirkung'].apply(determine_shape)
 
             color_scale = alt.Scale(
@@ -420,7 +422,6 @@ def chart_übersicht_allgemein_test_2(width, height):
             )
             legend_title = "Auswirkung"
 
-            # Balkendiagramm für positive und negative Auswirkungen, unterteilt in tatsächliche und potenzielle Auswirkungen
             bar_data = selected_columns.groupby(['Art der Auswirkung', 'Eigenschaft der Auswirkung']).size().reset_index(name='Anzahl')
 
             bar_chart = alt.Chart(bar_data).mark_bar(size=15).encode(
@@ -439,7 +440,6 @@ def chart_übersicht_allgemein_test_2(width, height):
                 height=200
             )
 
-            # Zweites Balkendiagramm: Y-Achse nach "Tatsächliche" und "Potenzielle" Auswirkungen, Farben nach "Positive" und "Negative" Auswirkungen
             bar_data_2 = selected_columns.groupby(['Eigenschaft der Auswirkung', 'Art der Auswirkung']).size().reset_index(name='Anzahl')
 
             bar_chart_2 = alt.Chart(bar_data_2).mark_bar(size=15).encode(
@@ -457,6 +457,8 @@ def chart_übersicht_allgemein_test_2(width, height):
                 width=650,
                 height=200
             )
+
+            
 
         # Daten filtern basierend auf der Mindest-Stakeholder Wichtigkeit
         filtered_columns = selected_columns[selected_columns['Stakeholder Wichtigkeit'] >= min_importance]
@@ -544,8 +546,8 @@ def chart_übersicht_allgemein_test_2(width, height):
         with bottom_col2:
             # Balkendiagramme anzeigen
             st.altair_chart(bar_chart)
-            st.altair_chart(bar_chart_2)
-
+            if bar_chart_2 is not None:
+                st.altair_chart(bar_chart_2)
     else:
         st.info("Keine Daten ausgewählt.")
 
@@ -703,7 +705,7 @@ def Balken_Auswirkungsbezogen():
     selected_columns = st.session_state.get('selected_columns', pd.DataFrame())
 
     # Überprüfen, ob die notwendigen Spalten vorhanden sind
-    necessary_columns = {'Score Auswirkung', 'Unter-Unterthema', 'Unterthema', 'Thema', 'Auswirkung', 'Stakeholder Bew. Auswirkung'}
+    necessary_columns = {'Score Auswirkung', 'Unter-Unterthema', 'Unterthema', 'Thema', 'Auswirkung', 'Stakeholder Bew Auswirkung'}
     if not necessary_columns.issubset(selected_columns.columns):
         st.error("Die notwendigen Spalten sind nicht im DataFrame vorhanden.")
         return
@@ -769,7 +771,7 @@ def Balken_Auswirkungsbezogen():
     else:
         st.warning("Keine Daten verfügbar nach Anwendung der Filter.")
 
-
+    
 
 def Balken_Finanzbezogen():
 
@@ -837,3 +839,82 @@ def Balken_Finanzbezogen():
         st.altair_chart(chart)
     else:
         st.warning("Keine Daten verfügbar nach Anwendung der Filter.")
+
+
+def Balken_Auswirkungsbezogen_Stakeholder():
+    ausgewählte_spalten = st.session_state.get('selected_columns', pd.DataFrame())
+
+    # Überprüfen, ob die notwendigen Spalten vorhanden sind
+    notwendige_spalten = {'Stakeholder Bew Auswirkung', 'Unter-Unterthema', 'Unterthema', 'Thema', 'Auswirkung'}
+    if not notwendige_spalten.issubset(ausgewählte_spalten.columns):
+        st.error("Die notwendigen Spalten sind nicht im DataFrame vorhanden.")
+        return
+
+    # Funktion zur Extraktion der relevanten Auswirkung
+    def extrahiere_auswirkung(wert):
+        if pd.isna(wert):
+            return None
+        for auswirkung in ['Negative Auswirkung', 'Positive Auswirkung']:
+            if auswirkung in wert:
+                return auswirkung
+        return None
+
+    ausgewählte_spalten['Extrahierte_Auswirkung'] = ausgewählte_spalten['Auswirkung'].apply(extrahiere_auswirkung)
+
+    # Filtere Daten mit "Keine Auswirkung" und nicht-numerische Werte aus
+    ausgewählte_spalten = ausgewählte_spalten[
+        (ausgewählte_spalten['Auswirkung'] != 'Keine Auswirkung') & 
+        (pd.to_numeric(ausgewählte_spalten['Stakeholder Bew Auswirkung'], errors='coerce').notna())
+    ]
+
+    # Erstellen der neuen Spalte 'Bezeichnung'
+    def erstelle_name(zeile):
+        unter_unterthema_anzahl = ausgewählte_spalten['Unter-Unterthema'].value_counts().get(zeile['Unter-Unterthema'], 0)
+        unterthema_anzahl = ausgewählte_spalten['Unterthema'].value_counts().get(zeile['Unterthema'], 0)
+
+        if zeile['Unter-Unterthema']:
+            if unter_unterthema_anzahl > 1:
+                return zeile['Unter-Unterthema'] + '_' + zeile['Thema']
+            else:
+                return zeile['Unter-Unterthema']
+        else:
+            if unterthema_anzahl > 1:
+                return zeile['Unterthema'] + '_' + zeile['Thema']
+            else:
+                return zeile['Unterthema']
+
+    ausgewählte_spalten['Bezeichnung'] = ausgewählte_spalten.apply(erstelle_name, axis=1)
+
+    # Speichere den vorbereiteten DataFrame in der Session-State
+    st.session_state['vorbereiteter_df'] = ausgewählte_spalten
+
+    # Führe die restlichen Schritte durch, um die Top 30 nach Stakeholder Bew Auswirkung zu filtern und anzuzeigen
+    gefilterte_df = ausgewählte_spalten[ausgewählte_spalten['Stakeholder Bew Auswirkung'] > 0]
+    st.write(gefilterte_df)
+
+    top_30 = gefilterte_df.nlargest(30, 'Stakeholder Bew Auswirkung').sort_values('Stakeholder Bew Auswirkung')
+    st.write(top_30)
+
+    if not top_30.empty:
+        st.write("Daten für die Visualisierung:", top_30)  # Überprüfen Sie die Daten direkt vor der Visualisierung
+
+        farbskala = alt.Scale(
+            domain=['Negative Auswirkung', 'Positive Auswirkung'],
+            range=['red', 'green']
+        )
+
+        diagramm = alt.Chart(top_30).mark_bar(size=20).encode(
+            x=alt.X('Bezeichnung', sort=None, title='Nachhaltigkeitspunkt'),
+            y=alt.Y('Stakeholder Bew Auswirkung', title='Stakeholder Bewertung Auswirkung', stack=None),
+            color=alt.Color('Extrahierte_Auswirkung', title='Art der Auswirkung', scale=farbskala),
+            tooltip=['ID', 'Thema', 'Unterthema', 'Unter-Unterthema', 'Stakeholder Bew Auswirkung']
+        ).properties(
+            width=900,  
+            height=500  
+        )
+
+        st.altair_chart(diagramm)
+    else:
+        st.warning("Keine Daten verfügbar nach Anwendung der Filter.")
+
+

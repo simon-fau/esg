@@ -51,14 +51,14 @@ def get_numerical_rating(value):
     return ratings.get(value, 0)
 
 def aggregate_rankings(df):
-    df['Stakeholder Bew. Auswirkung'] = df['Auswirkungsbezogene Bewertung'].apply(get_numerical_rating).astype(int)
+    df['Stakeholder Bew Auswirkung'] = df['Auswirkungsbezogene Bewertung'].apply(get_numerical_rating).astype(int)
     df['Stakeholder Bew. Finanzen'] = df['Finanzbezogene Bewertung'].apply(get_numerical_rating).astype(int)
-    df['Stakeholder Gesamtbew.'] = df['Stakeholder Bew. Auswirkung'] + df['Stakeholder Bew. Finanzen']
+    df['Stakeholder Gesamtbew.'] = df['Stakeholder Bew Auswirkung'] + df['Stakeholder Bew. Finanzen']
     df.fillna({'Thema': 'Unbekannt', 'Unterthema': 'Unbekannt', 'Unter-Unterthema': ''}, inplace=True)
-    ranking = df.groupby(['Thema', 'Unterthema', 'Unter-Unterthema', 'Quelle']).agg({'Stakeholder Bew. Auswirkung': 'sum', 'Stakeholder Bew. Finanzen': 'sum', 'Stakeholder Gesamtbew.': 'sum'}).reset_index()
+    ranking = df.groupby(['Thema', 'Unterthema', 'Unter-Unterthema', 'Quelle']).agg({'Stakeholder Bew Auswirkung': 'sum', 'Stakeholder Bew. Finanzen': 'sum', 'Stakeholder Gesamtbew.': 'sum'}).reset_index()
     ranking.sort_values(by='Stakeholder Gesamtbew.', ascending=False, inplace=True)
     ranking['Platzierung'] = ranking['Stakeholder Gesamtbew.'].rank(method='min', ascending=False).astype(int)
-    return ranking[['Platzierung', 'Thema', 'Unterthema', 'Unter-Unterthema', 'Stakeholder Bew. Auswirkung', 'Stakeholder Bew. Finanzen', 'Stakeholder Gesamtbew.', 'Quelle']]
+    return ranking[['Platzierung', 'Thema', 'Unterthema', 'Unter-Unterthema', 'Stakeholder Bew Auswirkung', 'Stakeholder Bew. Finanzen', 'Stakeholder Gesamtbew.', 'Quelle']]
 
 def calculate_selected_rows(df, class_size):
     slider_value = st.session_state.slider_value
@@ -110,7 +110,7 @@ def stakeholder_punkte():
     if not stakeholder_punkte_filtered.empty:
         stakeholder_punkte_filtered.reset_index(inplace=True)
         stakeholder_punkte_filtered.rename(columns={'index': '_index'}, inplace=True)
-        stakeholder_punkte_filtered = stakeholder_punkte_filtered[['Platzierung', 'Thema', 'Unterthema', 'Unter-Unterthema', 'Stakeholder Bew. Auswirkung', 'Stakeholder Bew. Finanzen', 'Stakeholder Gesamtbew.', 'Quelle']]
+        stakeholder_punkte_filtered = stakeholder_punkte_filtered[['Platzierung', 'Thema', 'Unterthema', 'Unter-Unterthema', 'Stakeholder Bew Auswirkung', 'Stakeholder Bew. Finanzen', 'Stakeholder Gesamtbew.', 'Quelle']]
         grid_response = display_aggrid(stakeholder_punkte_filtered, with_checkboxes=True)
         selected = grid_response['selected_rows']
 
@@ -181,7 +181,7 @@ def excel_upload():
                     st.session_state.sidebar_companies.append(st.session_state.selected_option)
                     save_session_state({'sidebar_companies': st.session_state.sidebar_companies})
 
-                    relevant_columns = ['Thema', 'Unterthema', 'Unter-Unterthema', 'Stakeholder Bew. Auswirkung', 'Stakeholder Bew. Finanzen', 'Stakeholder Gesamtbew.', 'Quelle']
+                    relevant_columns = ['Thema', 'Unterthema', 'Unter-Unterthema', 'Stakeholder Bew Auswirkung', 'Stakeholder Bew. Finanzen', 'Stakeholder Gesamtbew.', 'Quelle']
                     new_df = st.session_state.ranking_df[relevant_columns]
                     new_df = new_df[new_df['Stakeholder Gesamtbew.'] >= 1]
 
@@ -191,7 +191,7 @@ def excel_upload():
                             on=['Thema', 'Unterthema', 'Unter-Unterthema', 'Quelle'], how='outer', suffixes=('_x', '_y')
                         )
 
-                        merged_df['Stakeholder Bew. Auswirkung'] = merged_df['Stakeholder Bew. Auswirkung_x'].add(merged_df['Stakeholder Bew. Auswirkung_y'], fill_value=0).astype(int)
+                        merged_df['Stakeholder Bew Auswirkung'] = merged_df['Stakeholder Bew. Auswirkung_x'].add(merged_df['Stakeholder Bew. Auswirkung_y'], fill_value=0).astype(int)
                         merged_df['Stakeholder Bew. Finanzen'] = merged_df['Stakeholder Bew. Finanzen_x'].add(merged_df['Stakeholder Bew. Finanzen_y'], fill_value=0).astype(int)
                         merged_df['Stakeholder Gesamtbew.'] = merged_df['Stakeholder Gesamtbew._x'].add(merged_df['Stakeholder Gesamtbew._y'], fill_value=0).astype(int)
                         merged_df.drop(columns=['Stakeholder Bew. Auswirkung_x', 'Stakeholder Bew. Auswirkung_y', 'Stakeholder Bew. Finanzen_x', 'Stakeholder Bew. Finanzen_y', 'Stakeholder Gesamtbew._x', 'Stakeholder Gesamtbew._y'], inplace=True)

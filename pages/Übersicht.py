@@ -4,7 +4,7 @@ import pandas as pd
 from pages.Stakeholder_Management import stakeholder_ranking
 from pages.Externe_Nachhaltigkeitspunkte import calculate_class_size, calculate_selected_rows, display_aggrid
 from pages.Longlist import  bewertung_Uebersicht_Nein,  bewertung_Uebersicht, anzahl_punkte_Longlist, count_top_down_points, count_internal_points, count_stakeholder_points
-from pages.Shortlist import chart_übersicht_allgemein_test_2, Balken_Finanzbezogen, chart_auswirkungsbezogen, chart_finanzbezogen, Balken_Auswirkungsbezogen
+from pages.Shortlist import Balken_Auswirkungsbezogen_Stakeholder, chart_übersicht_allgemein_test_2, Balken_Finanzbezogen, chart_auswirkungsbezogen, chart_finanzbezogen, Balken_Auswirkungsbezogen
 from pages.Themenspezifische_ESRS import calculate_percentages, count_checkboxes
 
 # Ensure 'checkbox_count' is initialized
@@ -119,7 +119,7 @@ def display_page():
     # Check if all relevant session states are empty
     session_states_to_check = [
         'stakeholder_punkte_df', 'filtered_df', 'sidebar_companies', 
-        'namen_tabelle', 'ranking_table', 'stakeholder_punkte_filtered'
+        'namen_tabelle', 'ranking_table', 'stakeholder_punkte_filtered',
     ]
     if all(key not in st.session_state or st.session_state[key].empty for key in session_states_to_check):
         st.info("Es wurden noch keine Inhalte hinzugefügt. Starten Sie mit der Wesentlichkeitsanalyse")
@@ -158,6 +158,9 @@ def display_page():
                     st.write(" ")
                     Balken_Auswirkungsbezogen()
                     
+                    Balken_Auswirkungsbezogen_Stakeholder()
+                    
+                
                 else:
                     st.write(" ")
                     st.write(" ")
@@ -191,4 +194,4 @@ def display_page():
         
             chart_auswirkungsbezogen(width=900, height=800)
             chart_finanzbezogen(width=900, height=800)
-        
+            
