@@ -236,11 +236,7 @@ def display_page():
 #---- Abschnitt zur Erstellung von unterschiedlichen Charts für die Übersicht ----#
 
 def chart_übersicht_allgemein_test_2(width, height):
-    st.write(" ")
-    st.write(" ")
-    st.write(" ")
-    st.write(" ")
-
+    # Überprüfen, ob Daten ausgewählt wurden
     if 'selected_columns' in st.session_state and len(st.session_state['selected_columns']) > 0:
         selected_columns = st.session_state['selected_columns']
 
@@ -252,13 +248,17 @@ def chart_übersicht_allgemein_test_2(width, height):
 
         columns_to_display = ['Score Finanzen', 'Score Auswirkung']
         selected_columns_df = selected_columns_df[columns_to_display]
-        required_columns = ['ID', 'Score Finanzen', 'Score Auswirkung', 'Thema', 'Unterthema', 'Unter-Unterthema', 
-                            'Stakeholder Wichtigkeit', 'Art der Auswirkung', 'Eigenschaft der Auswirkung', 'Finanzielle Auswirkung']
+        required_columns = [
+            'ID', 'Score Finanzen', 'Score Auswirkung', 'Thema', 'Unterthema',
+            'Unter-Unterthema', 'Stakeholder Wichtigkeit', 'Art der Auswirkung',
+            'Eigenschaft der Auswirkung', 'Finanzielle Auswirkung'
+        ]
 
         if selected_columns_df.empty:
             st.info("Keine Daten vorhanden, um den Chart anzuzeigen.")
             return
 
+        # Funktionen zur Farbzuteilung
         def assign_color_by_theme(theme):
             if theme in ['Klimawandel', 'Umweltverschmutzung', 'Wasser- & Meeresressourcen', 'Biodiversität', 'Kreislaufwirtschaft']:
                 return 'Environmental'
@@ -291,10 +291,26 @@ def chart_übersicht_allgemein_test_2(width, height):
         def extract_impact_property(impact):
             if 'Tatsächliche' in impact:
                 return 'Tatsächliche Auswirkung'
-            elif 'Potentielle' in impact:
-                return 'Potentielle Auswirkung'
+            elif 'Potenzielle' in impact:
+                return 'Potenzielle Auswirkung'
             else:
                 return 'Keine Auswirkung'
+
+        def determine_color(impact_type):
+            if impact_type == 'Positive Auswirkung':
+                return 'Positive Auswirkung'
+            elif impact_type == 'Negative Auswirkung':
+                return 'Negative Auswirkung'
+            else:
+                return None  # Ignore "Keine Auswirkung"
+
+        def determine_shape(impact_property):
+            if impact_property == 'Tatsächliche Auswirkung':
+                return 'Tatsächliche Auswirkung'
+            elif impact_property == 'Potenzielle Auswirkung':
+                return 'Potenzielle Auswirkung'
+            else:
+                return None
 
         selected_columns['Art der Auswirkung'] = selected_columns['Auswirkung'].apply(extract_impact_type)
         selected_columns['Eigenschaft der Auswirkung'] = selected_columns['Auswirkung'].apply(extract_impact_property)
@@ -307,112 +323,214 @@ def chart_übersicht_allgemein_test_2(width, height):
                 return 'Chance'
             elif 'Keine Auswirkung' in financial:
                 return 'Keine finanzielle Auswirkung'
+            else:
+                return 'Keine finanzielle Auswirkung'  # Default-Fall
 
         selected_columns['Finanzielle Auswirkung'] = selected_columns['Finanziell'].apply(extract_financial_impact)
 
-        # Layout in zwei Spalten
-        col1, col2 = st.columns([1, 2], gap="medium")
-
-        with col1:
-            container = st.container()
-            with container:
-                # Linke Spalte: Radio-Buttons, Slider, und Balkendiagramm
-                legend_option = st.radio("Legende basierend auf:", ["Kategorien", "Finanziell"])
-
-                st.write(" ")
-                st.write(" ")
-                st.write(" ")
-                st.write(" ")
-
-                min_importance = st.slider(
-                    "Minimale Stakeholder Wichtigkeit",
-                    min_value=int(selected_columns['Stakeholder Wichtigkeit'].min()),
-                    max_value=int(selected_columns['Stakeholder Wichtigkeit'].max()),
-                    value=int(selected_columns['Stakeholder Wichtigkeit'].min())
-                )
-
-                if legend_option == "Kategorien":
-                    selected_columns['color'] = selected_columns['Thema'].apply(assign_color_by_theme)
-                    color_scale = alt.Scale(
-                        domain=['Environmental', 'Social', 'Governance', 'Sonstige'],
-                        range=['green', 'yellow', 'blue', 'gray']
-                    )
-                    legend_title = "Kategorien"
-                else:
-                    selected_columns['color'] = selected_columns['Finanzielle Auswirkung'].apply(assign_color_by_financial_impact)
-                    color_scale = alt.Scale(
-                        domain=['Chance', 'Risiko', 'Keine finanzielle Auswirkung'],
-                        range=['green', 'red', 'gray']
-                    )
-                    legend_title = "Finanzielle Auswirkung"
-
-                # Balkendiagramm
-                if legend_option == "Kategorien":
-                    bar_data = selected_columns['color'].value_counts().reset_index()
-                    bar_data.columns = ['color', 'Anzahl']
-                    bar_chart = alt.Chart(bar_data).mark_bar(size=15).encode(
-                        x=alt.X('Anzahl:Q', title='Anzahl'),
-                        y=alt.Y('color:N', sort='-x', title='Kategorien'),
-                        color=alt.Color('color:N', scale=color_scale, legend=None)
-                    ).properties(
-                        width=450,  # Setze die Breite etwas kleiner als die Spaltenbreite
-                        height=200  # Gleiche Höhe wie der Scatter-Chart
-                    )
-                    st.altair_chart(bar_chart)
-                else:
-                    bar_data = selected_columns['Finanzielle Auswirkung'].value_counts().reset_index()
-                    bar_data.columns = ['Finanzielle Auswirkung', 'Anzahl']
-                    bar_chart = alt.Chart(bar_data).mark_bar(size=15).encode(
-                        x=alt.X('Anzahl:Q', title='Anzahl'),
-                        y=alt.Y('Finanzielle Auswirkung:N', sort='-x', title='Finanzielle Auswirkung'),
-                        color=alt.Color('Finanzielle Auswirkung:N', scale=color_scale, legend=None)
-                    ).properties(
-                        width=450,  # Breite angepasst für die linke Spalte
-                        height=200  # Gleiche Höhe wie der Scatter-Chart
-                    )
-                    st.altair_chart(bar_chart)
-
+        # Berechnung der Stakeholder Wichtigkeit
         min_rating = st.session_state.combined_df['Stakeholder Gesamtbew.'].min()
         max_rating = st.session_state.combined_df['Stakeholder Gesamtbew.'].max()
-        selected_columns['Stakeholder Wichtigkeit'] = ((selected_columns['Stakeholder Gesamtbew.'] - min_rating) / (max_rating - min_rating)) * (1000 - 100) + 100
+        selected_columns['Stakeholder Wichtigkeit'] = (
+            (selected_columns['Stakeholder Gesamtbew.'] - min_rating) / (max_rating - min_rating)
+        ) * (1000 - 100) + 100
         selected_columns['Stakeholder Wichtigkeit'] = selected_columns['Stakeholder Wichtigkeit'].fillna(100)
 
-        # Filtere die Daten basierend auf der ausgewählten Mindest-Stakeholder Wichtigkeit
-        filtered_columns = selected_columns[selected_columns['Stakeholder Wichtigkeit'] >= min_importance]
+        # Layout: Obere Zeile mit Radio-Buttons und Slider
+        top_col1, top_col2, top_col3_placeholder = st.columns([1, 1, 3], gap="small")
+        
+        with top_col1:
+            legend_option = st.radio("Darstellung der Graphik:", ["Kategorien", "Finanzbezogene Ansicht", "Auswirkungsbezogene Ansicht"])
 
-        # Interaktiver Selektor für die Legende
-        color_selection = alt.selection_multi(fields=['color'], bind='legend')
+            container = st.container()
+            with container:
+                st.write(" ")
+                st.write(" ")
+                st.write(" ")
+                st.write(" ")
+                st.write(" ")
+                st.write(" ")
+                st.write(" ")
 
-        with col2:
-            # Rechte Spalte: Scatter-Chart
-            scatter = alt.Chart(filtered_columns, width=width, height=height).mark_circle().encode(
-                x=alt.X('Score Finanzen', scale=alt.Scale(domain=(0, 1000)), title='Finanzielle Wesentlichkeit'),
-                y=alt.Y('Score Auswirkung', scale=alt.Scale(domain=(0, 1000)), title='Auswirkungsbezogene Wesentlichkeit'),
-                color=alt.Color('color:N', scale=color_scale, legend=alt.Legend(
-                    title=legend_title,
-                    orient="right",
+        with top_col2:
+            min_importance = st.slider(
+                "Minimale Stakeholder Wichtigkeit",
+                min_value=int(selected_columns['Stakeholder Wichtigkeit'].min()),
+                max_value=int(selected_columns['Stakeholder Wichtigkeit'].max()),
+                value=int(selected_columns['Stakeholder Wichtigkeit'].min())
+            )
+        
+        with top_col3_placeholder:
+            st.empty()
+
+        # Farbzuteilung und Formen basierend auf der Legendenauswahl
+        if legend_option == "Kategorien":
+            selected_columns['color'] = selected_columns['Thema'].apply(assign_color_by_theme)
+            color_scale = alt.Scale(
+                domain=['Environmental', 'Social', 'Governance', 'Sonstige'],
+                range=['green', 'yellow', 'blue', 'gray']
+            )
+            legend_title = "Kategorien"
+
+            bar_data = selected_columns['color'].value_counts().reset_index()
+            bar_data.columns = ['color', 'Anzahl']
+
+            bar_chart = alt.Chart(bar_data).mark_bar(size=15).encode(
+                x=alt.X('Anzahl:Q', title='Anzahl'),
+                y=alt.Y('color:N', sort='-x', title='Kategorien'),
+                color=alt.Color('color:N', scale=color_scale, legend=None)
+            ).properties(
+                width=650,
+                height=200
+            )
+        elif legend_option == "Finanzbezogene Ansicht":
+            selected_columns['color'] = selected_columns['Finanzielle Auswirkung'].apply(assign_color_by_financial_impact)
+            color_scale = alt.Scale(
+                domain=['Chance', 'Risiko', 'Keine finanzielle Auswirkung'],
+                range=['green', 'red', 'gray']
+            )
+            legend_title = "Finanzielle Auswirkung"
+
+            bar_data = selected_columns['color'].value_counts().reset_index()
+            bar_data.columns = ['color', 'Anzahl']
+
+            bar_chart = alt.Chart(bar_data).mark_bar(size=15).encode(
+                x=alt.X('Anzahl:Q', title='Anzahl'),
+                y=alt.Y('color:N', sort='-x', title='Finanzielle Auswirkung'),
+                color=alt.Color('color:N', scale=color_scale, legend=None)
+            ).properties(
+                width=650,
+                height=200
+            )
+        elif legend_option == "Auswirkungsbezogene Ansicht":
+            # Filter out rows with "Keine Auswirkung"
+            selected_columns['color'] = selected_columns['Art der Auswirkung'].apply(determine_color)
+            selected_columns = selected_columns[selected_columns['color'].notnull()]
+
+            # Add shape column
+            selected_columns['shape'] = selected_columns['Eigenschaft der Auswirkung'].apply(determine_shape)
+
+            color_scale = alt.Scale(
+                domain=['Positive Auswirkung', 'Negative Auswirkung'],
+                range=['green', 'red']
+            )
+            shape_scale = alt.Scale(
+                domain=['Tatsächliche Auswirkung', 'Potenzielle Auswirkung'],
+                range=['circle', 'square']
+            )
+            legend_title = "Auswirkung"
+
+            # Balkendiagramm für positive und negative Auswirkungen, unterteilt in tatsächliche und potenzielle Auswirkungen
+            bar_data = selected_columns.groupby(['Art der Auswirkung', 'Eigenschaft der Auswirkung']).size().reset_index(name='Anzahl')
+
+            bar_chart = alt.Chart(bar_data).mark_bar(size=15).encode(
+                x=alt.X('Anzahl:Q', title='Anzahl'),
+                y=alt.Y('Art der Auswirkung:N', sort=['Positive Auswirkung', 'Negative Auswirkung'], title='Art der Auswirkung'),
+                color=alt.Color('Eigenschaft der Auswirkung:N', scale=alt.Scale(domain=['Tatsächliche Auswirkung', 'Potenzielle Auswirkung'], range=['blue', 'orange']), legend=alt.Legend(
+                    title="Typ der Auswirkung",
+                    orient="top",
                     titleColor='black',
                     labelColor='black',
                     titleFontSize=12,
                     labelFontSize=10
-                )),
-                size=alt.Size('Stakeholder Wichtigkeit:Q', scale=alt.Scale(range=[100, 1000]), legend=alt.Legend(
-                    title="Stakeholder Wichtigkeit",
-                    orient="right",
-                    titleColor='black',
-                    labelColor='black',
-                    titleFontSize=12,
-                    labelFontSize=10
-                )),
-                tooltip=required_columns,
-                opacity=alt.condition(color_selection, alt.value(1), alt.value(0.2))  # Sichtbarkeit der Punkte basierend auf der Auswahl
-            ).add_selection(
-                color_selection  # Füge die Auswahl zur Legende hinzu
+                ))
+            ).properties(
+                width=650,
+                height=200
             )
 
+        # Daten filtern basierend auf der Mindest-Stakeholder Wichtigkeit
+        filtered_columns = selected_columns[selected_columns['Stakeholder Wichtigkeit'] >= min_importance]
+
+        # Layout: Untere Zeile mit Scatter-Chart und Balkendiagramm
+        bottom_col1, bottom_col2 = st.columns([1.5 , 1], gap="small")  # Breitere linke Spalte für Scatter-Chart
+
+        with bottom_col1:
+            if legend_option == "Auswirkungsbezogene Ansicht":
+                # Interaktiver Selektor für die Legende
+                color_selection = alt.selection_multi(fields=['color'], bind='legend')
+                shape_selection = alt.selection_multi(fields=['shape'], bind='legend')
+                importance_selection = alt.selection_interval(fields=['Stakeholder Wichtigkeit'], bind='scales')
+
+                # Scatter-Chart erstellen
+                scatter = alt.Chart(filtered_columns, width=width, height=height).mark_point(filled=True).encode(
+                    x=alt.X('Score Finanzen', scale=alt.Scale(domain=(0, 1000)), title='Finanzielle Wesentlichkeit'),
+                    y=alt.Y('Score Auswirkung', scale=alt.Scale(domain=(0, 1000)), title='Auswirkungsbezogene Wesentlichkeit'),
+                    color=alt.Color('color:N', scale=color_scale, legend=alt.Legend(
+                        title=legend_title,
+                        orient="right",
+                        titleColor='black',
+                        labelColor='black',
+                        titleFontSize=12,
+                        labelFontSize=10,
+                        values=['Positive Auswirkung', 'Negative Auswirkung']
+                    )),
+                    shape=alt.Shape('shape:N', scale=shape_scale, legend=alt.Legend(
+                        title="Typ der Auswirkung",
+                        orient="right",
+                        titleColor='black',
+                        labelColor='black',
+                        titleFontSize=12,
+                        labelFontSize=10,
+                        values=['Tatsächliche Auswirkung', 'Potenzielle Auswirkung']
+                    )),
+                    size=alt.Size('Stakeholder Wichtigkeit:Q', scale=alt.Scale(range=[100, 1000]), legend=alt.Legend(
+                        title="Stakeholder Wichtigkeit",
+                        orient="right",
+                        titleColor='black',
+                        labelColor='black',
+                        titleFontSize=12,
+                        labelFontSize=10
+                    )),
+                    tooltip=required_columns,
+                    opacity=alt.condition(
+                        shape_selection & color_selection & importance_selection, alt.value(1), alt.value(0.2)
+                    )  # Sichtbarkeit basierend auf Auswahl
+                ).add_selection(
+                    color_selection, shape_selection, importance_selection  # Legendenauswahl hinzufügen
+                )
+            else:
+                # Interaktiver Selektor für die Legende
+                color_selection = alt.selection_multi(fields=['color'], bind='legend')
+                importance_selection = alt.selection_interval(fields=['Stakeholder Wichtigkeit'], bind='scales')
+
+                # Scatter-Chart erstellen
+                scatter = alt.Chart(filtered_columns, width=width, height=height).mark_circle().encode(
+                    x=alt.X('Score Finanzen', scale=alt.Scale(domain=(0, 1000)), title='Finanzielle Wesentlichkeit'),
+                    y=alt.Y('Score Auswirkung', scale=alt.Scale(domain=(0, 1000)), title='Auswirkungsbezogene Wesentlichkeit'),
+                    color=alt.Color('color:N', scale=color_scale, legend=alt.Legend(
+                        title=legend_title,
+                        orient="right",
+                        titleColor='black',
+                        labelColor='black',
+                        titleFontSize=12,
+                        labelFontSize=10
+                    )),
+                    size=alt.Size('Stakeholder Wichtigkeit:Q', scale=alt.Scale(range=[100, 1000]), legend=alt.Legend(
+                        title="Stakeholder Wichtigkeit",
+                        orient="right",
+                        titleColor='black',
+                        labelColor='black',
+                        titleFontSize=12,
+                        labelFontSize=10
+                    )),
+                    tooltip=required_columns,
+                    opacity=alt.condition(color_selection & importance_selection, alt.value(1), alt.value(0.2))  # Sichtbarkeit basierend auf Auswahl
+                ).add_selection(
+                    color_selection, importance_selection  # Legendenauswahl hinzufügen
+                )
+
             st.altair_chart(scatter)
+
+        with bottom_col2:
+            # Balkendiagramm anzeigen
+            st.altair_chart(bar_chart)
+
     else:
         st.info("Keine Daten ausgewählt.")
+
+    st.write(st.session_state.selected_columns)
+
 
 
 # Graphik zur Darstellung auswikrungsbezogener Punkte. Unterscheidung positiv & negativ, sowie potentiell und tatsächlich
@@ -427,6 +545,7 @@ def chart_auswirkungsbezogen(width, height):
     if 'selected_columns' in st.session_state and len(st.session_state['selected_columns']) > 0:
         df = st.session_state['selected_columns']
 
+    
         # Farbcodierung basierend auf der Untersuchung der Zeichenkette in "Score Auswirkung"
         def determine_color(impact):
             if 'Positive Auswirkung' in impact:

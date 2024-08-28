@@ -190,7 +190,5 @@ def display_page():
             
         
             chart_auswirkungsbezogen(width=900, height=800)
-            
-        
             chart_finanzbezogen(width=900, height=800)
         
