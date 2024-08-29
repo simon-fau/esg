@@ -38,6 +38,21 @@ def calculate_percentages():
     
     return percentage_missing
 
+def checkboxes_count():
+    checkbox_count = st.session_state['checkbox_count']
+    total_checkboxes = 93
+    number_of_missing_checkboxes = total_checkboxes - checkbox_count
+    # Berechnung des prozentualen Fortschritts
+    percentage_complete = round((checkbox_count / total_checkboxes) * 100, 1)
+    
+    # Berechnung des Fortschritts für st.progress
+    percentage_complete_normalized = min(max(percentage_complete / 100.0, 0.0), 1.0)
+    
+    st.metric(label="**Themenspezifische ESRS**", value=checkbox_count)
+    st.write("Checkboxen wurden bis jetzt ausgewählt.")
+    st.write("Es fehlen noch: **" + str(number_of_missing_checkboxes) + "** Checkboxen.")
+    st.progress(percentage_complete_normalized)
+
 def display_section(topics, section_key, section_title):
     form_key = f'form_{section_key}'
     with st.form(key=form_key, border=False):

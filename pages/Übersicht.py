@@ -4,8 +4,8 @@ import pandas as pd
 from pages.Stakeholder_Management import stakeholder_ranking
 from pages.Externe_Nachhaltigkeitspunkte import calculate_class_size, calculate_selected_rows, display_aggrid
 from pages.Longlist import  bewertung_Uebersicht_Nein,  bewertung_Uebersicht, anzahl_punkte_Longlist, count_top_down_points, count_internal_points, count_stakeholder_points
-from pages.Shortlist import Balken_Auswirkungsbezogen_Stakeholder, chart_übersicht_allgemein_test_2, Balken_Finanzbezogen, chart_auswirkungsbezogen, chart_finanzbezogen, Balken_Auswirkungsbezogen
-from pages.Themenspezifische_ESRS import calculate_percentages, count_checkboxes
+from pages.Shortlist import Balken_Finanzbezogen_Stakeholder,Balken_Auswirkungsbezogen_Stakeholder, chart_übersicht_allgemein_test_2, Balken_Finanzbezogen, chart_auswirkungsbezogen, chart_finanzbezogen, Balken_Auswirkungsbezogen
+from pages.Themenspezifische_ESRS import calculate_percentages, checkboxes_count
 
 # Ensure 'checkbox_count' is initialized
 if 'checkbox_count' not in st.session_state:
@@ -74,11 +74,11 @@ def aktueller_stand_wesentlichkeitsanalyse():
             st.write(name)
         with col2:
             if key == 'checkbox_state_5':
-                if 'table2' in st.session_state and 'sidebar_items' in st.session_state:
+                if 'table2' in st.session_state and 'sidebar_companies' in st.session_state:
                     if not st.session_state['table2']:
                         st.write("✔")
                     else:
-                        count = len([opt for opt in st.session_state['table2'] if opt not in st.session_state['sidebar_items']])
+                        count = len([opt for opt in st.session_state['table2'] if opt not in st.session_state['sidebar_companies']])
                         if st.session_state.get(key) == True:
                             completed_count += 1
                             st.write("✔")
@@ -137,43 +137,72 @@ def display_page():
                 aktueller_stand_wesentlichkeitsanalyse()
             container_4 = st.container(border=True)
             with container_4:
-                anzahl_punkte_Longlist()
-                bewertung_Uebersicht()
+                checkboxes_count()
+                
             container_5 = st.container(border=True)
             with container_5:
+                anzahl_punkte_Longlist()
+                bewertung_Uebersicht()    
+            container_3 = st.container(border=True)
+            with container_3:
                 count_shortlist_points()
-                calculate_percentages()
+                
             
         with col[1]:        
 
             container_1 = st.container(border=True)
             with container_1:
+                st.header("Eigene Bewertung")
                 
                 on = st.toggle ("Änderung der Darstellung", True)
                 if on:
                     st.write(" ")
                     st.write(" ")
-                    st.write("**Auswirkungsbezogene Darstellung**")
+                    st.write("**Top 30 der auswirkungsbezogenen Punkte**")
                     st.write(" ")
                     st.write(" ")
-                    Balken_Auswirkungsbezogen()
-                    
-                    Balken_Auswirkungsbezogen_Stakeholder()
-                    
-                
+                    st.write(" ")
+                    st.write(" ")
+                    Balken_Auswirkungsbezogen()  
+               
                 else:
                     st.write(" ")
                     st.write(" ")
-                    st.write("**Finanzbezogene Darstellung**")
+                    st.write("**Top 30 der finanzbezogenen Punkte**")
+                    st.write(" ")
+                    st.write(" ")
                     st.write(" ")
                     st.write(" ")
                     Balken_Finanzbezogen()
-                       
-        with col[2]:
+                    
 
-            container_3 = st.container(border=True)
-            with container_3:
-                count_checkboxes()      
+            container_2 = st.container(border=True)
+            with container_2:
+                st.header("Stakeholder Bewertung")
+                
+                on = st.toggle("Änderung der Darstellung.", True)
+                if on:
+                    st.write(" ")
+                    st.write(" ")
+                    st.write("**Top 30 der auswirkungsbezogenen Punkte nach Stakeholder**")
+                    st.write(" ")
+                    st.write(" ")
+                    st.write(" ")
+                    st.write(" ")
+                    Balken_Auswirkungsbezogen_Stakeholder()
+
+                else:
+                    st.write(" ")
+                    st.write(" ")
+                    st.write("**Top 30 finanzbezogenen Punkte nach Stakeholder**")
+                    st.write(" ")
+                    st.write(" ")
+                    st.write(" ")
+                    st.write(" ")
+                    Balken_Finanzbezogen_Stakeholder()
+                
+                       
+        with col[2]:      
 
             container_6 = st.container(border=True)
             with container_6:

@@ -420,7 +420,7 @@ def chart_übersicht_allgemein_test_2(width, height):
                 domain=['Tatsächliche Auswirkung', 'Potenzielle Auswirkung'],
                 range=['circle', 'square']
             )
-            legend_title = "Auswirkung"
+            legend_title = "Art der Auswirkung"
 
             bar_data = selected_columns.groupby(['Art der Auswirkung', 'Eigenschaft der Auswirkung']).size().reset_index(name='Anzahl')
 
@@ -890,14 +890,13 @@ def Balken_Auswirkungsbezogen_Stakeholder():
 
     # Führe die restlichen Schritte durch, um die Top 30 nach Stakeholder Bew Auswirkung zu filtern und anzuzeigen
     gefilterte_df = ausgewählte_spalten[ausgewählte_spalten['Stakeholder Bew Auswirkung'] > 0]
-    st.write(gefilterte_df)
+    
 
     top_30 = gefilterte_df.nlargest(30, 'Stakeholder Bew Auswirkung').sort_values('Stakeholder Bew Auswirkung')
-    st.write(top_30)
+    
 
     if not top_30.empty:
-        st.write("Daten für die Visualisierung:", top_30)  # Überprüfen Sie die Daten direkt vor der Visualisierung
-
+       
         farbskala = alt.Scale(
             domain=['Negative Auswirkung', 'Positive Auswirkung'],
             range=['red', 'green']
@@ -909,8 +908,8 @@ def Balken_Auswirkungsbezogen_Stakeholder():
             color=alt.Color('Extrahierte_Auswirkung', title='Art der Auswirkung', scale=farbskala),
             tooltip=['ID', 'Thema', 'Unterthema', 'Unter-Unterthema', 'Stakeholder Bew Auswirkung']
         ).properties(
-            width=900,  
-            height=500  
+            width=800,  
+            height=400  
         )
 
         st.altair_chart(diagramm)
@@ -918,3 +917,70 @@ def Balken_Auswirkungsbezogen_Stakeholder():
         st.warning("Keine Daten verfügbar nach Anwendung der Filter.")
 
 
+def Balken_Finanzbezogen_Stakeholder():
+
+    # Beispiel-Session-State (ersetzen durch den tatsächlichen Session-State in der Implementierung)
+    selected_columns = st.session_state.get('selected_columns', pd.DataFrame())
+
+    # Überprüfen, ob die notwendigen Spalten vorhanden sind
+    if not {'Stakeholder Bew Finanzen', 'Unter-Unterthema', 'Unterthema', 'Thema', 'Finanziell'}.issubset(selected_columns.columns):
+        st.error("Die notwendigen Spalten sind nicht im DataFrame vorhanden.")
+        return
+
+    # Funktion zur Extraktion der relevanten Finanziell-Angabe
+    def extract_financial(value):
+        if pd.isna(value):
+            return None
+        for financial in ['Chance', 'Risiko']:
+            if financial in value:
+                return financial
+        return None
+
+    selected_columns['Extracted_Finanziell'] = selected_columns['Finanziell'].apply(extract_financial)
+
+    # Filtere Daten mit "Keine Auswirkung" aus
+    selected_columns = selected_columns[selected_columns['Finanziell'] != 'Keine Auswirkung']
+
+    # Erstellen der neuen Spalte 'Name'
+    def create_name(row):
+        unter_unterthema_count = selected_columns['Unter-Unterthema'].value_counts().get(row['Unter-Unterthema'], 0)
+        unterthema_count = selected_columns['Unterthema'].value_counts().get(row['Unterthema'], 0)
+
+        if row['Unter-Unterthema']:
+            if unter_unterthema_count > 1:
+                return row['Unter-Unterthema'] + '_' + row['Thema']
+            else:
+                return row['Unter-Unterthema']
+        else:
+            if unterthema_count > 1:
+                return row['Unterthema'] + '_' + row['Thema']
+            else:
+                return row['Unterthema']
+
+    selected_columns['Name'] = selected_columns.apply(create_name, axis=1)
+
+    filtered_df = selected_columns[selected_columns['Stakeholder Bew Finanzen'] > 1]
+
+    # Wähle die Top 30 Datensätze basierend auf 'Stakeholder Bew Finanzen' und sortiere sie
+    top_30_df = filtered_df.nlargest(30, 'Stakeholder Bew Finanzen').sort_values('Stakeholder Bew Finanzen')
+
+    # Bar-Chart erstellen
+    if not top_30_df.empty:
+        color_scale = alt.Scale(
+            domain=['Chance', 'Risiko'],
+            range=['green', 'red']
+        )
+
+        chart = alt.Chart(top_30_df).mark_bar(size=20).encode(
+            x=alt.X('Name', sort=None, title='Nachhaltigkeitspunkt'),
+            y=alt.Y('Stakeholder Bew Finanzen', title='Stakeholder Bewertung Finanzen', stack=None),
+            color=alt.Color('Extracted_Finanziell', title='Art der finanziellen Auswirkung', scale=color_scale),
+            tooltip=['ID', 'Thema', 'Unterthema', 'Unter-Unterthema', 'Stakeholder Bew Finanzen']
+        ).properties(
+            width=800,
+            height=400
+        )
+        
+        st.altair_chart(chart)
+    else:
+        st.warning("Keine Daten verfügbar nach Anwendung der Filter.")
