@@ -116,11 +116,18 @@ def display_grid():
         selection_mode='multiple',
     )
 
-# Funktion zum Löschen der ausgewählten Zeilen in der GridResponse
 def delete_selected_rows(grid_response):
     selected_rows = grid_response['selected_rows']
     selected_indices = [row['index'] for row in selected_rows]
-    st.session_state.df = st.session_state.df.drop(selected_indices)
+    
+    # Löschen aus st.session_state.df
+    st.session_state.df = st.session_state.df.drop(selected_indices).reset_index(drop=True)
+    
+    # Falls vorhanden, löschen aus st.session_state.ranking_table
+    if 'ranking_table' in st.session_state and not st.session_state.ranking_table.empty:
+        st.session_state.ranking_table = st.session_state.ranking_table.drop(selected_indices).reset_index(drop=True)
+    
+    # Speichern des Zustands und Neuladen der Anwendung
     save_state()
     st.experimental_rerun()
 

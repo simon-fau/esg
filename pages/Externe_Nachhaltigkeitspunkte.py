@@ -191,10 +191,10 @@ def excel_upload():
                             on=['Thema', 'Unterthema', 'Unter-Unterthema', 'Quelle'], how='outer', suffixes=('_x', '_y')
                         )
 
-                        merged_df['Stakeholder Bew Auswirkung'] = merged_df['Stakeholder Bew. Auswirkung_x'].add(merged_df['Stakeholder Bew. Auswirkung_y'], fill_value=0).astype(int)
-                        merged_df['Stakeholder Bew Finanzen'] = merged_df['Stakeholder Bew. Finanzen_x'].add(merged_df['Stakeholder Bew. Finanzen_y'], fill_value=0).astype(int)
+                        merged_df['Stakeholder Bew Auswirkung'] = merged_df['Stakeholder Bew Auswirkung_x'].add(merged_df['Stakeholder Bew Auswirkung_y'], fill_value=0).astype(int)
+                        merged_df['Stakeholder Bew Finanzen'] = merged_df['Stakeholder Bew Finanzen_x'].add(merged_df['Stakeholder Bew Finanzen_y'], fill_value=0).astype(int)
                         merged_df['Stakeholder Gesamtbew.'] = merged_df['Stakeholder Gesamtbew._x'].add(merged_df['Stakeholder Gesamtbew._y'], fill_value=0).astype(int)
-                        merged_df.drop(columns=['Stakeholder Bew. Auswirkung_x', 'Stakeholder Bew. Auswirkung_y', 'Stakeholder Bew. Finanzen_x', 'Stakeholder Bew. Finanzen_y', 'Stakeholder Gesamtbew._x', 'Stakeholder Gesamtbew._y'], inplace=True)
+                        merged_df.drop(columns=['Stakeholder Bew Auswirkung_x', 'Stakeholder Bew Auswirkung_y', 'Stakeholder Bew Finanzen_x', 'Stakeholder Bew Finanzen_y', 'Stakeholder Gesamtbew._x', 'Stakeholder Gesamtbew._y'], inplace=True)
                         st.session_state.stakeholder_punkte_df = merged_df
                     else:
                         st.session_state.stakeholder_punkte_df = new_df

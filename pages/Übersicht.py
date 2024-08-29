@@ -75,7 +75,9 @@ def aktueller_stand_wesentlichkeitsanalyse():
         with col2:
             if key == 'checkbox_state_5':
                 if 'table2' in st.session_state and 'sidebar_companies' in st.session_state:
-                    if not st.session_state['table2']:
+                    if not st.session_state['table2'] and not st.session_state['sidebar_companies']:
+                        st.write("✘")
+                    elif not st.session_state['table2']:
                         st.write("✔")
                     else:
                         count = len([opt for opt in st.session_state['table2'] if opt not in st.session_state['sidebar_companies']])
@@ -116,12 +118,18 @@ def aktueller_stand_wesentlichkeitsanalyse():
 
 def display_page():
     
-    # Check if all relevant session states are empty
+    # List of session states to check
     session_states_to_check = [
         'stakeholder_punkte_df', 'filtered_df', 'sidebar_companies', 
         'namen_tabelle', 'ranking_table', 'stakeholder_punkte_filtered',
     ]
-    if all(key not in st.session_state or st.session_state[key].empty for key in session_states_to_check):
+
+    # Check if all relevant session states are empty or do not exist
+    if all(
+        key not in st.session_state or 
+        (isinstance(st.session_state[key], pd.DataFrame) and st.session_state[key].empty) 
+        for key in session_states_to_check
+    ):
         st.info("Es wurden noch keine Inhalte hinzugefügt. Starten Sie mit der Wesentlichkeitsanalyse")
         return
     
