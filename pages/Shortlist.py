@@ -339,6 +339,7 @@ def chart_übersicht_allgemein_test_2(width, height):
         top_col1, top_col2, top_col3_placeholder = st.columns([1, 1, 3], gap="small")
         
         with top_col1:
+    
             legend_option = st.radio("Darstellung der Graphik:", ["Kategorien", "Finanzbezogene Ansicht", "Auswirkungsbezogene Ansicht"])
 
             container = st.container()

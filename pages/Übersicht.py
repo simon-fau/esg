@@ -215,7 +215,14 @@ def display_page():
                 stakeholder_ranking()
 
     with tab2:
-        
+            st.title("Allgemeine Graphik") 
+            st.write("Hier finden Sie eine Graphik, welche alle Informationen zu den bewerteten nachhaltigkeitspunkten zusammenfasst.")
+            st.write("Sie können die Graphik durch Klicken auf die Radio Buttons, den Regler sowie Teilen der Legende an die gewünschte Ansicht anpassen.")
+            st.markdown("---")
+            st.write(" ")
+            st.write(" ")
+            st.write(" ")
+            st.write(" ")
             chart_übersicht_allgemein_test_2(width=900, height=800)
 
     with tab3:
