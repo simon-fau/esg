@@ -71,6 +71,17 @@ def calculate_selected_rows(df, class_size):
     else:
         return df[df['Stakeholder Gesamtbew.'] > 0]
 
+def filter_stakeholders():
+    # Ensure 'ranking_table' and 'table2' are present in session state
+    if 'ranking_table' not in st.session_state or 'table2' not in st.session_state:
+        return []
+
+    # Filter table2 to include only those present in ranking_table
+    valid_stakeholders = set(st.session_state.ranking_table['Gruppe'].tolist())
+    filtered_table2 = [item for item in st.session_state.table2 if item in valid_stakeholders]
+
+    return filtered_table2
+
 # UI components
 def add_slider():
     with st.expander("**Grenzwert der Stakeholderpunkte:**", expanded=False):
@@ -140,6 +151,26 @@ def display_sidebar_items():
         st.write("**Bereits in Bewertung aufgenommen:**")
         for item in st.session_state.sidebar_companies:
             st.write(item)
+
+def display_not_in_sidebar_count():
+    filtered_table2 = filter_stakeholders()
+    
+    # Überprüfen, ob filtered_table2 leer ist
+    if not filtered_table2:
+        st.write("Keine Stakeholder in der Bewertung aufgenommen.")
+        return
+    
+    # Zähle die Anzahl der Stakeholder, deren Excel noch nicht hochgeladen wurde
+    count = len([opt for opt in filtered_table2 if opt not in st.session_state.sidebar_companies])
+    
+    # Zeige die Anzahl mit st.write an
+    st.write(f"Anzahl der noch nicht in die Bewertung aufgenommenen Stakeholder: {count}")
+    
+    # Überprüfen, ob count auf 0 steht und table2 gefüllt ist
+    if count == 0:
+        st.session_state['checkbox_state_5'] = True
+    else:
+        st.session_state['checkbox_state_5'] = False
 
 # Main Function
 def excel_upload():
@@ -214,26 +245,10 @@ def excel_upload():
                     else:
                         st.success("Stakeholder Punkte erfolgreich übernommen")
 
-def display_not_in_sidebar_count():
-    # Überprüfen, ob table2 leer ist
-    if not st.session_state.get('table2'):
-        st.write("Keine Stakeholder in der Bewertung aufgenommen.")
-        return
-    
-    # Zähle die Anzahl der Stakeholder, deren Excel noch nihct hochgeladen wurde
-    count = len([opt for opt in st.session_state.table2 if opt not in st.session_state.sidebar_companies])
-    
-    # Zeige die Anzahl mit st.write an
-    st.write(f"Anzahl der noch nicht in die Bewertung aufgenommenen Stakeholder: {count}")
-    
-    # Überprüfen, ob count auf 0 steht und table2 gefüllt ist
-    if count == 0:
-        st.session_state['checkbox_state_5'] = True
-    else:
-        st.session_state['checkbox_state_5'] = False
-       
-
 def display_page():
+    st.write(st.session_state.ranking_table)
+    st.write(st.session_state.table2)
+    st.write(st.session_state.sidebar_companies)
     col1, col2 = st.columns([3, 1])
     with col1:
         st.header("Stakeholder-Management") 
@@ -253,3 +268,4 @@ def display_page():
     with tab2:
         add_slider()
         stakeholder_punkte()
+

@@ -105,6 +105,8 @@ def check_abgeschlossen_stakeholder_auswahl():
     # Checkbox erstellen und Zustand in st.session_state speichern
     st.session_state['checkbox_state_2'] = st.checkbox("Abgeschlossen", value=st.session_state['checkbox_state_2'])
 
+
+
 def display_page():
     st.write(st.session_state.df)
     st.write(st.session_state.ranking_table)
