@@ -28,6 +28,7 @@ def initialize_session_state():
 
     return True
 
+
 def clean_up_tables():
     st.write("Before Cleanup - table1:", st.session_state.get('table1', []))
     valid_groups = set(st.session_state['ranking_table']['Gruppe'].tolist())
