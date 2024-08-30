@@ -21,6 +21,8 @@ def initialize_session_state():
     
     if 'table2' not in st.session_state:
         st.session_state['table2'] = []
+    st.write("Initialized table2: ", st.session_state.table2)  # Debugging output
+
     if 'checkbox_state_2' not in st.session_state:
         st.session_state['checkbox_state_2'] = False
     
@@ -28,13 +30,12 @@ def initialize_session_state():
 
     return True
 
-
 def clean_up_tables():
-    st.write("Before Cleanup - table1:", st.session_state.get('table1', []))
+    
     valid_groups = set(st.session_state['ranking_table']['Gruppe'].tolist())
     st.session_state.table1 = [item for item in st.session_state.get('table1', []) if item in valid_groups]
     st.session_state.table2 = [item for item in st.session_state.get('table2', []) if item in valid_groups]
-    st.write("After Cleanup - table1:", st.session_state.table1)
+   
 
 def update_table1():
     current_ranking = st.session_state['ranking_table']['Gruppe'].tolist()

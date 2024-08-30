@@ -23,6 +23,17 @@ def save_session_state(state):
 loaded_state = load_session_state()
 st.session_state.update(loaded_state)
 
+if 'stakeholder_punkte_filtered' not in st.session_state:
+    st.session_state.stakeholder_punkte_filtered = []
+
+# Ensure table2 is initialized
+if 'table2' not in st.session_state:
+    st.session_state.table2 = []
+
+# Check if ranking_table is initialized, to avoid other potential errors
+if 'ranking_table' not in st.session_state:
+    st.session_state.ranking_table = pd.DataFrame()
+
 # Ensure required session state attributes are initialized
 if 'stakeholder_punkte_df' not in st.session_state:
     st.session_state.stakeholder_punkte_df = pd.DataFrame(columns=['Platzierung', 'Thema', 'Unterthema', 'Unter-Unterthema', 'AuswirkungRating', 'FinanzRating', 'Stakeholder Gesamtbew', 'Quelle'])
@@ -90,11 +101,26 @@ def filter_stakeholders():
 def display_aggrid(df, with_checkboxes=False):
     gb = GridOptionsBuilder.from_dataframe(df)
     gb.configure_pagination(paginationAutoPageSize=False, paginationPageSize=15)
-    if with_checkboxes:
-        gb.configure_selection('multiple', use_checkbox=True, groupSelectsChildren="Group checkbox select children", rowMultiSelectWithClick=True)
     gb.configure_side_bar()
     gb.configure_grid_options(domLayout='autoHeight')  # Adjusted to autoHeight for dynamic sizing
     gb.configure_default_column(flex=1, minWidth=100, resizable=True, autoHeight=True)  # Ensure columns use available space
+    
+    # Set the "Platzierung" column to be the first column
+    if 'Platzierung' in df.columns:
+        gb.configure_column('Platzierung', pinned='left')
+    
+    # Hide the "Stakeholder" column
+    if 'Stakeholder' in df.columns:
+        gb.configure_column('Stakeholder', hide=True)
+
+    if 'Quelle' in df.columns:
+        gb.configure_column('Quelle', hide=True)
+    
+    # Configure checkboxes to be in the first column
+    if with_checkboxes:
+        gb.configure_selection('multiple', use_checkbox=True, groupSelectsChildren="Group checkbox select children", rowMultiSelectWithClick=True)
+        gb.configure_column('Platzierung', checkboxSelection=True)
+    
     grid_options = gb.build()
     return AgGrid(df, gridOptions=grid_options, enable_enterprise_modules=True, update_mode=GridUpdateMode.MODEL_CHANGED)
 
@@ -104,17 +130,15 @@ def stakeholder_punkte():
         # Ensure it's a DataFrame
         if isinstance(st.session_state.stakeholder_punkte_filtered, pd.DataFrame):
             # Display the filtered stakeholder points using AgGrid
-            
             response = display_aggrid(st.session_state.stakeholder_punkte_filtered, with_checkboxes=True)
             
             # Store the response for further processing if needed
             st.session_state.grid_response = response
             save_session_state({'grid_response': st.session_state.grid_response})
         else:
-            st.error("stakeholder_punkte_filtered is not a DataFrame.")
+            st.info("Keine Stakeholder-Daten zum Anzeigen verfügbar.")
     else:
         st.info("Keine Stakeholder-Daten zum Anzeigen verfügbar.")
-
 
 def display_sidebar_items():
     with st.sidebar:
@@ -128,12 +152,14 @@ def display_not_in_sidebar_count():
     filtered_table2 = filter_stakeholders()
     
     if not filtered_table2:
-        st.write("Keine Stakeholder in der Bewertung aufgenommen.")
+        st.write("**Fortschritt:**")
+        st.write("Keine Stakeholder in Bewertung aufgenommen.")
         return
     
     count = len([opt for opt in filtered_table2 if opt not in st.session_state.sidebar_companies])
     
-    st.write(f"Anzahl der noch nicht in die Bewertung aufgenommenen Stakeholder: {count}")
+    st.write("**Fortschritt:**")
+    st.write(f"Anzahl fehlender Stakeholder-Bewertungen: {count}")
     
     if count == 0:
         st.session_state['checkbox_state_5'] = True
@@ -209,10 +235,15 @@ def excel_upload():
                     new_df = new_df[new_df['Stakeholder Gesamtbew'] >= 1]
                     
                     new_df['Stakeholder'] = st.session_state.selected_option
-                    
+
                     if 'new_df_copy' not in st.session_state:
                         st.session_state.new_df_copy = new_df.copy()
                     else:
+                        # Vorhandene Einträge des Stakeholders entfernen
+                        st.session_state.new_df_copy = st.session_state.new_df_copy[
+                            st.session_state.new_df_copy['Stakeholder'] != st.session_state.selected_option
+                        ]
+                        # Neue Einträge hinzufügen
                         st.session_state.new_df_copy = pd.concat([st.session_state.new_df_copy, new_df], ignore_index=True)
                     
                     st.session_state.new_df_copy = update_status(st.session_state.new_df_copy)
@@ -250,6 +281,7 @@ def excel_upload():
                         st.info("Punkte können nicht übernommen werden. Bitte fügen Sie den entsprechenden Stakeholder unter hinzu und/oder nehmen sie diesen explizit in die Bewertung auf.")
                     else:
                         st.success("Stakeholder Punkte erfolgreich übernommen")
+
     
     if 'new_df_copy' in st.session_state:
         refresh_new_df_copy()
@@ -266,31 +298,26 @@ def display_sidebar_items():
             st.write(item)
 
 def display_page():
+
+    # Refresh the new_df_copy and other necessary session state
     refresh_new_df_copy()
     
-    st.write(st.session_state.ranking_table)
-    st.write(st.session_state.table2)
-    st.write(st.session_state.sidebar_companies)
-    
-    if 'stakeholder_punkte_filtered' not in st.session_state:
-        st.session_state.stakeholder_punkte_filtered = []
-    
-    st.write(st.session_state.stakeholder_punkte_filtered)
-    col1, col2 = st.columns([3, 1])
+    col1, col2 = st.columns([3, 1.3])
     with col1:
-        st.header("Stakeholder-Management") 
+        st.header("Stakeholder-Management")
     with col2:
         container = st.container(border=True)
         with container:
             display_not_in_sidebar_count()
+    
     st.markdown("""
         Dieses Tool hilft Ihnen, Ihre Stakeholder effektiv zu verwalten und zu analysieren. Sie können relevante Informationen über verschiedene Stakeholdergruppen hinzufügen, bearbeiten und visualisieren. Die Daten helfen Ihnen, Strategien für den Umgang mit Ihren Stakeholdern zu entwickeln und zu priorisieren, basierend auf verschiedenen Kriterien wie Engagement-Level und Kommunikationshäufigkeit.
     """)
-    
+
     tab1, tab2 = st.tabs(["Auswahl", "Ranking der Stakeholderbewertung"])
     with tab1:
         excel_upload()
         display_sidebar_items()
-        
+
     with tab2:
         stakeholder_punkte()
