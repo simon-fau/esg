@@ -38,6 +38,10 @@ if os.path.exists(STATE_FILE) and os.path.getsize(STATE_FILE) > 0:
 if 'df' not in st.session_state:
     st.session_state.df = initialize_df()
 
+# Initialisiere die Ranking-Tabelle, falls sie noch nicht existiert
+if 'ranking_table' not in st.session_state:
+    st.session_state.ranking_table = pd.DataFrame(columns=["Gruppe", "Score", "Ranking"])
+
 # Funktion zur Berechnung des Scores für eine Zeile
 def calculate_score(row):
     engagement_mapping = {'Hoch': 3, 'Mittel': 1.5, 'Niedrig': 0}
@@ -75,7 +79,7 @@ def sidebar():
     if 'zeithorizont' not in st.session_state:
         st.session_state.zeithorizont = ''
 
-    with st.form(key='stakeholder_form',border=False, clear_on_submit=True):
+    with st.form(key='stakeholder_form', clear_on_submit=True):
         gruppe = st.text_input("Gruppe", value=st.session_state.gruppe)
         bestehende_beziehung = st.selectbox("Bestehende Beziehung", ['', 'Ja', 'Nein'], index=0 if st.session_state.bestehende_beziehung == '' else ['','Ja','Nein'].index(st.session_state.bestehende_beziehung))
         auswirkung = st.selectbox("Auswirkung auf Interessen", ['', 'Hoch', 'Mittel', 'Niedrig'], index=0 if st.session_state.auswirkung == '' else ['', 'Hoch', 'Mittel', 'Niedrig'].index(st.session_state.auswirkung))
@@ -202,11 +206,13 @@ def check_abgeschlossen_stakeholder_management():
     
 # Hauptfunktion zum Anzeigen der Seite
 def display_page():
+    if 'ranking_table' in st.session_state:
+        st.write(st.session_state.ranking_table)
     col1, col2 = st.columns([7, 1])
     with col1:
         st.header("Stakeholder-Management")
     with col2:
-        container = st.container(border=False)
+        container = st.container()
         with container:
             check_abgeschlossen_stakeholder_management()
     st.markdown("""
@@ -226,4 +232,3 @@ def display_page():
         with col2:
             st.subheader("Netzwerkdiagramm")
             stakeholder_network()
-       

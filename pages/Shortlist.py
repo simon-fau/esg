@@ -54,9 +54,9 @@ def Chart(intersection_value, stakeholder_importance_value):
 
         selected_columns['color'] = selected_columns['Thema'].apply(assign_color)
 
-        min_rating = st.session_state.combined_df['Stakeholder Gesamtbew.'].min()
-        max_rating = st.session_state.combined_df['Stakeholder Gesamtbew.'].max()
-        selected_columns['Stakeholder Wichtigkeit'] = ((selected_columns['Stakeholder Gesamtbew.'] - min_rating) / (max_rating - min_rating)) * (1000 - 100) + 100
+        min_rating = st.session_state.combined_df['Stakeholder Gesamtbew'].min()
+        max_rating = st.session_state.combined_df['Stakeholder Gesamtbew'].max()
+        selected_columns['Stakeholder Wichtigkeit'] = ((selected_columns['Stakeholder Gesamtbew'] - min_rating) / (max_rating - min_rating)) * (1000 - 100) + 100
         selected_columns['Stakeholder Wichtigkeit'] = selected_columns['Stakeholder Wichtigkeit'].fillna(100)
 
         # Base scatter chart
@@ -328,10 +328,10 @@ def chart_übersicht_allgemein_test_2(width, height):
         selected_columns['Finanzielle Auswirkung'] = selected_columns['Finanziell'].apply(extract_financial_impact)
 
         # Berechnung der Stakeholder Wichtigkeit
-        min_rating = st.session_state.combined_df['Stakeholder Gesamtbew.'].min()
-        max_rating = st.session_state.combined_df['Stakeholder Gesamtbew.'].max()
+        min_rating = st.session_state.combined_df['Stakeholder Gesamtbew'].min()
+        max_rating = st.session_state.combined_df['Stakeholder Gesamtbew'].max()
         selected_columns['Stakeholder Wichtigkeit'] = (
-            (selected_columns['Stakeholder Gesamtbew.'] - min_rating) / (max_rating - min_rating)
+            (selected_columns['Stakeholder Gesamtbew'] - min_rating) / (max_rating - min_rating)
         ) * (1000 - 100) + 100
         selected_columns['Stakeholder Wichtigkeit'] = selected_columns['Stakeholder Wichtigkeit'].fillna(100)
 
@@ -592,9 +592,9 @@ def chart_auswirkungsbezogen(width, height):
         df['shape'] = df['Auswirkung'].apply(determine_shape)
 
         # Berechnung der Stakeholder Wichtigkeit
-        min_rating = st.session_state.combined_df['Stakeholder Gesamtbew.'].min()
-        max_rating = st.session_state.combined_df['Stakeholder Gesamtbew.'].max()
-        df['Stakeholder Wichtigkeit'] = ((df['Stakeholder Gesamtbew.'] - min_rating) / (max_rating - min_rating)) * (1000 - 100) + 100
+        min_rating = st.session_state.combined_df['Stakeholder Gesamtbew'].min()
+        max_rating = st.session_state.combined_df['Stakeholder Gesamtbew'].max()
+        df['Stakeholder Wichtigkeit'] = ((df['Stakeholder Gesamtbew'] - min_rating) / (max_rating - min_rating)) * (1000 - 100) + 100
         df['Stakeholder Wichtigkeit'] = df['Stakeholder Wichtigkeit'].fillna(100)
 
         # Basis-Scatter-Chart
@@ -664,9 +664,9 @@ def chart_finanzbezogen(width, height):
         df = df[df['color'].notnull()]
 
         # Berechnung der Stakeholder Wichtigkeit
-        min_rating = st.session_state.combined_df['Stakeholder Gesamtbew.'].min()
-        max_rating = st.session_state.combined_df['Stakeholder Gesamtbew.'].max()
-        df['Stakeholder Wichtigkeit'] = ((df['Stakeholder Gesamtbew.'] - min_rating) / (max_rating - min_rating)) * (1000 - 100) + 100
+        min_rating = st.session_state.combined_df['Stakeholder Gesamtbew'].min()
+        max_rating = st.session_state.combined_df['Stakeholder Gesamtbew'].max()
+        df['Stakeholder Wichtigkeit'] = ((df['Stakeholder Gesamtbew'] - min_rating) / (max_rating - min_rating)) * (1000 - 100) + 100
         df['Stakeholder Wichtigkeit'] = df['Stakeholder Wichtigkeit'].fillna(100)
 
         # Basis-Scatter-Chart

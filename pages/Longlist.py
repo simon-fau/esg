@@ -14,7 +14,7 @@ def save_state():
 def stakeholder_Nachhaltigkeitspunkte():
     # Initialisiere DataFrame falls nicht vorhanden
     if 'stakeholder_punkte_filtered' not in st.session_state:
-        st.session_state.stakeholder_punkte_filtered = pd.DataFrame(columns=["Platzierung", "Thema", "Unterthema", "Unter-Unterthema", "Stakeholder Gesamtbew.", "Stakeholder Bew Finanzen", "Stakeholder Bew Auswirkung", "Quelle"])	
+        st.session_state.stakeholder_punkte_filtered = pd.DataFrame(columns=["Platzierung", "Thema", "Unterthema", "Unter-Unterthema", "Stakeholder Gesamtbew", "Stakeholder Bew Finanzen", "Stakeholder Bew Auswirkung", "Quelle"])	
     
     # Erstelle eine Kopie des DataFrame
     selected_rows_st = st.session_state.stakeholder_punkte_filtered.copy()
@@ -359,9 +359,9 @@ def display_selected_data():
         # Auswahl der benötigten Spalten
         selected_columns = st.session_state.selected_data[['ID', 'Auswirkung', 'Finanziell', 'Score Finanzen', 'Score Auswirkung', 'Thema', 'Unterthema', 'Unter-Unterthema']]
 
-        # Extrahieren Sie die Spalten 'Stakeholder Gesamtbew.', 'Stakeholder Bew Finanzen' und 'Stakeholder Bew Auswirkung' aus 'combined_df' und fügen Sie sie zu 'selected_columns' hinzu
-        if 'combined_df' in st.session_state and all(col in st.session_state.combined_df.columns for col in ['Stakeholder Gesamtbew.', 'Stakeholder Bew Finanzen', 'Stakeholder Bew Auswirkung']):
-            combined_df_with_numerical_ratings = st.session_state.combined_df[['ID', 'Stakeholder Gesamtbew.', 'Stakeholder Bew Finanzen', 'Stakeholder Bew Auswirkung']]
+        # Extrahieren Sie die Spalten 'Stakeholder Gesamtbew', 'Stakeholder Bew Finanzen' und 'Stakeholder Bew Auswirkung' aus 'combined_df' und fügen Sie sie zu 'selected_columns' hinzu
+        if 'combined_df' in st.session_state and all(col in st.session_state.combined_df.columns for col in ['Stakeholder Gesamtbew', 'Stakeholder Bew Finanzen', 'Stakeholder Bew Auswirkung']):
+            combined_df_with_numerical_ratings = st.session_state.combined_df[['ID', 'Stakeholder Gesamtbew', 'Stakeholder Bew Finanzen', 'Stakeholder Bew Auswirkung']]
             selected_columns = pd.merge(selected_columns, combined_df_with_numerical_ratings, on='ID', how='left')
         
         # Speichern Sie 'selected_columns' in 'st.session_state'
@@ -504,8 +504,8 @@ def merge_dataframes():
     # Gruppieren der Daten nach 'Thema', 'Unterthema' und 'Unter-Unterthema' und Zusammenführen der 'Quelle'-Werte
     combined_df = combined_df.groupby(['Thema', 'Unterthema', 'Unter-Unterthema']).agg({'Quelle': lambda x: ' & '.join(sorted(set(x)))}).reset_index()
 
-    # Hinzufügen der 'Stakeholder Gesamtbew.' Spalte aus 'selected_rows_st'
-    combined_df = pd.merge(combined_df, selected_rows_st[['Thema', 'Unterthema', 'Unter-Unterthema', 'Stakeholder Gesamtbew.', 'Stakeholder Bew Finanzen', 'Stakeholder Bew Auswirkung']], on=['Thema', 'Unterthema', 'Unter-Unterthema'], how='left')
+    # Hinzufügen der 'Stakeholder Gesamtbew' Spalte aus 'selected_rows_st'
+    combined_df = pd.merge(combined_df, selected_rows_st[['Thema', 'Unterthema', 'Unter-Unterthema', 'Stakeholder Gesamtbew', 'Stakeholder Bew Finanzen', 'Stakeholder Bew Auswirkung']], on=['Thema', 'Unterthema', 'Unter-Unterthema'], how='left')
 
     # Entfernen von Duplikaten
     combined_df = combined_df.drop_duplicates(subset=['Thema', 'Unterthema', 'Unter-Unterthema'])
@@ -541,7 +541,7 @@ def merge_dataframes():
     st.session_state.combined_df = combined_df
 
     # Erstellung einer Kopie von combined_df ohne Stakeholder Bewertungen und Quelle zur Darstellung der Longlist mit lediglich relevanten Spalten
-    combined_df_without_numerical_rating_and_source = st.session_state.combined_df.drop(columns=['Stakeholder Gesamtbew.', 'Stakeholder Bew Finanzen', 'Stakeholder Bew Auswirkung', 'Quelle'])
+    combined_df_without_numerical_rating_and_source = st.session_state.combined_df.drop(columns=['Stakeholder Gesamtbew', 'Stakeholder Bew Finanzen', 'Stakeholder Bew Auswirkung', 'Quelle'])
     # Speichern Sie die neue DataFrame in 'st.session_state'
     st.session_state['combined_df_without_numerical_rating_and_source'] = combined_df_without_numerical_rating_and_source
 

@@ -10,24 +10,30 @@ def save_state():
         pickle.dump(dict(st.session_state), f)
 
 def initialize_session_state():
-    if 'ranking_table' not in st.session_state:
-        st.error("No ranking table found in session state")
+    if 'ranking_table' not in st.session_state or st.session_state['ranking_table'].empty:
+        st.error("No ranking table found or it is empty")
         return False
-    clean_up_tables()
-    if 'table2' not in st.session_state:
-        st.session_state.table2 = []
+    st.write("Ranking Table: ", st.session_state['ranking_table'])
+    
     if 'table1' not in st.session_state:
-        st.session_state.table1 = st.session_state['ranking_table']['Gruppe'].tolist()
-    else:
-        update_table1()
+        st.session_state['table1'] = st.session_state['ranking_table']['Gruppe'].tolist()
+    st.write("Initialized table1: ", st.session_state.table1)  # Debugging output
+    
+    if 'table2' not in st.session_state:
+        st.session_state['table2'] = []
     if 'checkbox_state_2' not in st.session_state:
         st.session_state['checkbox_state_2'] = False
+    
+    update_table1()  # Hinzufügen dieser Zeile
+
     return True
 
 def clean_up_tables():
+    st.write("Before Cleanup - table1:", st.session_state.get('table1', []))
     valid_groups = set(st.session_state['ranking_table']['Gruppe'].tolist())
     st.session_state.table1 = [item for item in st.session_state.get('table1', []) if item in valid_groups]
     st.session_state.table2 = [item for item in st.session_state.get('table2', []) if item in valid_groups]
+    st.write("After Cleanup - table1:", st.session_state.table1)
 
 def update_table1():
     current_ranking = st.session_state['ranking_table']['Gruppe'].tolist()
@@ -105,13 +111,8 @@ def check_abgeschlossen_stakeholder_auswahl():
     # Checkbox erstellen und Zustand in st.session_state speichern
     st.session_state['checkbox_state_2'] = st.checkbox("Abgeschlossen", value=st.session_state['checkbox_state_2'])
 
-
-
 def display_page():
-    st.write(st.session_state.df)
-    st.write(st.session_state.ranking_table)
-    st.write(st.session_state.table1)
-    st.write(st.session_state.table2)
+    
     col1, col2 = st.columns([7, 1])
     with col1:
         st.header("Stakeholder Auswahl")
@@ -151,5 +152,3 @@ def display_page():
         display_in_evaluation()
 
     save_state()
-
-
