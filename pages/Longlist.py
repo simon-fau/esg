@@ -41,7 +41,8 @@ def Top_down_Nachhaltigkeitspunkte():
         # Erstellen eines DataFrames aus den ausgewählten Punkten
         data = []
         for key, value in relevance_selection.items():
-            if value and (key.startswith('Relevant_')):
+            # Ensure value is a boolean and key starts with 'Relevant_'
+            if isinstance(value, bool) and value and key.startswith('Relevant_'):
                 data.append(extract_data_from_key(key))
         
         selected_points_df = pd.DataFrame(data)
@@ -50,6 +51,11 @@ def Top_down_Nachhaltigkeitspunkte():
         # Speichern des DataFrame 'selected_points_df' im session_state
         st.session_state['selected_points_df'] = selected_points_df
         return selected_points_df
+    else:
+        # Return an empty DataFrame if 'relevance_selection' is not in session_state
+        return pd.DataFrame(columns=["Thema", "Unterthema", "Unter-Unterthema", "Quelle"])
+
+
 
 def extract_data_from_key(key):
     start, end, suffix = determine_key_suffix(key)

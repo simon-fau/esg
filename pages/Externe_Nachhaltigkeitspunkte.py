@@ -181,6 +181,14 @@ def display_aggrid(df):
 def stakeholder_punkte():
     # Überprüfe, ob 'stakeholder_punkte_filtered' im Sitzungszustand verfügbar ist
     if 'stakeholder_punkte_filtered' in st.session_state:
+        # Entferne Zeilen, bei denen die 'Stakeholder'-Spalte leer ist
+        st.session_state.stakeholder_punkte_filtered = st.session_state.stakeholder_punkte_filtered[
+            st.session_state.stakeholder_punkte_filtered['Stakeholder'].str.strip() != ''
+        ]
+        
+        # Speichere den aktualisierten Zustand
+        save_session_state({'stakeholder_punkte_filtered': st.session_state.stakeholder_punkte_filtered})
+
         # Stelle sicher, dass es sich um einen DataFrame handelt
         if isinstance(st.session_state.stakeholder_punkte_filtered, pd.DataFrame):
             # Zeige die gefilterten Stakeholder-Punkte mit AgGrid an

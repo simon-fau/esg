@@ -1,5 +1,6 @@
 import streamlit as st
 import pickle
+import pandas as pd
 import os
 
 def Text():
@@ -11,24 +12,47 @@ def Text():
         - **Nicht Wesentlich**: Ein Aspekt ist nicht wesentlich, wenn er keine oder nur vernachlässigbare Auswirkungen auf Menschen, die Umwelt oder die Finanzen des Unternehmens hat.
     """)
 
-if 'relevance_selection' not in st.session_state:
-    st.session_state['relevance_selection'] = {}
+# Load session state from the file if it exists
+def load_session_state():
+    if os.path.exists('a.pkl'):
+        with open('a.pkl', 'rb') as f:
+            st.session_state['relevance_selection'] = pickle.load(f)
 
 def save_session_state():
     with open('a.pkl', 'wb') as f:
         pickle.dump(st.session_state['relevance_selection'], f)
 
+# Ensure session state is loaded at the start
+if 'relevance_selection' not in st.session_state:
+    load_session_state()
+
 def count_checkboxes():
-    checkbox_count = sum(st.session_state['relevance_selection'].values())
+    # Filter out only the checkboxes that are actually checked (True)
+    checkbox_count = sum(1 for value in st.session_state['relevance_selection'].values() if isinstance(value, bool) and value)
     st.session_state['checkbox_count'] = checkbox_count
 
     # Set the session state value for checkbox_state_3
-    if checkbox_count == 93:
-        st.session_state['checkbox_state_3'] = True
-    else:
-        st.session_state['checkbox_state_3'] = False
+    st.session_state['checkbox_state_3'] = (checkbox_count == 93)
     
     return checkbox_count
+
+
+def checkboxes_count():
+    checkbox_count = st.session_state['checkbox_count']
+    total_checkboxes = 93
+    number_of_missing_checkboxes = total_checkboxes - checkbox_count
+    # Berechnung des prozentualen Fortschritts
+    percentage_complete = round((checkbox_count / total_checkboxes) * 100, 1)
+    
+    # Berechnung des Fortschritts für st.progress
+    percentage_complete_normalized = min(max(percentage_complete / 100.0, 0.0), 1.0)
+    
+    st.metric(label="**Themenspezifische ESRS**", value=checkbox_count)
+    st.write("Checkboxen wurden bis jetzt ausgewählt.")
+    st.write("Es fehlen noch: **" + str(number_of_missing_checkboxes) + "** Checkboxen.")
+    st.progress(percentage_complete_normalized)
+
+
 
 def calculate_percentages():
     checkbox_count = st.session_state['checkbox_count']
@@ -98,6 +122,9 @@ def display_complex_section(sections, section_key, section_title):
         for i, header in enumerate(headers):
             header_row[i + 1].write(header)
 
+        overall_selection = {}
+        all_validation_passed = True
+
         def create_section(title, topics):
             st.markdown(f"**{title}**")
             current_selection = {}
@@ -117,24 +144,27 @@ def display_complex_section(sections, section_key, section_title):
                     validation_passed = False
             return current_selection, validation_passed
 
-        all_validation_passed = True
         for section_title, topics in sections:
             current_selection, validation_passed = create_section(section_title, topics)
-            st.session_state['relevance_selection'] = {
-                **st.session_state['relevance_selection'],
-                **current_selection
-            }
+            # Merge the current selection with the overall selection
+            overall_selection.update(current_selection)
             if not validation_passed:
                 all_validation_passed = False
 
         submitted = st.form_submit_button("💾 Auswahl speichern")
         if submitted:
             if all_validation_passed:
+                # Update the session state once after processing all sections
+                st.session_state['relevance_selection'] = {
+                    **st.session_state.get('relevance_selection', {}),
+                    **overall_selection
+                }
                 st.success("Auswahl erfolgreich gespeichert!")
                 save_session_state()
-                st.experimental_rerun() 
+                st.experimental_rerun()
             else:
                 st.warning("Es darf nur eine Checkbox pro Zeile markiert sein.")
+
 
 def display_E1_Klimawandel():
     topics = [("Anpassung an Klimawandel", "Anpassung_an_den_Klimawandel"), ("Klimaschutz", "Klimaschutz"), ("Energie", "Energie")]
@@ -258,16 +288,15 @@ def display_G1_Unternehmenspolitik():
     display_section(topics, "G1", "Unternehmenspolitik")
 
 def display_page():
-    checkbox_count = count_checkboxes()
-    
     col1, col2 = st.columns([6, 1])
     with col1:
         st.header("Themenspezifische ESRS") 
+    
     with col2:
-        container = st.container(border=False)
-        with container:
-            st.write(f"{checkbox_count} von 93 bewertet")
-                      
+        # Count the checkboxes and display the result in col2
+        checkbox_count = count_checkboxes()
+        st.metric(label="**Markierte Checkboxen von 93**", value=checkbox_count)
+
     Text()
     
     tabs = st.tabs(["Klimawandel", "Umweltverschmutzung", "Wasser- und Meeressourcen", "Biodiversität", "Kreislaufwirtschaft", "Eigene Belegschaft", "Belegschaft Lieferkette", "Betroffene Gemeinschaften", "Verbraucher und Endnutzer", "Unternehmenspolitik"])
@@ -291,6 +320,6 @@ def display_page():
         display_S4_Verbraucher_und_Endnutzer()
     with tabs[9]:
         display_G1_Unternehmenspolitik()
-    
-   
 
+# This code block ensures that the state is loaded initially
+load_session_state()
