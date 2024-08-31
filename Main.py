@@ -52,7 +52,8 @@ menu_data = [
     {'id': 'Wesentlichkeitsanalyse', 'label': "Wesentlichkeitsanalyse", 'icon': "fas fa-file-alt"},
     {'id': 'Allgemeine_Angaben', 'label': "Allgemeine Angaben", 'icon': "fas fa-file-alt"},
     {'id': 'Mindestangabepflicht', 'label': "Mindestangabepflicht", 'icon': "fas fa-file-alt"},
-    {'id': 'Übersicht', 'label': "Übersicht", 'icon': "fas fa-info-circle"}
+    {'id': 'Übersicht', 'label': "Übersicht", 'icon': "fas fa-info-circle"},
+    {'id': 'Einstellungen', 'label': "Einstellungen", 'icon': "fas fa-cog"}  
 ]
 
 # Create the navigation bar
@@ -128,3 +129,6 @@ elif selected_menu == 'Allgemeine_Angaben':
 elif selected_menu == 'Mindestangabepflicht':
     import pages.Mindestangabepflicht as Mindestangabepflicht_page
     load_page_with_spinner(Mindestangabepflicht_page)
+elif selected_menu == 'Einstellungen':
+    import pages.Einstellungen as Einstellungen_page
+    load_page_with_spinner(Einstellungen_page)
