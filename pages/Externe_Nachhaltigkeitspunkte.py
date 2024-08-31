@@ -58,6 +58,15 @@ if 'sidebar_companies' not in st.session_state:
 if 'valid_stakeholder' not in st.session_state:
     st.session_state.valid_stakeholder = []
 
+#---------------------------------- Erstellen eines Platzhalters zur Vergrößerung vertikaler Abstände ----------------------------------#
+
+def plazhalter():
+    st.write(" ")
+    st.write(" ")
+    st.write(" ")
+    st.write(" ")
+    st.write(" ")
+
 #---------------------------------- Funktionen zur Anpassung von Stakeholder-Daten ----------------------------------#
 
 # Funktion zur Anpassung der Werte und Stakeholder-Namen in 'stakeholder_punkte_filtered' basierend auf 'new_df_copy' für nicht einbezogene Stakeholder
@@ -263,7 +272,7 @@ def remove_invalid_stakeholders():
 
 # Funktion zum Hochladen einer Excel-Datei und Verarbeiten der enthaltenen Daten
 def excel_upload():
-    
+    plazhalter()
     uploaded_file = st.file_uploader("Laden Sie hier die Excel-Dateien der Stakeholder hoch", type=['xlsx'])  # Zeige einen Datei-Uploader für Excel-Dateien an
     
     if uploaded_file:
@@ -285,12 +294,14 @@ def excel_upload():
             st.session_state.ranking_df = aggregate_rankings(combined_df)
             # Speichere den aggregierten Zustand
             save_session_state({'ranking_df': st.session_state.ranking_df})
+            plazhalter()
             
-            st.write("Vorschau der hochgeladenen Daten:")
-            # Zeige die aggregierten Daten in einer Vorschau an
-            response = display_aggrid(st.session_state.ranking_df)
-            st.session_state.grid_response = response
-            save_session_state({'grid_response': st.session_state.grid_response})
+            # Erstelle einen Expander für die Vorschau der hochgeladenen Daten
+            with st.expander("Vorschau der hochgeladenen Daten"):
+                # Zeige die aggregierten Daten in einer Vorschau an
+                response = display_aggrid(st.session_state.ranking_df)
+                st.session_state.grid_response = response
+                save_session_state({'grid_response': st.session_state.grid_response})
 
             if 'table2' not in st.session_state:
                 st.session_state.table2 = []

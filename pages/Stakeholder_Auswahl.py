@@ -31,11 +31,17 @@ def initialize_session_state():
     return True
 
 def clean_up_tables():
-    
     valid_groups = set(st.session_state['ranking_table']['Gruppe'].tolist())
+    
+    # Remove invalid entries from table1
     st.session_state.table1 = [item for item in st.session_state.get('table1', []) if item in valid_groups]
+    
+    # Remove invalid entries from table2
     st.session_state.table2 = [item for item in st.session_state.get('table2', []) if item in valid_groups]
-   
+
+    # Debugging output to verify cleanup
+    st.write("Cleaned table1: ", st.session_state.table1)
+    st.write("Cleaned table2: ", st.session_state.table2)
 
 def update_table1():
     current_ranking = st.session_state['ranking_table']['Gruppe'].tolist()
@@ -153,4 +159,7 @@ def display_page():
         st.write(" ")
         display_in_evaluation()
 
+    # Clean up tables before saving the state
+    clean_up_tables()
     save_state()
+
