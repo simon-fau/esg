@@ -11,17 +11,14 @@ def save_state():
 
 def initialize_session_state():
     if 'ranking_table' not in st.session_state or st.session_state['ranking_table'].empty:
-        st.error("No ranking table found or it is empty")
+        st.info("Noch keine Stakeholder hinzugefügt.")
         return False
-    st.write("Ranking Table: ", st.session_state['ranking_table'])
     
     if 'table1' not in st.session_state:
         st.session_state['table1'] = st.session_state['ranking_table']['Gruppe'].tolist()
-    st.write("Initialized table1: ", st.session_state.table1)  # Debugging output
     
     if 'table2' not in st.session_state:
         st.session_state['table2'] = []
-    st.write("Initialized table2: ", st.session_state.table2)  # Debugging output
 
     if 'checkbox_state_2' not in st.session_state:
         st.session_state['checkbox_state_2'] = False
@@ -38,10 +35,6 @@ def clean_up_tables():
     
     # Remove invalid entries from table2
     st.session_state.table2 = [item for item in st.session_state.get('table2', []) if item in valid_groups]
-
-    # Debugging output to verify cleanup
-    st.write("Cleaned table1: ", st.session_state.table1)
-    st.write("Cleaned table2: ", st.session_state.table2)
 
 def update_table1():
     current_ranking = st.session_state['ranking_table']['Gruppe'].tolist()

@@ -1,33 +1,27 @@
 import streamlit as st
 import os
+import pickle
+import shutil
 
-# Liste der Session State keys, die in Stakeholder_Management.py verwendet werden
-stakeholder_keys = [
-    'df', 
-    'ranking_table', 
-    'gruppe', 
-    'bestehende_beziehung', 
-    'auswirkung', 
-    'level_des_engagements', 
-    'stakeholdergruppe', 
-    'kommunikation', 
-    'art_der_betroffenheit', 
-    'zeithorizont',
-    'checkbox_state_1'
-]
+# Define the file paths
+STATE_FILE = 'a.pkl'
+DEFAULT_STATE_FILE = 'Grundlagen.pkl'
 
-# Funktion zum Löschen aller Stakeholder-Session-States
-def clear_stakeholder_session_states():
-    for key in stakeholder_keys:
-        if key in st.session_state:
-            del st.session_state[key]
+def reset_session_state():
+    st.session_state.clear()  # Clear all session state values
+    if os.path.exists(STATE_FILE):
+        shutil.copy(DEFAULT_STATE_FILE, STATE_FILE)  # Overwrite the state file with the default
+        st.success("Session state has been reset, and the default settings have been restored.")
+    else:
+        st.error("State file not found. Please ensure 'a.pkl' and 'Grundlagen.pkl' exist in the correct directory.")
 
-    # Optionale Datei löschen, falls die Sitzung gespeichert wurde
-    state_file = 'a.pkl'
-    if os.path.exists(state_file):
-        os.remove(state_file)
+# Display page content
+def display_settings_page():
+    st.header("Einstellungen")
+    st.markdown("Auf dieser Seite können Sie Ihre Einstellungen verwalten.")
+    
+    if st.button('🔄 Reset Session State'):
+        reset_session_state()
 
-# Button zum Löschen der Session States
-if st.button("Clear Stakeholder Management Session States"):
-    clear_stakeholder_session_states()
-    st.success("All Stakeholder Management session states have been cleared!")
+def display_page():
+    display_settings_page()

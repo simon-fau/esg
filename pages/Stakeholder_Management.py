@@ -34,13 +34,14 @@ if os.path.exists(STATE_FILE) and os.path.getsize(STATE_FILE) > 0:
             if key not in st.session_state:
                 st.session_state[key] = value
 
-# Initialisiere den DataFrame, falls er noch nicht existiert
+# Ensure that the DataFrame is initialized if it doesn't exist
 if 'df' not in st.session_state:
     st.session_state.df = initialize_df()
 
-# Initialisiere die Ranking-Tabelle, falls sie noch nicht existiert
+# Ensure that the ranking table is initialized if it doesn't exist
 if 'ranking_table' not in st.session_state:
     st.session_state.ranking_table = pd.DataFrame(columns=["Gruppe", "Score", "Ranking"])
+
 
 # Funktion zur Berechnung des Scores für eine Zeile
 def calculate_score(row):
@@ -152,17 +153,25 @@ def add_new_row(gruppe, bestehende_beziehung, auswirkung, level_des_engagements,
 
 # Hauptfunktion zum Anzeigen des Stakeholder-Managements
 def display_stakeholder_management():
+    # Initialize DataFrame if not present
+    if 'df' not in st.session_state:
+        st.session_state.df = initialize_df()
+
+    # Initialize ranking table if not present
+    if 'ranking_table' not in st.session_state:
+        st.session_state.ranking_table = pd.DataFrame(columns=["Gruppe", "Score", "Ranking"])
+
     with st.sidebar:
         st.markdown("---")
         inputs = sidebar()
-    
+
     if st.session_state.df.empty:
         st.info("Keine Daten vorhanden.")
     else:
         grid_response = display_grid()
         if st.button('🗑️ Zeile löschen') and grid_response:
             delete_selected_rows(grid_response)
-    
+
     if inputs[-1]:  # add_row is the last element in the tuple 'inputs'
         add_new_row(*inputs[:-1])
 
@@ -206,8 +215,7 @@ def check_abgeschlossen_stakeholder_management():
     
 # Hauptfunktion zum Anzeigen der Seite
 def display_page():
-    if 'ranking_table' in st.session_state:
-        st.write(st.session_state.ranking_table)
+    
     col1, col2 = st.columns([7, 1])
     with col1:
         st.header("Stakeholder-Management")

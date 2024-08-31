@@ -2,7 +2,7 @@ import streamlit as st
 import altair as alt
 import pandas as pd
 from pages.Stakeholder_Management import stakeholder_ranking
-from pages.Externe_Nachhaltigkeitspunkte import calculate_class_size, calculate_selected_rows, display_aggrid
+from pages.Externe_Nachhaltigkeitspunkte import display_aggrid
 from pages.Longlist import  bewertung_Uebersicht_Nein,  bewertung_Uebersicht, anzahl_punkte_Longlist, count_top_down_points, count_internal_points, count_stakeholder_points
 from pages.Shortlist import Balken_Finanzbezogen_Stakeholder,Balken_Auswirkungsbezogen_Stakeholder, chart_übersicht_allgemein_test_2, Balken_Finanzbezogen, chart_auswirkungsbezogen, chart_finanzbezogen, Balken_Auswirkungsbezogen
 from pages.Themenspezifische_ESRS import calculate_percentages, checkboxes_count
@@ -10,28 +10,6 @@ from pages.Themenspezifische_ESRS import calculate_percentages, checkboxes_count
 # Ensure 'checkbox_count' is initialized
 if 'checkbox_count' not in st.session_state:
     st.session_state['checkbox_count'] = 0
-
-def display_stakeholder_table():
-    class_size = calculate_class_size(st.session_state.stakeholder_punkte_df)
-    stakeholder_punkte_filtered = calculate_selected_rows(st.session_state.stakeholder_punkte_df, class_size)
-    st.session_state.stakeholder_punkte_filtered = stakeholder_punkte_filtered
-
-    if not stakeholder_punkte_filtered.empty:
-        stakeholder_punkte_filtered.reset_index(inplace=True)
-        stakeholder_punkte_filtered.rename(columns={'index': '_index'}, inplace=True)
-
-        # Ensure "Platzierung" is the first column
-        columns = stakeholder_punkte_filtered.columns.tolist()
-        if 'Platzierung' in columns:
-            columns.insert(0, columns.pop(columns.index('Platzierung')))
-        stakeholder_punkte_filtered = stakeholder_punkte_filtered[columns]
-
-        # Remove the "Quelle" column if it exists
-        if 'Quelle' in stakeholder_punkte_filtered.columns:
-            stakeholder_punkte_filtered = stakeholder_punkte_filtered.drop(columns=['Quelle'])
-
-        # Display the table without checkboxes
-        grid_response = display_aggrid(stakeholder_punkte_filtered.drop(columns=['_index']), with_checkboxes=False)
 
 def count_shortlist_points():
     if 'filtered_df' in st.session_state:
