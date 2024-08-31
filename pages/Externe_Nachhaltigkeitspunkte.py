@@ -190,13 +190,13 @@ def stakeholder_punkte():
 
 # Funktion zur Anzeige von Stakeholdern in der Seitenleiste. DAbei werden nur Stakeholder angezeigt, die in valid_stakeholder enthalten sind
 def display_sidebar_items():
+    remove_invalid_stakeholders()
+    
     with st.sidebar:
-        st.markdown("---")  # Trennlinie in der Seitenleiste
+        st.markdown("---")
         st.write("**Bereits in Bewertung aufgenommen:**")
-        if 'sidebar_companies' in st.session_state and st.session_state.sidebar_companies:
-            for company in st.session_state.sidebar_companies:
-                if company in st.session_state.valid_stakeholder:  # Überprüfe, ob das Unternehmen ein gültiger Stakeholder ist
-                    st.sidebar.write(f"- {company}")
+        for item in st.session_state.sidebar_companies:
+            st.write(item)
 
 # Funktion zur Anzeige der Fortschrittsanzeige
 def display_not_in_sidebar_count():
@@ -263,7 +263,8 @@ def remove_invalid_stakeholders():
 
 # Funktion zum Hochladen einer Excel-Datei und Verarbeiten der enthaltenen Daten
 def excel_upload():
-    uploaded_file = st.file_uploader("Excel-Datei hochladen", type=['xlsx'])  # Zeige einen Datei-Uploader für Excel-Dateien an
+    
+    uploaded_file = st.file_uploader("Laden Sie hier die Excel-Dateien der Stakeholder hoch", type=['xlsx'])  # Zeige einen Datei-Uploader für Excel-Dateien an
     
     if uploaded_file:
         df_list = []
@@ -364,8 +365,6 @@ def excel_upload():
     # new_df_copy ist ein DataFrame, der alle Inhalte eines jeden Stakeholders speichert, um bei entfernen eines Stakeholders noch die INhlate und dessen Bewertungen
     if 'new_df_copy' in st.session_state:
         refresh_new_df_copy()
-        st.write("Kopie von neuen Daten:")
-        st.dataframe(st.session_state.new_df_copy)
 
 #---------------------------------- Hauptseite anzeigen ----------------------------------#
 
@@ -386,11 +385,12 @@ def display_page():
     
     # Füge eine Beschreibung der Seite hinzu
     st.markdown("""
-        Dieses Tool hilft Ihnen, Ihre Stakeholder effektiv zu verwalten und zu analysieren. Sie können relevante Informationen über verschiedene Stakeholdergruppen hinzufügen, bearbeiten und visualisieren. Die Daten helfen Ihnen, Strategien für den Umgang mit Ihren Stakeholdern zu entwickeln und zu priorisieren, basierend auf verschiedenen Kriterien wie Engagement-Level und Kommunikationshäufigkeit.
+        Hier können Sie Stakeholder-Bewertungen verwalten und aktualisieren. Laden Sie hierzu die von den Stakeholdern bereitgestellten Excel_Datein hoch und fügen Sie diese zur Bewertung hinzu. Von jeder hochgeladenen Excel wird Ihnen eine Vorschau der bewerteten Punkte angezeigt. Diesen Punkten müssen Sie dann die entsprechenden Stakeholder über die Selectbox zuordnen.
+        Im Tab "Übersicht Stakeholderbewertung" können Sie die aggregierten Stakeholder-Bewertungen einsehen.
     """)
 
     # Erstelle Tabs für die Auswahl und das Ranking der Stakeholderbewertung
-    tab1, tab2 = st.tabs(["Auswahl", "Ranking der Stakeholderbewertung"])
+    tab1, tab2 = st.tabs(["Hochladen der Bewertungen", "Übersicht der Bewertung"])
     with tab1:
         excel_upload()  # Ermögliche das Hochladen und Verarbeiten von Excel-Dateien
         display_sidebar_items()  # Zeige die bereits bewerteten Stakeholder in der Seitenleiste an
