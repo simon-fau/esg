@@ -203,16 +203,24 @@ def stakeholder_punkte():
     else:
         st.info("No stakeholder data available to display.")
 
-    st.write(st.session_state.stakeholder_punkte_filtered)
-
 
 #---------------------------------- Seitenleiste und Fortschrittsanzeige ----------------------------------#
 
 # Funktion zur Anzeige von Stakeholdern in der Seitenleiste. DAbei werden nur Stakeholder angezeigt, die in valid_stakeholder enthalten sind
 def display_sidebar_items():
     remove_invalid_stakeholders()
-    
+
     with st.sidebar:
+
+        st.markdown("---")
+        # Multiselect-Box für Stakeholder, die sich sowohl in table2 als auch in der Sidebar befinden
+        valid_options = [stakeholder for stakeholder in st.session_state.table2 if stakeholder in st.session_state.sidebar_companies]
+        selected_stakeholders = st.multiselect('Stakeholder-Bewertung entfernen:', valid_options)
+
+        # Button zum Verschieben der ausgewählten Stakeholder von table2 nach table1
+        if st.button('Entfernen'):
+            move_stakeholders(selected_stakeholders)
+
         st.markdown("---")
         st.write("**Bereits in Bewertung aufgenommen:**")
         for item in st.session_state.sidebar_companies:
@@ -309,8 +317,6 @@ def re_add_stakeholder(stakeholder_name, new_data):
     
     save_session_state({'new_df_copy': st.session_state.new_df_copy,
                         'stakeholder_punkte_filtered': st.session_state.stakeholder_punkte_filtered})
-
-
 
 
 # Function to remove invalid stakeholders from the sidebar and associated data from session state
@@ -463,13 +469,25 @@ def refresh_session_state():
     save_session_state({'stakeholder_punkte_filtered': st.session_state.get('stakeholder_punkte_filtered', pd.DataFrame())})
     save_session_state({'stakeholder_punkte_df': st.session_state.get('stakeholder_punkte_df', pd.DataFrame())})
 
+# Funktion zum Verschieben von Stakeholdern von table2 nach table1
+def move_stakeholders(selected_stakeholders):
+    if selected_stakeholders:
+        # Stakeholder aus table2 entfernen und zu table1 hinzufügen
+        st.session_state.table2 = [stakeholder for stakeholder in st.session_state.table2 if stakeholder not in selected_stakeholders]
+        st.session_state.table1.extend(selected_stakeholders)
+        
+        # Speichern des aktualisierten Sitzungszustands
+        save_session_state({'table2': st.session_state.table2, 'table1': st.session_state.table1})
+        
+        # Erfolgsmeldung anzeigen und die Seite neu laden
+        st.success(f"{len(selected_stakeholders)} Stakeholder erfolgreich verschoben!")
+        st.experimental_rerun()
+
 #---------------------------------- Hauptseite anzeigen ----------------------------------#
 
 # Main function to display the page content
 def display_page():
-    #st.write(st.session_state.stakeholder_punkte_filtered)
-    #st.write(st.session_state.new_df_copy)
-
+    
     # Update the new data copy and other necessary session data
     refresh_new_df_copy()
     
@@ -498,4 +516,3 @@ def display_page():
         stakeholder_punkte()  # Display stakeholder points in a table
     
     refresh_session_state()  # Refresh the session state to ensure all data is up to date
-    
