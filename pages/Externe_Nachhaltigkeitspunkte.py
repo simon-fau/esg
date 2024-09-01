@@ -357,7 +357,13 @@ def excel_upload():
                         merged_df['Stakeholder Bew Auswirkung'] = merged_df['Stakeholder Bew Auswirkung_x'].add(merged_df['Stakeholder Bew Auswirkung_y'], fill_value=0).astype(int)
                         merged_df['Stakeholder Bew Finanzen'] = merged_df['Stakeholder Bew Finanzen_x'].add(merged_df['Stakeholder Bew Finanzen_y'], fill_value=0).astype(int)
                         merged_df['Stakeholder Gesamtbew'] = merged_df['Stakeholder Gesamtbew_x'].add(merged_df['Stakeholder Gesamtbew_y'], fill_value=0).astype(int)
-                        merged_df['Stakeholder'] = merged_df.apply(lambda row: ', '.join(filter(None, [row.get('Stakeholder_x', ''), row.get('Stakeholder_y', '')])), axis=1)
+                        # When merging data, ensure no 'nan' is present in the 'Stakeholder' field
+                        merged_df['Stakeholder'] = merged_df.apply(
+                            lambda row: ', '.join(filter(lambda x: pd.notna(x) and x != 'nan', 
+                                                        [str(row.get('Stakeholder_x', '')), str(row.get('Stakeholder_y', ''))])), 
+                            axis=1
+                        )
+
                         merged_df.drop(columns=['Stakeholder Bew Auswirkung_x', 'Stakeholder Bew Auswirkung_y', 'Stakeholder Bew Finanzen_x', 'Stakeholder Bew Finanzen_y', 'Stakeholder Gesamtbew_x', 'Stakeholder Gesamtbew_y', 'Stakeholder_x', 'Stakeholder_y'], inplace=True)
                         st.session_state.stakeholder_punkte_df = merged_df
                     else:
@@ -390,6 +396,8 @@ def excel_upload():
 
 # Funktion zur Anzeige der Hauptseite
 def display_page():
+    st.write(st.session_state.stakeholder_punkte_filtered)
+    st.write(st.session_state.new_df_copy)
 
     # Aktualisiere die neue Datenkopie und andere notwendige Sitzungsdaten
     refresh_new_df_copy()
