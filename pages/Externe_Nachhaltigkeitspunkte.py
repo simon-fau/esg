@@ -270,27 +270,42 @@ def refresh_new_df_copy():
 # Function to remove entries related to a stakeholder from new_df_copy and stakeholder_punkte_filtered
 def remove_stakeholder_entries(stakeholder_name):
     if 'new_df_copy' in st.session_state:
-        # Remove entries from new_df_copy
+        # Remove all entries related to the stakeholder from new_df_copy
         st.session_state.new_df_copy = st.session_state.new_df_copy[
-            ~st.session_state.new_df_copy['Stakeholder'].str.contains(stakeholder_name)
+            ~st.session_state.new_df_copy['Stakeholder'].str.contains(stakeholder_name, case=False, na=False)
         ]
         save_session_state({'new_df_copy': st.session_state.new_df_copy})
 
     if 'stakeholder_punkte_filtered' in st.session_state:
-        # Remove entries from stakeholder_punkte_filtered
+        # Remove all entries related to the stakeholder from stakeholder_punkte_filtered
         st.session_state.stakeholder_punkte_filtered = st.session_state.stakeholder_punkte_filtered[
-            ~st.session_state.stakeholder_punkte_filtered['Stakeholder'].str.contains(stakeholder_name)
+            ~st.session_state.stakeholder_punkte_filtered['Stakeholder'].str.contains(stakeholder_name, case=False, na=False)
         ]
         save_session_state({'stakeholder_punkte_filtered': st.session_state.stakeholder_punkte_filtered})
 
-# Process to re-add a stakeholder
+    if 'stakeholder_punkte_df' in st.session_state:
+        # Ensure the main DataFrame is also cleared of the stakeholder
+        st.session_state.stakeholder_punkte_df = st.session_state.stakeholder_punkte_df[
+            ~st.session_state.stakeholder_punkte_df['Stakeholder'].str.contains(stakeholder_name, case=False, na=False)
+        ]
+        save_session_state({'stakeholder_punkte_df': st.session_state.stakeholder_punkte_df})
+
+
+# Function to add a stakeholder and ensure no residual data persists
 def re_add_stakeholder(stakeholder_name, new_data):
-    # Clear any existing data for this stakeholder
+    # First remove any existing data for this stakeholder
     remove_stakeholder_entries(stakeholder_name)
     
     # Add the new data
-    st.session_state.new_df_copy = pd.concat([st.session_state.new_df_copy, new_data], ignore_index=True)
-    st.session_state.stakeholder_punkte_filtered = pd.concat([st.session_state.stakeholder_punkte_filtered, new_data], ignore_index=True)
+    if 'new_df_copy' in st.session_state:
+        st.session_state.new_df_copy = pd.concat([st.session_state.new_df_copy, new_data], ignore_index=True)
+    else:
+        st.session_state.new_df_copy = new_data.copy()
+
+    if 'stakeholder_punkte_filtered' in st.session_state:
+        st.session_state.stakeholder_punkte_filtered = pd.concat([st.session_state.stakeholder_punkte_filtered, new_data], ignore_index=True)
+    else:
+        st.session_state.stakeholder_punkte_filtered = new_data.copy()
     
     save_session_state({'new_df_copy': st.session_state.new_df_copy,
                         'stakeholder_punkte_filtered': st.session_state.stakeholder_punkte_filtered})
@@ -442,12 +457,18 @@ def excel_upload():
     if 'new_df_copy' in st.session_state:
         refresh_new_df_copy()
 
+def refresh_session_state():
+    # Force save all session states to ensure they are updated
+    save_session_state({'new_df_copy': st.session_state.get('new_df_copy', pd.DataFrame())})
+    save_session_state({'stakeholder_punkte_filtered': st.session_state.get('stakeholder_punkte_filtered', pd.DataFrame())})
+    save_session_state({'stakeholder_punkte_df': st.session_state.get('stakeholder_punkte_df', pd.DataFrame())})
+
 #---------------------------------- Hauptseite anzeigen ----------------------------------#
 
 # Main function to display the page content
 def display_page():
-    st.write(st.session_state.stakeholder_punkte_filtered)
-    st.write(st.session_state.new_df_copy)
+    #st.write(st.session_state.stakeholder_punkte_filtered)
+    #st.write(st.session_state.new_df_copy)
 
     # Update the new data copy and other necessary session data
     refresh_new_df_copy()
@@ -475,3 +496,6 @@ def display_page():
 
     with tab2:
         stakeholder_punkte()  # Display stakeholder points in a table
+    
+    refresh_session_state()  # Refresh the session state to ensure all data is up to date
+    
