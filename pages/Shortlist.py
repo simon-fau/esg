@@ -22,7 +22,6 @@ if 'filtered_df' not in st.session_state:
     st.session_state['filtered_df'] = pd.DataFrame()  # Initialize as an empty DataFrame
 
 def Chart(intersection_value, stakeholder_importance_value):
-    st.header("Graphische Übersicht")
 
     if 'selected_columns' in st.session_state and len(st.session_state['selected_columns']) > 0:
         selected_columns = st.session_state['selected_columns']
@@ -223,6 +222,7 @@ def display_page():
         st.header("Erstellung der Shortlist")
     with col2:
         check_abgeschlossen_shortlist()
+    st.write("Hier können Sie die Shortlist auf Bais ihrer Bewertungen in der Longlist erstellen. Um die Shortlist zu erstellen, müssen Sie zunächst die Grenzwerte für die Relevanz der Themen und Stakeholder festlegen. Anschließend können Sie die Shortlist anhand der festgelegten Grenzwerte filtern und die Ergebnisse in einer Excel-Datei speichern.")
     display_slider()
     if 'apply_changes' in st.session_state and st.session_state['apply_changes']:
         Chart(st.session_state['intersection_value'], st.session_state['stakeholder_importance_value'])

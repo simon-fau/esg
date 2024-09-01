@@ -179,28 +179,29 @@ def display_aggrid(df):
 
 # Funktion zur Anzeige der Stakeholder-Punkte-Tabelle
 def stakeholder_punkte():
-    # Überprüfe, ob 'stakeholder_punkte_filtered' im Sitzungszustand verfügbar ist
+    # Check if 'stakeholder_punkte_filtered' is in session state
     if 'stakeholder_punkte_filtered' in st.session_state:
-        # Entferne Zeilen, bei denen die 'Stakeholder'-Spalte leer ist
-        st.session_state.stakeholder_punkte_filtered = st.session_state.stakeholder_punkte_filtered[
-            st.session_state.stakeholder_punkte_filtered['Stakeholder'].str.strip() != ''
-        ]
-        
-        # Speichere den aktualisierten Zustand
-        save_session_state({'stakeholder_punkte_filtered': st.session_state.stakeholder_punkte_filtered})
-
-        # Stelle sicher, dass es sich um einen DataFrame handelt
-        if isinstance(st.session_state.stakeholder_punkte_filtered, pd.DataFrame):
-            # Zeige die gefilterten Stakeholder-Punkte mit AgGrid an
-            response = display_aggrid(st.session_state.stakeholder_punkte_filtered)
+        # Check if 'Stakeholder' column exists
+        if 'Stakeholder' in st.session_state.stakeholder_punkte_filtered.columns:
+            # Remove rows where 'Stakeholder' column is empty or just spaces
+            st.session_state.stakeholder_punkte_filtered = st.session_state.stakeholder_punkte_filtered[
+                st.session_state.stakeholder_punkte_filtered['Stakeholder'].str.strip() != ''
+            ]
             
-            # Speichere die Antwort von AgGrid im Sitzungszustand für die weitere Verarbeitung
-            st.session_state.grid_response = response
-            save_session_state({'grid_response': st.session_state.grid_response})
+            # Save updated state
+            save_session_state({'stakeholder_punkte_filtered': st.session_state.stakeholder_punkte_filtered})
+            
+            # Ensure it's a DataFrame and not empty
+            if isinstance(st.session_state.stakeholder_punkte_filtered, pd.DataFrame) and not st.session_state.stakeholder_punkte_filtered.empty:
+                response = display_aggrid(st.session_state.stakeholder_punkte_filtered)
+                st.session_state.grid_response = response
+                save_session_state({'grid_response': st.session_state.grid_response})
+            else:
+                st.info("No stakeholder data available to display.")
         else:
-            st.info("Keine Stakeholder-Daten zum Anzeigen verfügbar.")  # Zeige eine Info-Nachricht an, wenn keine Daten verfügbar sind
+            st.error("The 'Stakeholder' column is missing in the data.")
     else:
-        st.info("Keine Stakeholder-Daten zum Anzeigen verfügbar.")  # Zeige eine Info-Nachricht an, wenn keine Daten verfügbar sind
+        st.info("No stakeholder data available to display.")
 
 
 #---------------------------------- Seitenleiste und Fortschrittsanzeige ----------------------------------#

@@ -288,14 +288,16 @@ def display_G1_Unternehmenspolitik():
     display_section(topics, "G1", "Unternehmenspolitik")
 
 def display_page():
-    col1, col2 = st.columns([6, 1])
+    col1, col2 = st.columns([6, 1.5])
     with col1:
         st.header("Themenspezifische ESRS") 
     
     with col2:
-        # Count the checkboxes and display the result in col2
-        checkbox_count = count_checkboxes()
-        st.metric(label="**Markierte Checkboxen von 93**", value=checkbox_count)
+        container = st.container(border=True)
+        with container:
+            # Count the checkboxes and display the result in col2
+            checkbox_count = count_checkboxes()
+            st.metric(label="**Markierte Checkboxen von 93**", value=checkbox_count)
 
     Text()
     
