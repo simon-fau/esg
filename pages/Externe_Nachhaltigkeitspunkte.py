@@ -203,6 +203,8 @@ def stakeholder_punkte():
     else:
         st.info("No stakeholder data available to display.")
 
+    st.write(st.session_state.stakeholder_punkte_filtered)
+
 
 #---------------------------------- Seitenleiste und Fortschrittsanzeige ----------------------------------#
 
@@ -265,17 +267,65 @@ def refresh_new_df_copy():
         save_session_state({'new_df_copy': st.session_state.new_df_copy,
                             'stakeholder_punkte_filtered': st.session_state.stakeholder_punkte_filtered})
 
-# Funktion zum Entfernen ungültiger Stakeholder aus der Seitenleiste
+# Function to remove entries related to a stakeholder from new_df_copy and stakeholder_punkte_filtered
+def remove_stakeholder_entries(stakeholder_name):
+    if 'new_df_copy' in st.session_state:
+        # Remove entries from new_df_copy
+        st.session_state.new_df_copy = st.session_state.new_df_copy[
+            ~st.session_state.new_df_copy['Stakeholder'].str.contains(stakeholder_name)
+        ]
+        save_session_state({'new_df_copy': st.session_state.new_df_copy})
+
+    if 'stakeholder_punkte_filtered' in st.session_state:
+        # Remove entries from stakeholder_punkte_filtered
+        st.session_state.stakeholder_punkte_filtered = st.session_state.stakeholder_punkte_filtered[
+            ~st.session_state.stakeholder_punkte_filtered['Stakeholder'].str.contains(stakeholder_name)
+        ]
+        save_session_state({'stakeholder_punkte_filtered': st.session_state.stakeholder_punkte_filtered})
+
+# Process to re-add a stakeholder
+def re_add_stakeholder(stakeholder_name, new_data):
+    # Clear any existing data for this stakeholder
+    remove_stakeholder_entries(stakeholder_name)
+    
+    # Add the new data
+    st.session_state.new_df_copy = pd.concat([st.session_state.new_df_copy, new_data], ignore_index=True)
+    st.session_state.stakeholder_punkte_filtered = pd.concat([st.session_state.stakeholder_punkte_filtered, new_data], ignore_index=True)
+    
+    save_session_state({'new_df_copy': st.session_state.new_df_copy,
+                        'stakeholder_punkte_filtered': st.session_state.stakeholder_punkte_filtered})
+
+
+
+
+# Function to remove invalid stakeholders from the sidebar and associated data from session state
 def remove_invalid_stakeholders():
     if 'table2' in st.session_state and 'ranking_table' in st.session_state:
-        # Bestimme gültige Stakeholder
+        # Determine valid stakeholders
         valid_stakeholders = set(st.session_state.ranking_table['Gruppe'].tolist()).intersection(set(st.session_state.table2))
-        # Filtere die Seitenleisten-Unternehmen, um nur gültige Stakeholder beizubehalten
+        # Filter the sidebar companies to keep only valid stakeholders
+        removed_stakeholders = [item for item in st.session_state.sidebar_companies if item not in valid_stakeholders]
         st.session_state.sidebar_companies = [item for item in st.session_state.sidebar_companies if item in valid_stakeholders]
-        # Speichere den aktualisierten Zustand
         save_session_state({'sidebar_companies': st.session_state.sidebar_companies})
-        # Aktualisiere die neue Datenkopie
+        
+        # Remove entries of removed stakeholders from new_df_copy and stakeholder_punkte_filtered
+        for stakeholder in removed_stakeholders:
+            remove_stakeholder_entries(stakeholder)
+
+        # Update the new data copy
         refresh_new_df_copy()
+
+# Refresh new_df_copy by updating the status and adjusting the stakeholder points
+def refresh_new_df_copy():
+    if 'new_df_copy' in st.session_state and 'stakeholder_punkte_filtered' in st.session_state:
+        st.session_state.new_df_copy = update_status(st.session_state.new_df_copy)
+        st.session_state.stakeholder_punkte_filtered = adjust_stakeholder_punkte_filtered(
+            st.session_state.new_df_copy,
+            st.session_state.stakeholder_punkte_filtered
+        )
+        save_session_state({'new_df_copy': st.session_state.new_df_copy,
+                            'stakeholder_punkte_filtered': st.session_state.stakeholder_punkte_filtered})
+
 
 #---------------------------------- Excel-Datei hochladen und Daten verarbeiten ----------------------------------#
 
@@ -394,34 +444,34 @@ def excel_upload():
 
 #---------------------------------- Hauptseite anzeigen ----------------------------------#
 
-# Funktion zur Anzeige der Hauptseite
+# Main function to display the page content
 def display_page():
     st.write(st.session_state.stakeholder_punkte_filtered)
     st.write(st.session_state.new_df_copy)
 
-    # Aktualisiere die neue Datenkopie und andere notwendige Sitzungsdaten
+    # Update the new data copy and other necessary session data
     refresh_new_df_copy()
     
-    # Erstelle zwei Spalten für das Layout
+    # Create two columns for layout
     col1, col2 = st.columns([3, 1.3])
     with col1:
-        st.header("Stakeholder-Management")  # Setze den Hauptheader der Seite
+        st.header("Stakeholder-Management")  # Set the main header of the page
     with col2:
         container = st.container(border=True)
         with container:
-            display_not_in_sidebar_count()  # Zeige die Anzahl fehlender Stakeholder-Bewertungen an
+            display_not_in_sidebar_count()  # Show the count of missing stakeholder evaluations
     
-    # Füge eine Beschreibung der Seite hinzu
+    # Add a description of the page
     st.markdown("""
         Hier können Sie Stakeholder-Bewertungen verwalten und aktualisieren. Laden Sie hierzu die von den Stakeholdern bereitgestellten Excel_Datein hoch und fügen Sie diese zur Bewertung hinzu. Von jeder hochgeladenen Excel wird Ihnen eine Vorschau der bewerteten Punkte angezeigt. Diesen Punkten müssen Sie dann die entsprechenden Stakeholder über die Selectbox zuordnen.
         Im Tab "Übersicht Stakeholderbewertung" können Sie die aggregierten Stakeholder-Bewertungen einsehen.
     """)
 
-    # Erstelle Tabs für die Auswahl und das Ranking der Stakeholderbewertung
+    # Create tabs for stakeholder rating selection and ranking
     tab1, tab2 = st.tabs(["Hochladen der Bewertungen", "Übersicht der Bewertung"])
     with tab1:
-        excel_upload()  # Ermögliche das Hochladen und Verarbeiten von Excel-Dateien
-        display_sidebar_items()  # Zeige die bereits bewerteten Stakeholder in der Seitenleiste an
+        excel_upload()  # Allow uploading and processing of Excel files
+        display_sidebar_items()  # Show already rated stakeholders in the sidebar
 
     with tab2:
-        stakeholder_punkte()  # Zeige die Stakeholder-Punkte in einer Tabelle an
+        stakeholder_punkte()  # Display stakeholder points in a table
