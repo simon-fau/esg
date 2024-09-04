@@ -3,7 +3,6 @@ import os
 import shutil
 from openpyxl import load_workbook
 
-
 # Define the file paths
 STATE_FILE = 'a.pkl'
 BACKUP_STATE_FILE = 'ab.pkl'
@@ -111,6 +110,23 @@ def Ausleitung_Excel():
             general_sheet[f'C{row_index}'] = entry
             row_index += 1
 
+    # Add Mindestangaben to the "Mindestangaben" sheet if it exists
+    if 'Antworten_MDR' in st.session_state:
+        if 'Mindestangaben' not in workbook.sheetnames:
+            st.error("Das Blatt 'Mindestangaben' existiert nicht in der Datei.")
+            return
+        
+        # Select the 'Mindestangaben' worksheet
+        min_sheet = workbook['Mindestangaben']
+
+        # Write the Antworten_MDR data into column C starting at row 2
+        mdr_data = st.session_state['Antworten_MDR']
+        row_index = 2  # Start from row 2 in the Mindestangaben sheet
+
+        for entry in mdr_data:
+            min_sheet[f'C{row_index}'] = entry
+            row_index += 1
+
     # Save the new Excel file with the name 'Ergebnisse_WA.xlsx'
     output_file = 'Ergebnisse_WA.xlsx'
     
@@ -140,8 +156,7 @@ def display_page():
     with col2:
         Ausleitung_Excel()
 
-
-
+    
 
 
 
