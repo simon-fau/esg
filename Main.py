@@ -53,7 +53,7 @@ menu_data = [
     {'id': 'Allgemeine_Angaben', 'label': "Allgemeine Angaben", 'icon': "fas fa-file-alt"},
     {'id': 'Mindestangabepflicht', 'label': "Mindestangabepflicht", 'icon': "fas fa-file-alt"},
     {'id': 'Übersicht', 'label': "Übersicht", 'icon': "fas fa-info-circle"},
-    {'id': 'Einstellungen', 'label': "Einstellungen", 'icon': "fas fa-cog"}  
+    {'id': 'Einstellungen', 'label': "Einstellungen & Ausleitung", 'icon': "fas fa-cog"}  
 ]
 
 # Create the navigation bar
