@@ -93,7 +93,7 @@ def add_button_selection():
     )
     if st.button("Hinzufügen >>>"):
         add_to_table2(selected_table1)
-        st.experimental_rerun()
+        st.rerun()
 
 def remove_button_selection():
     selected_table2 = st.multiselect(
@@ -103,7 +103,7 @@ def remove_button_selection():
     )
     if st.button("<<< Entfernen"):
         remove_from_table2(selected_table2)
-        st.experimental_rerun()
+        st.rerun()
 
 def check_abgeschlossen_stakeholder_auswahl():
     if 'checkbox_state_2' not in st.session_state:

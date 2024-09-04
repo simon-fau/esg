@@ -452,7 +452,7 @@ def excel_upload():
 
                     st.session_state.uploaded_file = None
                     save_session_state({'uploaded_file': st.session_state.uploaded_file})
-                    st.experimental_rerun()
+                    st.rerun()
                 else:
                     if not options:
                         st.info("Punkte können nicht übernommen werden. Bitte fügen Sie den entsprechenden Stakeholder unter hinzu und/oder nehmen sie diesen explizit in die Bewertung auf.")
@@ -481,7 +481,7 @@ def move_stakeholders(selected_stakeholders):
         
         # Erfolgsmeldung anzeigen und die Seite neu laden
         st.success(f"{len(selected_stakeholders)} Stakeholder erfolgreich verschoben!")
-        st.experimental_rerun()
+        st.rerun()
 
 #---------------------------------- Hauptseite anzeigen ----------------------------------#
 

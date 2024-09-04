@@ -134,7 +134,7 @@ def delete_selected_rows(grid_response):
     
     # Speichern des Zustands und Neuladen der Anwendung
     save_state()
-    st.experimental_rerun()
+    st.rerun()
 
 def add_new_row(gruppe, bestehende_beziehung, auswirkung, level_des_engagements, stakeholdergruppe, kommunikation, art_der_betroffenheit, zeithorizont):
     new_row = pd.DataFrame({

@@ -158,7 +158,7 @@ def display_slider():
         st.session_state['intersection_value'] = intersection_value
         st.session_state['stakeholder_importance_value'] = stakeholder_importance_value
         st.session_state['apply_changes'] = True
-        st.experimental_rerun()
+        st.rerun()
 
 template_path = os.path.join(os.path.dirname(__file__), 'Templates', 'Ausführung.xlsx')
 

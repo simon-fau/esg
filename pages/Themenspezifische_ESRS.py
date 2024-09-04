@@ -91,7 +91,7 @@ def display_section(topics, section_key, section_title):
                 st.session_state['relevance_selection'] = {**st.session_state['relevance_selection'], **current_selection}
                 st.success("Auswahl erfolgreich gespeichert!")
                 save_session_state()
-                st.experimental_rerun()
+                st.rerun()
             else:
                 st.warning("Es darf nur eine Checkbox pro Zeile markiert sein.")
 
@@ -143,7 +143,7 @@ def display_complex_section(sections, section_key, section_title):
                 }
                 st.success("Auswahl erfolgreich gespeichert!")
                 save_session_state()
-                st.experimental_rerun()
+                st.rerun()
             else:
                 st.warning("Es darf nur eine Checkbox pro Zeile markiert sein.")
 

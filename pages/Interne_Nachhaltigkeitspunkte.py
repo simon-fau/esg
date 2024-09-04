@@ -133,14 +133,14 @@ def add_empty_row():
     empty_row = {"Thema": "", "Unterthema": "", "Unter-Unterthema": ""}
     st.session_state.df2 = st.session_state.df2._append(empty_row, ignore_index=True)
     save_session_state({'df2': st.session_state.df2})
-    st.experimental_rerun()
+    st.rerun()
 
 def delete_selected_rows(grid_response):
     selected_rows = grid_response['selected_rows']
     selected_indices = [row['index'] for row in selected_rows]
     st.session_state.df2 = st.session_state.df2.drop(selected_indices)
     save_session_state({'df2': st.session_state.df2})
-    st.experimental_rerun()
+    st.rerun()
 
 def transfer_data_to_excel(dataframe):
     shutil.copyfile(TEMPLATE_PATH, TEMP_EXCEL_PATH)
