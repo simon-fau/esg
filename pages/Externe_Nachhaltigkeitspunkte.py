@@ -181,27 +181,32 @@ def display_aggrid(df):
 def stakeholder_punkte():
     # Check if 'stakeholder_punkte_filtered' is in session state
     if 'stakeholder_punkte_filtered' in st.session_state:
-        # Check if 'Stakeholder' column exists
-        if 'Stakeholder' in st.session_state.stakeholder_punkte_filtered.columns:
-            # Remove rows where 'Stakeholder' column is empty or just spaces
-            st.session_state.stakeholder_punkte_filtered = st.session_state.stakeholder_punkte_filtered[
-                st.session_state.stakeholder_punkte_filtered['Stakeholder'].str.strip() != ''
-            ]
-            
-            # Save updated state
-            save_session_state({'stakeholder_punkte_filtered': st.session_state.stakeholder_punkte_filtered})
-            
-            # Ensure it's a DataFrame and not empty
-            if isinstance(st.session_state.stakeholder_punkte_filtered, pd.DataFrame) and not st.session_state.stakeholder_punkte_filtered.empty:
-                response = display_aggrid(st.session_state.stakeholder_punkte_filtered)
-                st.session_state.grid_response = response
-                save_session_state({'grid_response': st.session_state.grid_response})
+        # Ensure it's a DataFrame
+        if isinstance(st.session_state.stakeholder_punkte_filtered, pd.DataFrame):
+            # Check if 'Stakeholder' column exists
+            if 'Stakeholder' in st.session_state.stakeholder_punkte_filtered.columns:
+                # Remove rows where 'Stakeholder' column is empty or just spaces
+                st.session_state.stakeholder_punkte_filtered = st.session_state.stakeholder_punkte_filtered[
+                    st.session_state.stakeholder_punkte_filtered['Stakeholder'].str.strip() != ''
+                ]
+                
+                # Save updated state
+                save_session_state({'stakeholder_punkte_filtered': st.session_state.stakeholder_punkte_filtered})
+                
+                # Ensure it's not empty
+                if not st.session_state.stakeholder_punkte_filtered.empty:
+                    response = display_aggrid(st.session_state.stakeholder_punkte_filtered)
+                    st.session_state.grid_response = response
+                    save_session_state({'grid_response': st.session_state.grid_response})
+                else:
+                    st.info("Keine Stakeholder-Bewertungen vorhanden.")
             else:
-                st.info("Keine Stakeholder-Bewertungen vorhanden.")
+                st.error("Die Spalte 'Stakeholder' ist nicht in den Daten vorhanden.")
         else:
-            st.error("Die Spalte 'Stakeholder' ist nicht in den Daten vorhanden.")
+            st.error("Die Daten sind nicht im korrekten Format (erwartet: Pandas DataFrame).")
     else:
         st.info("Keine Stakeholder-Bewertungen vorhanden.")
+
 
 
 #---------------------------------- Seitenleiste und Fortschrittsanzeige ----------------------------------#
@@ -249,20 +254,16 @@ def display_not_in_sidebar_count():
 
 #---------------------------------- Status-Update und Datenaktualisierung ----------------------------------#
 
+# Funktion zur Aktualisierung des Status von Stakeholdern in einem DataFrame. Wenn es änderungen in Stakeholder-Managenmte oder Auswahl gibt, wird valid_stakeholder aktualisiert
 def update_status(df):
-    # Check if 'Stakeholder' column exists in the DataFrame
-    if 'Stakeholder' in df.columns:
-        if 'table2' in st.session_state and 'ranking_table' in st.session_state:
-            # Determine valid stakeholders based on the tables in session state
-            valid_stakeholders = set(st.session_state.ranking_table['Gruppe'].tolist()).intersection(set(st.session_state.table2))
-            # Update the status based on the inclusion of stakeholders in the valid groups
-            df['Status'] = df['Stakeholder'].apply(lambda x: 'einbezogen' if x in valid_stakeholders else 'nicht einbezogen')
-        else:
-            df['Status'] = 'nicht einbezogen'  # Default to 'nicht einbezogen' if no valid stakeholders are found
+    if 'table2' in st.session_state and 'ranking_table' in st.session_state:
+        # Bestimme gültige Stakeholder basierend auf den Tabellen in der Sitzung
+        valid_stakeholders = set(st.session_state.ranking_table['Gruppe'].tolist()).intersection(set(st.session_state.table2))
+        # Aktualisiere den Status basierend auf der Zugehörigkeit der Stakeholder zu den gültigen Gruppen
+        df['Status'] = df['Stakeholder'].apply(lambda x: 'einbezogen' if x in valid_stakeholders else 'nicht einbezogen')
     else:
-        st.error("The column 'Stakeholder' is missing in the DataFrame.")
+        df['Status'] = 'nicht einbezogen'  # Wenn keine gültigen Stakeholder vorhanden sind, setze den Status auf 'nicht einbezogen'
     return df
-
 
 # Funktion zur Aktualisierung der Kopie der neuen Daten und Anpassung der Stakeholder-Punkte
 def refresh_new_df_copy():
