@@ -55,8 +55,6 @@ def Top_down_Nachhaltigkeitspunkte():
         # Return an empty DataFrame if 'relevance_selection' is not in session_state
         return pd.DataFrame(columns=["Thema", "Unterthema", "Unter-Unterthema", "Quelle"])
 
-
-
 def extract_data_from_key(key):
     start, end, suffix = determine_key_suffix(key)
     

@@ -249,16 +249,20 @@ def display_not_in_sidebar_count():
 
 #---------------------------------- Status-Update und Datenaktualisierung ----------------------------------#
 
-# Funktion zur Aktualisierung des Status von Stakeholdern in einem DataFrame. Wenn es änderungen in Stakeholder-Managenmte oder Auswahl gibt, wird valid_stakeholder aktualisiert
 def update_status(df):
-    if 'table2' in st.session_state and 'ranking_table' in st.session_state:
-        # Bestimme gültige Stakeholder basierend auf den Tabellen in der Sitzung
-        valid_stakeholders = set(st.session_state.ranking_table['Gruppe'].tolist()).intersection(set(st.session_state.table2))
-        # Aktualisiere den Status basierend auf der Zugehörigkeit der Stakeholder zu den gültigen Gruppen
-        df['Status'] = df['Stakeholder'].apply(lambda x: 'einbezogen' if x in valid_stakeholders else 'nicht einbezogen')
+    # Check if 'Stakeholder' column exists in the DataFrame
+    if 'Stakeholder' in df.columns:
+        if 'table2' in st.session_state and 'ranking_table' in st.session_state:
+            # Determine valid stakeholders based on the tables in session state
+            valid_stakeholders = set(st.session_state.ranking_table['Gruppe'].tolist()).intersection(set(st.session_state.table2))
+            # Update the status based on the inclusion of stakeholders in the valid groups
+            df['Status'] = df['Stakeholder'].apply(lambda x: 'einbezogen' if x in valid_stakeholders else 'nicht einbezogen')
+        else:
+            df['Status'] = 'nicht einbezogen'  # Default to 'nicht einbezogen' if no valid stakeholders are found
     else:
-        df['Status'] = 'nicht einbezogen'  # Wenn keine gültigen Stakeholder vorhanden sind, setze den Status auf 'nicht einbezogen'
+        st.error("The column 'Stakeholder' is missing in the DataFrame.")
     return df
+
 
 # Funktion zur Aktualisierung der Kopie der neuen Daten und Anpassung der Stakeholder-Punkte
 def refresh_new_df_copy():

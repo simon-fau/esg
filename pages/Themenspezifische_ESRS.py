@@ -12,14 +12,16 @@ def Text():
         - **Nicht Wesentlich**: Ein Aspekt ist nicht wesentlich, wenn er keine oder nur vernachlässigbare Auswirkungen auf Menschen, die Umwelt oder die Finanzen des Unternehmens hat.
     """)
 
-# Load session state from the file if it exists
 def load_session_state():
-    if os.path.exists('a.pkl'):
-        with open('a.pkl', 'rb') as f:
+    if 'relevance_selection' not in st.session_state:
+        # Initialize session state if not already present
+        st.session_state['relevance_selection'] = {}
+    if os.path.exists('ab.pkl'):
+        with open('ab.pkl', 'rb') as f:
             st.session_state['relevance_selection'] = pickle.load(f)
 
 def save_session_state():
-    with open('a.pkl', 'wb') as f:
+    with open('ab.pkl', 'wb') as f:
         pickle.dump(st.session_state['relevance_selection'], f)
 
 # Ensure session state is loaded at the start
