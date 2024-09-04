@@ -197,11 +197,11 @@ def stakeholder_punkte():
                 st.session_state.grid_response = response
                 save_session_state({'grid_response': st.session_state.grid_response})
             else:
-                st.info("No stakeholder data available to display.")
+                st.info("Keine Stakeholder-Bewertungen vorhanden.")
         else:
-            st.error("The 'Stakeholder' column is missing in the data.")
+            st.error("Die Spalte 'Stakeholder' ist nicht in den Daten vorhanden.")
     else:
-        st.info("No stakeholder data available to display.")
+        st.info("Keine Stakeholder-Bewertungen vorhanden.")
 
 
 #---------------------------------- Seitenleiste und Fortschrittsanzeige ----------------------------------#
@@ -346,7 +346,6 @@ def refresh_new_df_copy():
         )
         save_session_state({'new_df_copy': st.session_state.new_df_copy,
                             'stakeholder_punkte_filtered': st.session_state.stakeholder_punkte_filtered})
-
 
 #---------------------------------- Excel-Datei hochladen und Daten verarbeiten ----------------------------------#
 
