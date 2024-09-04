@@ -149,7 +149,7 @@ def add_new_row(gruppe, bestehende_beziehung, auswirkung, level_des_engagements,
     })
     st.session_state.df = pd.concat([new_row, st.session_state.df]).reset_index(drop=True)
     save_state()
-    st.experimental_rerun()
+    st.rerun()
 
 # Hauptfunktion zum Anzeigen des Stakeholder-Managements
 def display_stakeholder_management():
