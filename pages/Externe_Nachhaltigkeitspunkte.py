@@ -523,7 +523,6 @@ def move_stakeholders(selected_stakeholders):
 
 # Main function to display the page content
 def display_page():
-    st.write(st.session_state.new_df_copy)
     
     # Update the new data copy and other necessary session data
     refresh_new_df_copy()
