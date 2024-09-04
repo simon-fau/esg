@@ -702,7 +702,7 @@ def bewertung_Uebersicht():
 
     # Anzeigen des Prozentsatzes mit einer Fortschrittsleiste
     st.write("sind in der Longlist enthalten.")
-    st.write("Insgesamt wurden **" + str(total_bewertungen) + "** Punkte bewertet.")
+    st.write("Insgesamt wurden **" + str(ja_bewertungen) + "** Punkte bewertet.")
     st.write(f'Es fehlen noch: {nein_bewertung} Punkte.')
     st.progress(ja_prozent)
 
