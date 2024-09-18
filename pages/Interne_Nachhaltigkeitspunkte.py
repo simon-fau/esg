@@ -8,36 +8,34 @@ import shutil
 import io
 
 # Constants
-STATE_FILE = 'session_states.pkl'
 TEMPLATE_PATH = os.path.join(os.path.dirname(__file__), 'Templates', 'Stakeholder_Input_Vorlage_V1.xlsx')
 TEMP_EXCEL_PATH = 'Stakeholder_Input_Vorlage_V1_Copy.xlsx'
+STATE_FILE = 'Speicherung.pkl'  # Common state file shared with Stakeholder_Management.py
 
-# Session State Functions
-def load_session_state(file_path=STATE_FILE):
-    if os.path.exists(file_path):
-        with open(file_path, 'rb') as f:
-            return pickle.load(f)
-    return {}
-
-def save_session_state(data, file_path=STATE_FILE):
-    try:
-        with open(file_path, 'wb') as f:
-            pickle.dump(data, f)
-    except pickle.PicklingError:
-        st.error("PicklingError: Die Daten konnten nicht korrekt gespeichert werden.")
-    except Exception as e:
-        st.error(f"Ein unerwarteter Fehler ist beim Speichern der Daten aufgetreten: {str(e)}")
+def save_state():
+    # Save the current session state to the pickle file
+    with open(STATE_FILE, 'wb') as f:
+        pickle.dump(dict(st.session_state), f)
 
 def initialize_session_state():
+    # Load session state from the pickle file if it exists
+    if os.path.exists(STATE_FILE) and os.path.getsize(STATE_FILE) > 0:
+        with open(STATE_FILE, 'rb') as f:
+            loaded_state = pickle.load(f)
+            for key, value in loaded_state.items():
+                if key not in st.session_state:
+                    st.session_state[key] = value
+
+    # Initialize df2 if not loaded from the file
     if 'df2' not in st.session_state:
         st.session_state.df2 = pd.DataFrame(columns=["Thema", "Unterthema", "Unter-Unterthema"])
-
-def check_abgeschlossen_intern():
+    # Initialize checkbox state if not loaded from the file
     if 'checkbox_state_4' not in st.session_state:
         st.session_state['checkbox_state_4'] = False
-    
+
+def check_abgeschlossen_intern():
     st.session_state['checkbox_state_4'] = st.checkbox("Abgeschlossen", value=st.session_state['checkbox_state_4'])
-    save_session_state({'checkbox_state_4': st.session_state['checkbox_state_4']})
+    save_state()  # Save after checkbox state change
 
 # UI Functions
 def add_entry_form():
@@ -45,7 +43,6 @@ def add_entry_form():
         st.markdown("---")
         st.write("**Inhalte hinzufügen**")
 
-        # Erste Selectbox für die Auswahl des Themas
         thema = st.selectbox('Thema auswählen', options=[
             'Klimawandel', 'Umweltverschmutzung', 'Wasser- und Meeresressourcen', 
             'Biologische Vielfalt und Ökosysteme', 'Kreislaufwirtschaft', 'Eigene Belegschaft',
@@ -53,16 +50,14 @@ def add_entry_form():
             'Verbraucher und End-nutzer', 'Unternehmenspolitik'
         ], index=0)
 
-        # Zweite Selectbox für die dynamisch angepasste Auswahl des Unterthemas
         unterthema_options = get_unterthema_options(thema)
         unterthema = st.selectbox('Unterthema auswählen', options=unterthema_options, index=0)
-        
-        # Textfeld für die Eingabe des Unter-Unterthemas
+
         unter_unterthema = st.text_input('Unter-Unterthema eingeben')
-        
-        # Submit-Button außerhalb eines Formulars
+
         if st.button('➕ Hinzufügen'):
             add_row(thema, unterthema, unter_unterthema)
+            save_state()  # Save after adding a new entry
 
 def get_unterthema_options(thema):
     options = {
@@ -79,25 +74,15 @@ def get_unterthema_options(thema):
     }
     return options.get(thema, [])
 
-# Example of adding a row to the DataFrame in the session state
 def add_row(thema, unterthema, unter_unterthema):
-    if 'df2' not in st.session_state:
-        st.session_state.df2 = pd.DataFrame(columns=["Thema", "Unterthema", "Unter-Unterthema"])
-        
-    empty_row_index = st.session_state.df2[(st.session_state.df2["Thema"] == "") & (st.session_state.df2["Unterthema"] == "") & (st.session_state.df2["Unter-Unterthema"] == "")].first_valid_index()
-    if empty_row_index is not None:
-        st.session_state.df2.at[empty_row_index, "Thema"] = thema
-        st.session_state.df2.at[empty_row_index, "Unterthema"] = unterthema
-        st.session_state.df2.at[empty_row_index, "Unter-Unterthema"] = unter_unterthema
-    else:
-        new_row = {"Thema": thema, "Unterthema": unterthema, "Unter-Unterthema": unter_unterthema}
-        st.session_state.df2 = st.session_state.df2._append(new_row, ignore_index=True)
+    new_row = {"Thema": thema, "Unterthema": unterthema, "Unter-Unterthema": unter_unterthema}
+    st.session_state.df2 = st.session_state.df2._append(new_row, ignore_index=True)
 
 def display_data_table():
     if not st.session_state.df2.empty:
         grid_options = configure_grid_options(st.session_state.df2)
         grid_response = AgGrid(
-            st.session_state.df2.reset_index(),
+            st.session_state.df2.reset_index(drop=True),  # Prevent adding 'index' column
             gridOptions=grid_options,
             fit_columns_on_grid_load=True,
             height=300,
@@ -107,22 +92,21 @@ def display_data_table():
             return_mode=DataReturnMode.__members__['AS_INPUT'],
             selection_mode='multiple'
         )
-
-        # Only display these buttons when there is data in df2
-        if st.button('Ausgewählte Zeilen löschen', key='delete_rows'):
-            delete_selected_rows(grid_response)
-        
-        if st.button('Änderungen speichern', key='save_changes'):
-            st.session_state.df2 = grid_response['data'].set_index('index')
-            save_session_state({'df2': st.session_state.df2})
-            st.success('Änderungen erfolgreich gespeichert.')
+        st.session_state.df2 = pd.DataFrame(grid_response['data'])
+        save_state()  # Save after table modification
     else:
         st.info("Keine Daten vorhanden.")
     
-    # The "add empty row" button is always displayed
-    if st.button('Leere Zeile hinzufügen', key='add_empty_row'):
+    if st.button('➕ Leere Zeile hinzufügen', key='add_empty_row'):
         add_empty_row()
 
+    if st.button('🗑️ Ausgewählte Zeilen löschen', key='delete_rows'):
+        delete_selected_rows(grid_response)
+
+    if st.button('💾 Änderungen speichern', key='save_changes'):
+        st.session_state.df2 = pd.DataFrame(grid_response['data']).set_index('index', drop=True)
+        save_state()
+        st.success('Änderungen erfolgreich gespeichert.')
 
 def configure_grid_options(dataframe):
     gb = GridOptionsBuilder.from_dataframe(dataframe)
@@ -135,48 +119,30 @@ def configure_grid_options(dataframe):
 def add_empty_row():
     empty_row = {"Thema": "", "Unterthema": "", "Unter-Unterthema": ""}
     st.session_state.df2 = st.session_state.df2._append(empty_row, ignore_index=True)
-    save_session_state({'df2': st.session_state.df2})
+    save_state()
     st.rerun()
 
 def delete_selected_rows(grid_response):
     selected_rows = grid_response['selected_rows']
     selected_indices = [row['index'] for row in selected_rows]
     st.session_state.df2 = st.session_state.df2.drop(selected_indices)
-    save_session_state({'df2': st.session_state.df2})
+    save_state()
     st.rerun()
 
 def transfer_data_to_excel(dataframe):
-    # Copy the template file to ensure rules are maintained
     shutil.copyfile(TEMPLATE_PATH, TEMP_EXCEL_PATH)
-    
-    # Load the workbook and target sheet
     workbook = load_workbook(TEMP_EXCEL_PATH)
     sheet = workbook['Interne Nachhaltigkeitspunkte']
-
-    # Find the first empty row in the sheet (assumes first column is used)
-    first_empty_row = None
-    for row in sheet.iter_rows(min_row=2, max_col=1, values_only=True):
-        if row[0] is None:
-            first_empty_row = row[0].row
-            break
-
-    # If no empty row is found, append after the last used row
-    if first_empty_row is None:
-        first_empty_row = sheet.max_row + 1
-
-    # Write data to the sheet, preserving existing rules (formulas, validations)
+    first_empty_row = 2
+    
     for index, row in dataframe.iterrows():
-        # Write data into empty rows
         sheet[f'A{first_empty_row}'] = row['Thema']
         sheet[f'B{first_empty_row}'] = row['Unterthema']
         sheet[f'C{first_empty_row}'] = row['Unter-Unterthema']
         first_empty_row += 1
 
-    # Save the updated Excel file
     workbook.save(TEMP_EXCEL_PATH)
     st.success('Inhalte erfolgreich zur Excel-Datei hinzugefügt.')
-
-
 
 def download_excel():
     workbook = load_workbook(TEMP_EXCEL_PATH)
@@ -187,7 +153,8 @@ def download_excel():
 
 # Main display function
 def display_page():
-    initialize_session_state()  # Initialize session state variables
+    initialize_session_state()  # Ensure session state is initialized first
+    
     col1, col2 = st.columns([7, 1])
     
     with col1:
@@ -198,8 +165,7 @@ def display_page():
             check_abgeschlossen_intern()
         
     st.markdown("""
-        
-Hier können Sie unternehmensspezifische Nachhaltigkeitspunkte hinzufügen und verwalten. Nutzen Sie die Dropdown-Menüs und Textfelder in der Sidebar oder fügen Sie Inhalte direkt in die Tabelle ein. Achten Sie darauf, bei der direkten Eingabe in die Tabelle die Inhalte mit Enter zu bestätigen, damit der rote Rahmen um die Zelle verschwindet. Speichern Sie anschließend die Änderungen.
+        Hier können Sie unternehmensspezifische Nachhaltigkeitspunkte hinzufügen und verwalten. Nutzen Sie die Dropdown-Menüs und Textfelder in der Sidebar oder tragen Sie Inhalte direkt in die Tabelle ein. Achten Sie darauf, die Inhalte mit Enter zu bestätigen und den Speicher-Button zu drücken. Aktualisieren Sie anschließend die Excel-Datei, laden Sie sie herunter und leiten Sie diese an Ihre Stakeholder weiter.
     """)
     
     add_entry_form()

@@ -7,7 +7,7 @@ from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode, DataReturnMode
 from pyvis.network import Network
 
 # Konstante für den Dateinamen des Sitzungszustands
-STATE_FILE = 'session_states.pkl'
+STATE_FILE = 'Speicherung.pkl'
 
 # Funktion zum Initialisieren des DataFrame mit leeren Spalten für die Stakeholder-Daten
 def initialize_df():

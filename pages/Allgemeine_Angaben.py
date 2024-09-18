@@ -4,11 +4,11 @@ import pickle
 import os
 
 # Datei zum Speichern des Sitzungszustands
-state_file = 'session_states.pkl'
+state_file = 'Speicherung.pkl'
 
 # Funktion zum Speichern des Zustands
 def save_state():
-    with open('session_states.pkl', 'wb') as f:
+    with open('Speicherung.pkl', 'wb') as f:
         pickle.dump(dict(st.session_state), f)
 
 

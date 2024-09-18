@@ -28,7 +28,7 @@ def load_pickle(file_path):
         return None  
 
 # Pfad zur Pickle-Datei setzen
-pickle_file_path = os.path.join(os.path.dirname(__file__), 'session_states.pkl')
+pickle_file_path = os.path.join(os.path.dirname(__file__), 'Speicherung.pkl')
 
 # Daten aus der Pickle-Datei laden
 loaded_data = load_pickle(pickle_file_path)

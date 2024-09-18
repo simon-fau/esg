@@ -7,7 +7,7 @@ from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
 #---------------------------------- Sitzungszustand-Management ----------------------------------#
 
 # Konstante für die Pickl, in dem die session_states gespeichert werden
-STATE_FILE = 'session_states.pkl'
+STATE_FILE = 'Speicherung.pkl'
 
 # Funktion zum Laden des gespeicherten Sitzungszustands
 def load_session_state():
