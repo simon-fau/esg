@@ -8,7 +8,7 @@ import shutil
 import io
 
 # Constants
-STATE_FILE = 'a.pkl'
+STATE_FILE = 'session_states.pkl'
 TEMPLATE_PATH = os.path.join(os.path.dirname(__file__), 'Templates', 'Stakeholder_Input_Vorlage_V1.xlsx')
 TEMP_EXCEL_PATH = 'Stakeholder_Input_Vorlage_V1_Copy.xlsx'
 
@@ -107,19 +107,22 @@ def display_data_table():
             return_mode=DataReturnMode.__members__['AS_INPUT'],
             selection_mode='multiple'
         )
+
+        # Only display these buttons when there is data in df2
+        if st.button('Ausgewählte Zeilen löschen', key='delete_rows'):
+            delete_selected_rows(grid_response)
+        
+        if st.button('Änderungen speichern', key='save_changes'):
+            st.session_state.df2 = grid_response['data'].set_index('index')
+            save_session_state({'df2': st.session_state.df2})
+            st.success('Änderungen erfolgreich gespeichert.')
     else:
         st.info("Keine Daten vorhanden.")
     
-    if st.button('➕ Leere Zeile hinzufügen', key='add_empty_row'):
+    # The "add empty row" button is always displayed
+    if st.button('Leere Zeile hinzufügen', key='add_empty_row'):
         add_empty_row()
-    
-    if st.button('🗑️ Ausgewählte Zeilen löschen', key='delete_rows'):
-        delete_selected_rows(grid_response)
-    
-    if st.button('💾 Änderungen speichern', key='save_changes'):
-        st.session_state.df2 = grid_response['data'].set_index('index')
-        save_session_state({'df2': st.session_state.df2})
-        st.success('Änderungen erfolgreich gespeichert.')
+
 
 def configure_grid_options(dataframe):
     gb = GridOptionsBuilder.from_dataframe(dataframe)
@@ -143,19 +146,37 @@ def delete_selected_rows(grid_response):
     st.rerun()
 
 def transfer_data_to_excel(dataframe):
+    # Copy the template file to ensure rules are maintained
     shutil.copyfile(TEMPLATE_PATH, TEMP_EXCEL_PATH)
-    workbook = load_workbook(TEMP_EXCEL_PATH)
-    sheet = workbook['Intern']
-    first_empty_row = 2
     
+    # Load the workbook and target sheet
+    workbook = load_workbook(TEMP_EXCEL_PATH)
+    sheet = workbook['Interne Nachhaltigkeitspunkte']
+
+    # Find the first empty row in the sheet (assumes first column is used)
+    first_empty_row = None
+    for row in sheet.iter_rows(min_row=2, max_col=1, values_only=True):
+        if row[0] is None:
+            first_empty_row = row[0].row
+            break
+
+    # If no empty row is found, append after the last used row
+    if first_empty_row is None:
+        first_empty_row = sheet.max_row + 1
+
+    # Write data to the sheet, preserving existing rules (formulas, validations)
     for index, row in dataframe.iterrows():
+        # Write data into empty rows
         sheet[f'A{first_empty_row}'] = row['Thema']
         sheet[f'B{first_empty_row}'] = row['Unterthema']
         sheet[f'C{first_empty_row}'] = row['Unter-Unterthema']
         first_empty_row += 1
 
+    # Save the updated Excel file
     workbook.save(TEMP_EXCEL_PATH)
     st.success('Inhalte erfolgreich zur Excel-Datei hinzugefügt.')
+
+
 
 def download_excel():
     workbook = load_workbook(TEMP_EXCEL_PATH)
@@ -177,7 +198,8 @@ def display_page():
             check_abgeschlossen_intern()
         
     st.markdown("""
-        Hier können Sie unternehmensspezifische Nachhaltigkeitspunkte hinzufügen und verwalten. Nutzen Sie die Dropdown-Menüs und Textfelder in der Sidebar oder tragen Sie Inhalte direkt in die Tabelle ein. Achten Sie darauf, die Inhalte mit Enter zu bestätigen und den Speicher-Button zu drücken. Aktualisieren Sie anschließend die Excel-Datei, laden Sie sie herunter und leiten Sie diese an Ihre Stakeholder weiter.
+        
+Hier können Sie unternehmensspezifische Nachhaltigkeitspunkte hinzufügen und verwalten. Nutzen Sie die Dropdown-Menüs und Textfelder in der Sidebar oder fügen Sie Inhalte direkt in die Tabelle ein. Achten Sie darauf, bei der direkten Eingabe in die Tabelle die Inhalte mit Enter zu bestätigen, damit der rote Rahmen um die Zelle verschwindet. Speichern Sie anschließend die Änderungen.
     """)
     
     add_entry_form()

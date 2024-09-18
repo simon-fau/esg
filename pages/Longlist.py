@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 
 # Funktion zum Speichern des Zustands
 def save_state():
-    with open('a.pkl', 'wb') as f:
+    with open('session_states.pkl', 'wb') as f:
         pickle.dump(dict(st.session_state), f)
 
 def stakeholder_Nachhaltigkeitspunkte():

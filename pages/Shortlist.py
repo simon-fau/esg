@@ -10,7 +10,7 @@ from openpyxl import load_workbook
 
 # Funktion zum Speichern des Zustands
 def save_state():
-    with open('a.pkl', 'wb') as f:
+    with open('session_states.pkl', 'wb') as f:
         pickle.dump(dict(st.session_state), f)
 
 # Set initial session state values if they are not already set

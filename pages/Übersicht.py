@@ -52,13 +52,13 @@ def aktueller_stand_wesentlichkeitsanalyse():
             st.write(name)
         with col2:
             if key == 'checkbox_state_5':
-                if 'table2' in st.session_state and 'sidebar_companies' in st.session_state:
-                    if not st.session_state['table2'] and not st.session_state['sidebar_companies']:
+                if 'Einbezogene_Stakeholder' in st.session_state and 'sidebar_companies' in st.session_state:
+                    if not st.session_state['Einbezogene_Stakeholder'] and not st.session_state['sidebar_companies']:
                         st.write("✘")
-                    elif not st.session_state['table2']:
+                    elif not st.session_state['Einbezogene_Stakeholder']:
                         st.write("✔")
                     else:
-                        count = len([opt for opt in st.session_state['table2'] if opt not in st.session_state['sidebar_companies']])
+                        count = len([opt for opt in st.session_state['Einbezogene_Stakeholder'] if opt not in st.session_state['sidebar_companies']])
                         if st.session_state.get(key) == True:
                             completed_count += 1
                             st.write("✔")

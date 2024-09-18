@@ -7,7 +7,7 @@ from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
 #---------------------------------- Sitzungszustand-Management ----------------------------------#
 
 # Konstante für die Pickl, in dem die session_states gespeichert werden
-STATE_FILE = 'a.pkl'
+STATE_FILE = 'session_states.pkl'
 
 # Funktion zum Laden des gespeicherten Sitzungszustands
 def load_session_state():
@@ -37,9 +37,9 @@ if 'new_df_copy' not in st.session_state:
 if 'stakeholder_punkte_filtered' not in st.session_state:
     st.session_state.stakeholder_punkte_filtered = []
 
-# Initialisiere die Tabelle 'table2' im Sitzungszustand, falls sie noch nicht existiert
-if 'table2' not in st.session_state:
-    st.session_state.table2 = []
+# Initialisiere die Tabelle 'Einbezogene_Stakeholder' im Sitzungszustand, falls sie noch nicht existiert
+if 'Einbezogene_Stakeholder' not in st.session_state:
+    st.session_state.Einbezogene_Stakeholder = []
 
 # Initialisiere die DataFrame 'ranking_table' im Sitzungszustand, falls sie noch nicht existiert
 if 'ranking_table' not in st.session_state:
@@ -143,17 +143,17 @@ def aggregate_rankings(df):
     # Gib die relevanten Spalten des Rankings zurück
     return ranking[['Platzierung', 'Thema', 'Unterthema', 'Unter-Unterthema', 'Stakeholder Bew Auswirkung', 'Stakeholder Bew Finanzen', 'Stakeholder Gesamtbew', 'Quelle']]
 
-# Funktion zur Filterung von Stakeholdern basierend auf ihrer Gültigkeit, sodass nur Stakeholder verwendet werden, die in im Stakeholder-Managemnt (ranking_table) und in der AUswahl (table2) enthalten sind
+# Funktion zur Filterung von Stakeholdern basierend auf ihrer Gültigkeit, sodass nur Stakeholder verwendet werden, die in im Stakeholder-Managemnt (ranking_table) und in der AUswahl (Einbezogene_Stakeholder) enthalten sind
 def filter_stakeholders():
-    # Überprüfe, ob 'ranking_table' und 'table2' im Sitzungszustand vorhanden sind
-    if 'ranking_table' not in st.session_state or 'table2' not in st.session_state:
+    # Überprüfe, ob 'ranking_table' und 'Einbezogene_Stakeholder' im Sitzungszustand vorhanden sind
+    if 'ranking_table' not in st.session_state or 'Einbezogene_Stakeholder' not in st.session_state:
         return []
 
     # Erstelle eine Menge gültiger Stakeholder-Gruppen basierend auf der 'ranking_table'
     valid_stakeholders = set(st.session_state.ranking_table['Gruppe'].tolist())
     
-    # Filtere 'table2', um nur gültige Stakeholder-Gruppen zu behalten
-    filtered_table2 = [item for item in st.session_state.table2 if item in valid_stakeholders]
+    # Filtere 'Einbezogene_Stakeholder', um nur gültige Stakeholder-Gruppen zu behalten
+    filtered_table2 = [item for item in st.session_state.Einbezogene_Stakeholder if item in valid_stakeholders]
 
     return filtered_table2  # Gib die gefilterte Liste zurück
    
@@ -227,11 +227,11 @@ def display_sidebar_items():
     with st.sidebar:
 
         st.markdown("---")
-        # Multiselect-Box für Stakeholder, die sich sowohl in table2 als auch in der Sidebar befinden
-        valid_options = [stakeholder for stakeholder in st.session_state.table2 if stakeholder in st.session_state.sidebar_companies]
+        # Multiselect-Box für Stakeholder, die sich sowohl in Einbezogene_Stakeholder als auch in der Sidebar befinden
+        valid_options = [stakeholder for stakeholder in st.session_state.Einbezogene_Stakeholder if stakeholder in st.session_state.sidebar_companies]
         selected_stakeholders = st.multiselect('Stakeholder-Bewertung entfernen:', valid_options)
 
-        # Button zum Verschieben der ausgewählten Stakeholder von table2 nach table1
+        # Button zum Verschieben der ausgewählten Stakeholder von Einbezogene_Stakeholder nach Ausgeschlossene_Stakeholder
         if st.button('Entfernen'):
             move_stakeholders(selected_stakeholders)
 
@@ -267,8 +267,8 @@ def display_not_in_sidebar_count():
 def update_status(df):
     # Ensure that the 'Stakeholder' column exists in the dataframe before applying the lambda function
     if 'Stakeholder' in df.columns:
-        if 'table2' in st.session_state and 'ranking_table' in st.session_state:
-            valid_stakeholders = set(st.session_state.ranking_table['Gruppe'].tolist()).intersection(set(st.session_state.table2))
+        if 'Einbezogene_Stakeholder' in st.session_state and 'ranking_table' in st.session_state:
+            valid_stakeholders = set(st.session_state.ranking_table['Gruppe'].tolist()).intersection(set(st.session_state.Einbezogene_Stakeholder))
             df['Status'] = df['Stakeholder'].apply(lambda x: 'einbezogen' if x in valid_stakeholders else 'nicht einbezogen')
         else:
             df['Status'] = 'nicht einbezogen'  # If no valid stakeholders are found
@@ -347,9 +347,9 @@ def re_add_stakeholder(stakeholder_name, new_data):
 
 # Function to remove invalid stakeholders from the sidebar and associated data from session state
 def remove_invalid_stakeholders():
-    if 'table2' in st.session_state and 'ranking_table' in st.session_state:
+    if 'Einbezogene_Stakeholder' in st.session_state and 'ranking_table' in st.session_state:
         # Determine valid stakeholders
-        valid_stakeholders = set(st.session_state.ranking_table['Gruppe'].tolist()).intersection(set(st.session_state.table2))
+        valid_stakeholders = set(st.session_state.ranking_table['Gruppe'].tolist()).intersection(set(st.session_state.Einbezogene_Stakeholder))
         # Filter the sidebar companies to keep only valid stakeholders
         removed_stakeholders = [item for item in st.session_state.sidebar_companies if item not in valid_stakeholders]
         st.session_state.sidebar_companies = [item for item in st.session_state.sidebar_companies if item in valid_stakeholders]
@@ -383,7 +383,7 @@ def excel_upload():
     if uploaded_file:
         df_list = []
         # Iteriere durch die erwarteten Arbeitsblätter in der Excel-Datei
-        for sheet_name in ['Top-Down', 'Intern', 'Extern']:
+        for sheet_name in ['Themenspezifische ESRS', 'Interne Nachhaltigkeitspunkte', 'Externe Nachhaltigkeitspunkte']:
             try:
                 # Lese die relevanten Spalten aus jedem Arbeitsblatt in einen DataFrame
                 df = pd.read_excel(uploaded_file, sheet_name=sheet_name, engine='openpyxl', 
@@ -413,11 +413,11 @@ def excel_upload():
                 st.session_state.grid_response = response
                 save_session_state({'grid_response': st.session_state.grid_response})
 
-            if 'table2' not in st.session_state:
-                st.session_state.table2 = []
+            if 'Einbezogene_Stakeholder' not in st.session_state:
+                st.session_state.Einbezogene_Stakeholder = []
 
             # Bestimme die gültigen Stakeholder und biete eine Auswahl an
-            valid_stakeholders = set(st.session_state.ranking_table['Gruppe'].tolist()).intersection(set(st.session_state.table2))
+            valid_stakeholders = set(st.session_state.ranking_table['Gruppe'].tolist()).intersection(set(st.session_state.Einbezogene_Stakeholder))
             options = [opt for opt in valid_stakeholders if opt not in st.session_state.sidebar_companies]
 
             selected_option = st.selectbox('Wählen Sie den zugehörigen Stakeholder aus:', options)
@@ -490,7 +490,7 @@ def excel_upload():
                     st.rerun()
                 else:
                     if not options:
-                        st.info("Punkte können nicht übernommen werden. Bitte fügen Sie den entsprechenden Stakeholder unter hinzu und/oder nehmen sie diesen explizit in die Bewertung auf.")
+                        st.info("Punkte können nicht übernommen werden. Bitte fügen Sie den entsprechenden Stakeholder hinzu und/oder nehmen sie diesen explizit in die Bewertung auf.")
                     else:
                         st.success("Stakeholder Punkte erfolgreich übernommen")
 
@@ -505,15 +505,15 @@ def refresh_session_state():
     save_session_state({'stakeholder_punkte_filtered': st.session_state.get('stakeholder_punkte_filtered', pd.DataFrame())})
     save_session_state({'stakeholder_punkte_df': st.session_state.get('stakeholder_punkte_df', pd.DataFrame())})
 
-# Funktion zum Verschieben von Stakeholdern von table2 nach table1
+# Funktion zum Verschieben von Stakeholdern von Einbezogene_Stakeholder nach Ausgeschlossene_Stakeholder
 def move_stakeholders(selected_stakeholders):
     if selected_stakeholders:
-        # Stakeholder aus table2 entfernen und zu table1 hinzufügen
-        st.session_state.table2 = [stakeholder for stakeholder in st.session_state.table2 if stakeholder not in selected_stakeholders]
-        st.session_state.table1.extend(selected_stakeholders)
+        # Stakeholder aus Einbezogene_Stakeholder entfernen und zu Ausgeschlossene_Stakeholder hinzufügen
+        st.session_state.Einbezogene_Stakeholder = [stakeholder for stakeholder in st.session_state.Einbezogene_Stakeholder if stakeholder not in selected_stakeholders]
+        st.session_state.Ausgeschlossene_Stakeholder.extend(selected_stakeholders)
         
         # Speichern des aktualisierten Sitzungszustands
-        save_session_state({'table2': st.session_state.table2, 'table1': st.session_state.table1})
+        save_session_state({'Einbezogene_Stakeholder': st.session_state.Einbezogene_Stakeholder, 'Ausgeschlossene_Stakeholder': st.session_state.Ausgeschlossene_Stakeholder})
         
         # Erfolgsmeldung anzeigen und die Seite neu laden
         st.success(f"{len(selected_stakeholders)} Stakeholder erfolgreich verschoben!")

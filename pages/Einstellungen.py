@@ -4,7 +4,7 @@ import shutil
 from openpyxl import load_workbook
 
 # Define the file paths
-STATE_FILE = 'a.pkl'
+STATE_FILE = 'session_states.pkl'
 BACKUP_STATE_FILE = 'ab.pkl'
 DEFAULT_STATE_FILE = 'Grundlagen.pkl'
 DEFAULT_BACKUP_FILE = 'Grundlagen_Themen_ESRS.pkl'
@@ -13,13 +13,13 @@ DEFAULT_BACKUP_FILE = 'Grundlagen_Themen_ESRS.pkl'
 def reset_session_state():
     st.session_state.clear()  # Clear all session state values
 
-    # Check if 'a.pkl' and 'ab.pkl' exist, and overwrite them with the default files
+    # Check if 'session_states.pkl' and 'ab.pkl' exist, and overwrite them with the default files
     if os.path.exists(STATE_FILE) and os.path.exists(BACKUP_STATE_FILE):
-        shutil.copy(DEFAULT_STATE_FILE, STATE_FILE)  # Overwrite 'a.pkl' with 'Grundlagen.pkl'
+        shutil.copy(DEFAULT_STATE_FILE, STATE_FILE)  # Overwrite 'session_states.pkl' with 'Grundlagen.pkl'
         shutil.copy(DEFAULT_BACKUP_FILE, BACKUP_STATE_FILE)  # Overwrite 'ab.pkl' with 'Grundlagen_Themen_ESRS.pkl'
-        st.success("Session state has been reset, and the default settings have been restored for both 'a.pkl' and 'ab.pkl'.")
+        st.success("Session state has been reset, and the default settings have been restored for both 'session_states.pkl' and 'ab.pkl'.")
     else:
-        st.error("State files not found. Please ensure 'a.pkl', 'ab.pkl', 'Grundlagen.pkl', and 'Grundlagen_Themen_ESRS.pkl' exist in the correct directory.")
+        st.error("State files not found. Please ensure 'session_states.pkl', 'ab.pkl', 'Grundlagen.pkl', and 'Grundlagen_Themen_ESRS.pkl' exist in the correct directory.")
 
 # Function to simulate the modal dialog
 def show_modal_dialog():
