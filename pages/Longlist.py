@@ -6,11 +6,16 @@ import numpy as np
 import pickle
 import matplotlib.pyplot as plt
 
+#---------------------------------- Sitzungszustand-Management ----------------------------------#
+
 # Funktion zum Speichern des Zustands
 def save_state():
     with open('SessionStates.pkl', 'wb') as f:
         pickle.dump(dict(st.session_state), f)
 
+#----------- Abrufen der IROs aus Themenspezifischer ESRS, Interne und Externe Nachhaltigkeitspunkte -------------#
+
+# Abruf der Stakeholder IROs
 def stakeholder_Nachhaltigkeitspunkte():
     # Initialisiere DataFrame falls nicht vorhanden
     if 'stakeholder_punkte_filtered' not in st.session_state:
@@ -24,6 +29,7 @@ def stakeholder_Nachhaltigkeitspunkte():
     
     return selected_rows_st
 
+# Abruf der internen Nachhaltigkeitspunkte
 def eigene_Nachhaltigkeitspunkte():
     # Zugriff auf den DataFrame aus Eigene.py über session_state
     if 'df2' not in st.session_state:
@@ -33,7 +39,8 @@ def eigene_Nachhaltigkeitspunkte():
     df4['Quelle'] = 'Eigene'
     return df4
 
-def Top_down_Nachhaltigkeitspunkte():
+# Abruf der themenspezifischen ESRS-Nachhaltigkeitspunkte
+def Themenspezifische_ESRS():
     # Überprüfen, ob 'relevance_selection' im session_state vorhanden ist
     if 'relevance_selection' in st.session_state:
         relevance_selection = st.session_state['relevance_selection']
@@ -46,7 +53,7 @@ def Top_down_Nachhaltigkeitspunkte():
                 data.append(extract_data_from_key(key))
         
         selected_points_df = pd.DataFrame(data)
-        selected_points_df['Quelle'] = 'Top-Down Bewertung'
+        selected_points_df['Quelle'] = 'Themenspezifische_ESRS Bewertung'
         
         # Speichern des DataFrame 'selected_points_df' im session_state
         st.session_state['selected_points_df'] = selected_points_df
@@ -54,36 +61,43 @@ def Top_down_Nachhaltigkeitspunkte():
     else:
         # Return an empty DataFrame if 'relevance_selection' is not in session_state
         return pd.DataFrame(columns=["Thema", "Unterthema", "Unter-Unterthema", "Quelle"])
+    
+#---------------------------------- Datenextraktion und Schlüssel-Zuordnung ----------------------------------#
 
+# Extrahiert der Daten basierend auf dem Schlüssel (key)
 def extract_data_from_key(key):
-    start, end, suffix = determine_key_suffix(key)
+    start, end, suffix = determine_key_suffix(key)  # Bestimmt Start- und Endposition basierend auf dem Suffix
     
     if start is not None:
-        unterthema = key[start:end].replace('_', ' ')
-        thema, unterthema, unter_unterthema = map_key_to_theme_and_subthemes(key, unterthema)
+        unterthema = key[start:end].replace('_', ' ') # Entfernt Unterstriche im Schlüssel
+        thema, unterthema, unter_unterthema = map_key_to_theme_and_subthemes(key, unterthema) # Zuordnung der Themen und Unterthemen
         return {
             'Thema': thema,
             'Unterthema': unterthema,
             'Unter-Unterthema': unter_unterthema
         }
     else:
+         # Falls der Schlüssel nicht gemappt werden kann, Rückgabe von 'Unbekannt'
         return {
             'Thema': 'Unbekannt',
             'Unterthema': 'Unbekannt',
             'Unter-Unterthema': 'Unbekannt'
         }
 
+# Filtered die als "Relevant" markierten Punkte aus dem relevance_selection aus der Themenspezifischen ESRS- Bewertung
 def determine_key_suffix(key):
-    suffixes = ['E1', 'E2', 'E3', 'E4', 'E5', 'S1', 'S2', 'S3', 'S4', 'G1']
+    suffixes = ['E1', 'E2', 'E3', 'E4', 'E5', 'S1', 'S2', 'S3', 'S4', 'G1']  # Mögliche Suffixe
     for suffix in suffixes:
-        if key.endswith(suffix):
-            start = key.find('Relevant_') + len('Relevant_') 
-            end = key.find(f'_{suffix}')
+        if key.endswith(suffix):  # Überprüft, ob der Schlüssel mit einem Suffix endet
+            start = key.find('Relevant_') + len('Relevant_')  # Startposition nach 'Relevant_'
+            end = key.find(f'_{suffix}')  # Endposition vor dem Suffix
             return start, end, suffix
-    return None, None, None
+    return None, None, None  # Rückgabe von None, falls kein Suffix gefunden wird
 
+# Zuordnung von Thema und Unterthema basierend auf dem Schlüssel
 def map_key_to_theme_and_subthemes(key, unterthema_raw):
     thema_map = {
+        # Zuordnung der Themen auf Basis der Suffixe
         'E1': 'Klimawandel',
         'E2': 'Umweltverschmutzung',
         'E3': 'Meeres- und Wasserressourcen',
@@ -108,6 +122,9 @@ def map_key_to_theme_and_subthemes(key, unterthema_raw):
     else:
         return thema_map.get(key[-2:], 'Unbekannt'), unterthema_raw, ''
 
+# ---------- Zuordnung der Themen und Unterthemen basierend auf dem Schlüssel ----------#
+
+# Zuordnung von Biodiversität
 def map_biodiversity_key(unterthema_raw):
     unterthema_map = {
         'Direkte Ursachen des Biodiversitätsverlusts': ['Klimawandel', 'Land- Süßwasser- und Meeresnutzungsänderungen', 'Direkte Ausbeutung', 'Invasive gebietsfremde Arten', 'Umweltverschmutzung', 'Sonstige'],
@@ -120,6 +137,7 @@ def map_biodiversity_key(unterthema_raw):
             return 'Biodiversität', unterthema, unterthema_raw
     return 'Biodiversität', 'Unbekannt', 'Unbekannt'
 
+# Zuordnung der eigenen Belegschaft
 def map_own_workforce_key(unterthema_raw):
     unterthema_map = {
         'Arbeitsbedingungen': ['Sichere Beschäftigung', 'Arbeitszeit', 'Angemessene Entlohnung', 'Sozialer Dialog', 'Vereinigungsfreiheit, Existenz von Betriebsräten und Rechte der Arbeitnehmer auf Information, Anhörung und Mitbestimmung', 'Tarifverhandlungen, einschließlich der Quote der durch Tarifverträge abgedeckten Arbeitskräften', 'Vereinbarkeit von Beruf und Privatleben', 'Gesundheitsschutz und Sicherheit'],
@@ -131,6 +149,7 @@ def map_own_workforce_key(unterthema_raw):
             return 'Eigene Belegschaft', unterthema, unterthema_raw
     return 'Eigene Belegschaft', 'Unbekannt', 'Unbekannt'
 
+# Zuordnung der Belegschaft Lieferkette
 def map_valuechain_workforce_key(unterthema_raw):
     unterthema_map = {
         'Arbeitsbedingungen': ['Sichere Beschäftigung', 'Arbeitszeit', 'Angemessene Entlohnung', 'Sozialer Dialog', 'Vereinigungsfreiheit, Existenz von Betriebsräten und Rechte der Arbeitnehmer auf Information, Anhörung und Mitbestimmung', 'Tarifverhandlungen, einschließlich der Quote der durch Tarifverträge abgedeckten Arbeitskräften', 'Vereinbarkeit von Beruf und Privatleben', 'Gesundheitsschutz und Sicherheit'],
@@ -142,6 +161,7 @@ def map_valuechain_workforce_key(unterthema_raw):
             return 'Belegschaft Lieferkette', unterthema, unterthema_raw
     return 'Belegschaft Lieferkette', 'Unbekannt', 'Unbekannt'
 
+# Zuordnung der betroffenen Gemeinschaften
 def map_community_key(unterthema_raw):
     unterthema_map = {
         'Wirtschaftliche, soziale und kulturelle Rechte von Gemeinschaften': ['Angemessene Unterbringungen', 'Angemessene Ernährung', 'Wasser- und Sanitäreinrichtungen', 'Bodenbezogene Auswirkungen', 'Sicherheitsbezogene Auswirkungen'],
@@ -153,6 +173,7 @@ def map_community_key(unterthema_raw):
             return 'Betroffene Gemeinschaften', unterthema, unterthema_raw
     return 'Betroffene Gemeinschaften', 'Unbekannt', 'Unbekannt'
 
+# Zuordnung der Verbraucher und Endnutzer
 def map_consumer_key(unterthema_raw):
     unterthema_map = {
         'Informationsbezogene Auswirkungen für Verbraucher und Endnutzer': ['Datenschutz', 'Meinungsfreiheit', 'Zugang zu (hochwertigen) Informationen'],
@@ -164,49 +185,40 @@ def map_consumer_key(unterthema_raw):
             return 'Verbraucher und Endnutzer', unterthema, unterthema_raw
     return 'Verbraucher und Endnutzer', 'Unbekannt', 'Unbekannt'
 
-def extract_data_from_key(key):
-    start, end, suffix = determine_key_suffix(key)
-    
-    if start is not None:
-        unterthema = key[start:end].replace('_', ' ')
-        thema, unterthema, unter_unterthema = map_key_to_theme_and_subthemes(key, unterthema)
-        return {
-            'Thema': thema,
-            'Unterthema': unterthema,
-            'Unter-Unterthema': unter_unterthema
-        }
-    else:
-        return {
-            'Thema': 'Unbekannt',
-            'Unterthema': 'Unbekannt',
-            'Unter-Unterthema': 'Unbekannt'
-        }
+#---------------------------------- Bewertung der IROs ----------------------------------#
 
+# Initialisiert die 'Bewertet'-Spalte im 'longlist'-DataFrame
 def initialize_bewertet_column(longlist):
-    # Initialisiert die 'Bewertet'-Spalte im 'longlist'-DataFrame
+    # Überprüft, ob 'selected_data' im session_state vorhanden ist
     if 'selected_data' in st.session_state:
+        # Setzt die 'Bewertet'-Spalte auf 'Ja', wenn die ID in den ausgewählten Daten enthalten ist, ansonsten auf 'Nein'
         longlist['Bewertet'] = longlist['ID'].apply(lambda x: 'Ja' if x in st.session_state.selected_data['ID'].values else 'Nein')
     else:
+        # Wenn keine ausgewählten Daten vorhanden sind, wird die gesamte Spalte auf 'Nein' gesetzt
         longlist['Bewertet'] = 'Nein'
-    return longlist
+    return longlist  # Gibt den aktualisierten DataFrame zurück
 
+# Funktion zum Absenden der Bewertung
 def submit_bewertung(longlist, ausgewaehlte_werte):
+    # Wenn der Button "Bewertung absenden" in der Sidebar gedrückt wird
     if st.sidebar.button("📤 Bewertung absenden"):
-        # Überprüfen, ob ausgewaehlte_werte mindestens einen gültigen Wert enthält
+        # Überprüft, ob in den ausgewählten Werten mindestens eine Checkbox aktiviert ist
         if not any(ausgewaehlte_werte.values()):
-            st.error("Bitte wählen Sie eine Checkbox in der Liste aus.")
-            return longlist
+            st.error("Bitte wählen Sie eine Checkbox in der Liste aus.")  # Zeigt eine Fehlermeldung an
+            return longlist  # Gibt den ursprünglichen DataFrame zurück
 
-        # Überprüfen, ob ausgewählte Zeilen im Session State vorhanden sind
+        # Überprüft, ob im session_state mindestens eine ausgewählte Zeile vorhanden ist
         if 'selected_rows' not in st.session_state or not st.session_state['selected_rows']:
-            st.error("Bitte wählen Sie mindestens eine Zeile aus, bevor Sie eine Bewertung absenden.")
-            return longlist
+            st.error("Bitte wählen Sie mindestens eine Zeile aus, bevor Sie eine Bewertung absenden.")  # Fehlermeldung
+            return longlist  # Gibt den ursprünglichen DataFrame zurück
 
+        # Erzeugt einen neuen DataFrame basierend auf den ausgewählten Zeilen
         new_data = pd.DataFrame(st.session_state['selected_rows'])
+        # Entfernt die Spalte '_selectedRowNodeInfo', falls vorhanden
         if '_selectedRowNodeInfo' in new_data.columns:
             new_data.drop('_selectedRowNodeInfo', axis=1, inplace=True)
 
-        # Zuordnung der Slider-Auswahlen zu numerischen Werten für die finanzielle Bewertung
+        # Mappings zur Umwandlung der Slider-Werte in numerische Werte für die finanzielle Bewertung
         ausmass_finanziell_mapping = {
             "Keine": 1, "Minimal": 2, "Niedrig": 3, "Medium": 4, "Hoch": 5, "Sehr hoch": 6
         }
@@ -216,7 +228,8 @@ def submit_bewertung(longlist, ausgewaehlte_werte):
         auswirkung_finanziell_mapping = {
             "Keine": 1, "Sehr gering": 2, "Eher gering": 3, "Eher Hoch": 4, "Hoch": 5, "Sehr hoch": 6
         }
-        # Zuordnung der Slider-Auswahlen zu numerischen Werten für die Auswirkungsbewertung
+
+        # Mappings zur Umwandlung der Slider-Werte in numerische Werte für die negative Tat-Auswirkungsbewertung
         ausmass_neg_tat_mapping = {
             "Keine": 1, "Minimal": 2, "Niedrig": 3, "Medium": 4, "Hoch": 5, "Sehr hoch": 6
         }
@@ -226,6 +239,8 @@ def submit_bewertung(longlist, ausgewaehlte_werte):
         behebbarkeit_neg_tat_mapping = {
             "Kein Aufwand": 1, "Leicht zu beheben": 2, "Mit Aufwand": 3, "Mit hohem Aufwand": 4, "Mit sehr hohem Aufwand": 5, "Nicht behebbar": 6
         }
+
+        # Mappings zur Umwandlung der Slider-Werte für potenzielle negative Auswirkungen
         ausmass_neg_pot_mapping = {
             "Keine": 1, "Minimal": 2, "Niedrig": 3, "Medium": 4, "Hoch": 5, "Sehr hoch": 6
         }
@@ -238,6 +253,8 @@ def submit_bewertung(longlist, ausgewaehlte_werte):
         wahrscheinlichkeit_neg_pot_mapping = {
             "Tritt nicht ein": 1, "Unwahrscheinlich": 2, "Eher unwahrscheinlich": 3, "Eher wahrscheinlich": 4, "Wahrscheinlich": 5, "Sicher": 6
         }
+
+        # Mappings zur Umwandlung der Slider-Werte für tatsächliche und potenzielle positive Auswirkungen
         ausmass_pos_tat_mapping = {
             "Keine": 1, "Minimal": 2, "Niedrig": 3, "Medium": 4, "Hoch": 5, "Sehr hoch": 6
         }
@@ -254,7 +271,7 @@ def submit_bewertung(longlist, ausgewaehlte_werte):
             "Kein Aufwand": 1, "Leicht zu beheben": 2, "Mit Aufwand": 3, "Mit hohem Aufwand": 4, "Mit sehr hohem Aufwand": 5, "Nicht behebbar": 6
         }
 
-        # Kombinieren der Bewertungen zu einer String-Beschreibung
+        # Kombiniert alle Bewertungen zu einem String für die Auswirkungsbewertung
         auswirkung_string = ' ; '.join(part for part in [
             ausgewaehlte_werte.get('auswirkung_option', ''),
             ausgewaehlte_werte.get('auswirkung_art_option', ''),
@@ -272,16 +289,18 @@ def submit_bewertung(longlist, ausgewaehlte_werte):
             ausgewaehlte_werte.get('behebbarkeit_pos_pot', '') if ausgewaehlte_werte.get('behebbarkeit_pos_pot') else ''
         ] if part)
 
-        new_data['Auswirkung'] = auswirkung_string
-        finanziell_string = f"{ausgewaehlte_werte.get('art_finanziell', '')} ; {ausgewaehlte_werte.get('ausmass_finanziell', '')} ; {ausgewaehlte_werte.get('wahrscheinlichkeit_finanziell', '')} ; {ausgewaehlte_werte.get('auswirkung_finanziell', '')}"
-        new_data['Finanziell'] = finanziell_string
+        new_data['Auswirkung'] = auswirkung_string  # Fügt die Auswirkungsbewertung in den DataFrame ein
 
-        # Berechnung des Scores für finanzielle Bewertungen
-        new_data['Score Finanzen'] = np.round((
+        # Kombiniert alle Bewertungen zu einem String für die finanzielle Bewertung
+        finanziell_string = f"{ausgewaehlte_werte.get('art_finanziell', '')} ; {ausgewaehlte_werte.get('ausmass_finanziell', '')} ; {ausgewaehlte_werte.get('wahrscheinlichkeit_finanziell', '')} ; {ausgewaehlte_werte.get('auswirkung_finanziell', '')}"
+        new_data['Finanziell'] = finanziell_string  # Fügt die finanzielle Bewertung in den DataFrame ein
+
+        # Berechnung des Scores für die finanzielle Bewertung
+        new_data['Score Finanzen'] = np.round(((
             ausmass_finanziell_mapping.get(ausgewaehlte_werte.get('ausmass_finanziell', 'Keine'), 1) *
             wahrscheinlichkeit_finanziell_mapping.get(ausgewaehlte_werte.get('wahrscheinlichkeit_finanziell', 'Keine'), 1) *
             auswirkung_finanziell_mapping.get(ausgewaehlte_werte.get('auswirkung_finanziell', 'Keine'), 1) - 1) / (215) * 999 + 1
-            , 1)
+            ), 1)
 
         # Berechnung Tatsächliche negative Auswirkungen
         tatsaechlich_negativ = np.round(((
@@ -314,95 +333,117 @@ def submit_bewertung(longlist, ausgewaehlte_werte):
         # Berechnung des Gesamtscores für die Auswirkungsbewertung
         new_data['Score Auswirkung'] = tatsaechlich_negativ * tatsaechlich_positiv * potentiell_negativ * potentiell_positiv
 
-        # Aktualisieren oder Erstellen des `selected_data` DataFrames im Session State
+        # Aktualisiert den `selected_data` DataFrame im session_state
         if 'selected_data' in st.session_state:
             st.session_state.selected_data = pd.concat([st.session_state.selected_data, new_data], ignore_index=True)
+            # Entfernt doppelte Einträge basierend auf der ID-Spalte
             st.session_state.selected_data.drop_duplicates(subset='ID', keep='last', inplace=True)
         else:
+            # Erstellt neuen `selected_data` DataFrame, wenn er noch nicht vorhanden ist
             st.session_state.selected_data = new_data
 
+        # Aktualisiert die 'Bewertet'-Spalte basierend auf den IDs im `selected_data` DataFrame
         longlist['Bewertet'] = longlist['ID'].isin(st.session_state.selected_data['ID']).replace({True: 'Ja', False: 'Nein'})
-        st.success("Bewertung abgesendet")
-   
-    return longlist
+        st.success("Bewertung abgesendet")  # Zeigt eine Erfolgsmeldung an
 
+    return longlist  # Gibt den aktualisierten DataFrame zurück
+
+
+# Funktion zum Löschen von Bewertungen
 def delete_bewertung(longlist):
-    st.sidebar.markdown("---")
-    st.sidebar.write("**Bewertungen löschen**")
-    
+    st.sidebar.markdown("---")  # Trennlinie in der Sidebar
+    st.sidebar.write("**Bewertungen löschen**")  # Titel in der Sidebar
+
+    # Überprüfen, ob es bereits ausgewählte Daten gibt
     if 'selected_data' in st.session_state:
         selected_data_ids = st.session_state.selected_data['ID'] if 'ID' in st.session_state.selected_data.columns else []
 
-        # Button zum Löschen einer spezifischen Bewertung
+        # Button zum Löschen von Bewertungen
         if st.sidebar.button("🗑️ Bewertung löschen"):
+            # Überprüfen, ob Zeilen ausgewählt wurden
             if 'selected_rows' in st.session_state and st.session_state['selected_rows']:
+                # Extrahieren der IDs der ausgewählten Zeilen
                 selected_row_ids = [row['ID'] for row in st.session_state['selected_rows']]
+                # Filtern der zu löschenden Zeilen in den gespeicherten Daten
                 rows_to_delete = st.session_state.selected_data[st.session_state.selected_data['ID'].isin(selected_row_ids)]
                 
+                # Wenn keine Bewertung vorhanden ist, die gelöscht werden kann
                 if rows_to_delete.empty or all(longlist[longlist['ID'].isin(selected_row_ids)]['Bewertet'] == 'Nein'):
-                    st.error("Keine Bewertung zum Löschen vorhanden.")
+                    st.error("Keine Bewertung zum Löschen vorhanden.")  # Fehlermeldung
                 else:
+                    # Entfernen der ausgewählten Zeilen aus dem `selected_data` DataFrame
                     st.session_state.selected_data = st.session_state.selected_data[~st.session_state.selected_data['ID'].isin(selected_row_ids)]
+                    # Aktualisieren der 'Bewertet'-Spalte in der Longlist
                     longlist['Bewertet'] = longlist['ID'].isin(st.session_state.selected_data['ID']).replace({True: 'Ja', False: 'Nein'})
                     
+                    # Wenn alle Bewertungen gelöscht wurden, wird der `selected_columns` DataFrame geleert
                     if st.session_state.selected_data.empty:
                         st.session_state['selected_columns'] = pd.DataFrame()
 
-                    st.success("Bewertung erfolgreich gelöscht.")
+                    st.success("Bewertung erfolgreich gelöscht.")  # Erfolgsmeldung
             else:
-                st.error("Bitte wählen Sie mindestens eine Zeile aus, bevor Sie eine Bewertung löschen.")
+                st.error("Bitte wählen Sie mindestens eine Zeile aus, bevor Sie eine Bewertung löschen.")  # Fehlermeldung, wenn keine Zeile ausgewählt wurde
 
-    return longlist
+    return longlist  # Rückgabe der aktualisierten Longlist
 
+# Funktion zur Anzeige der ausgewählten Daten
 def display_selected_data():
+    # Überprüfen, ob es ausgewählte Daten gibt und ob diese nicht leer sind
     if 'selected_data' in st.session_state and not st.session_state.selected_data.empty:
-        # Füllen Sie fehlende Werte in 'Thema', 'Unterthema' und 'Unter-Unterthema' mit einem leeren String
+        # Fehlende Werte in den Spalten 'Thema', 'Unterthema' und 'Unter-Unterthema' mit einem leeren String füllen
         for column in ['Thema', 'Unterthema', 'Unter-Unterthema']:
             st.session_state.selected_data[column] = st.session_state.selected_data[column].fillna('')
 
-        # Auswahl der benötigten Spalten
+        # Auswahl der benötigten Spalten aus dem `selected_data` DataFrame
         selected_columns = st.session_state.selected_data[['ID', 'Auswirkung', 'Finanziell', 'Score Finanzen', 'Score Auswirkung', 'Thema', 'Unterthema', 'Unter-Unterthema']]
 
-        # Extrahieren Sie die Spalten 'Stakeholder Gesamtbew', 'Stakeholder Bew Finanzen' und 'Stakeholder Bew Auswirkung' aus 'combined_df' und fügen Sie sie zu 'selected_columns' hinzu
+        # Wenn die `combined_df` Daten existieren und die benötigten Spalten enthalten, diese hinzufügen
         if 'combined_df' in st.session_state and all(col in st.session_state.combined_df.columns for col in ['Stakeholder Gesamtbew', 'Stakeholder Bew Finanzen', 'Stakeholder Bew Auswirkung']):
             combined_df_with_numerical_ratings = st.session_state.combined_df[['ID', 'Stakeholder Gesamtbew', 'Stakeholder Bew Finanzen', 'Stakeholder Bew Auswirkung']]
+            # Zusammenführen der Daten basierend auf der 'ID'-Spalte
             selected_columns = pd.merge(selected_columns, combined_df_with_numerical_ratings, on='ID', how='left')
         
-        # Speichern Sie 'selected_columns' in 'st.session_state'
+        # Speichern der `selected_columns` im session_state
         st.session_state['selected_columns'] = selected_columns
 
-# Zeigt Bertungen nur an, wenn diese auch in der Longlist vorhanden sind
+# Funktion zur Anzeige der Bewertungen
 def Bewertungsanzeige():
+    # Überprüfen, ob `selected_columns` im session_state existiert und nicht leer ist
     if 'selected_columns' not in st.session_state or st.session_state['selected_columns'].empty:
-        st.info('Keine Bewertung vorhanden. Bitte fügen Sie eine Bewertung hinzu.')
-        return  # Beendet die Funktion, wenn keine Bewertung vorhanden ist
+        st.info('Keine Bewertung vorhanden. Bitte fügen Sie eine Bewertung hinzu.')  # Info-Meldung, wenn keine Bewertung vorhanden ist
+        return  # Beendet die Funktion, wenn keine Bewertung existiert
 
+    # Überprüfen, ob eine Longlist vorhanden ist
     if 'longlist' not in st.session_state:
-        st.info('Keine Longlist vorhanden. Bitte fügen Sie eine Longlist hinzu.')
-        return  # Beendet die Funktion, wenn keine Longlist vorhanden ist
+        st.info('Keine Longlist vorhanden. Bitte fügen Sie eine Longlist hinzu.')  # Info-Meldung, wenn keine Longlist vorhanden ist
+        return  # Beendet die Funktion, wenn keine Longlist existiert
 
+    # Extrahiert die IDs aus der Longlist
     longlist_ids = st.session_state['longlist']['ID'].unique()
+    # Filtern der `selected_columns` basierend auf den IDs, die in der Longlist existieren
     selected_columns = st.session_state['selected_columns']
     selected_columns = selected_columns[selected_columns['ID'].isin(longlist_ids)]
+    # Speichern der gefilterten `selected_columns` im session_state
     st.session_state['selected_columns'] = selected_columns
 
-    # Create a selectbox for IDs
+    # Dropdown zur Auswahl einer ID
     selected_id = st.selectbox('ID auswählen', selected_columns['ID'].unique())
 
-    # Filter the row with the selected ID
+    # Filtern der Zeile mit der ausgewählten ID
     selected_row = selected_columns[selected_columns['ID'] == selected_id]
 
+    # Wenn die gefilterte Zeile nicht leer ist
     if not selected_row.empty:
-        # Speichern der ausgewählten Bewertung im Session State
+        # Speichern der ausgewählten Bewertung im session_state
         st.session_state['selected_evaluation'] = selected_row
 
-        # Split the 'Auswirkung' string into parts by ';'
+        # Aufteilen des 'Auswirkung'-Strings in einzelne Teile
         auswirkung_parts = selected_row['Auswirkung'].values[0].split(';')
 
-        # Split the 'Finanziell' string into parts by ';'
+        # Aufteilen des 'Finanziell'-Strings in einzelne Teile
         finanziell_parts = selected_row['Finanziell'].values[0].split(';')
 
-        # Display each part of 'Auswirkung'
+        # Mapping der Teile von 'Auswirkung' zu spezifischen Bezeichnungen
         auswirkung_mapping = {
             1: 'Eigenschaft',
             2: 'Art',
@@ -412,7 +453,7 @@ def Bewertungsanzeige():
             6: 'Wahrscheinlichkeit'
         }
 
-        # Display each part of 'Finanziell'
+        # Mapping der Teile von 'Finanziell' zu spezifischen Bezeichnungen
         finanziell_mapping = {
             1: 'Art',
             2: 'Ausmaß',
@@ -420,34 +461,38 @@ def Bewertungsanzeige():
             4: 'Finanzielle Auswirkung'
         }
 
+        # Erstellen von drei Spalten zur Anzeige der Details
         col1, col2, col3 = st.columns([1, 1, 1])
 
+        # Anzeige der Auswirkung
         with col1:
             st.write("**Auswirkung**")
             for i, part in enumerate(auswirkung_parts, start=1):
                 if i in auswirkung_mapping:
-                    st.write(f'{auswirkung_mapping[i]}:', part.strip())
+                    st.write(f'{auswirkung_mapping[i]}:', part.strip())  # Zeigt die entsprechenden Teile der Auswirkung an
                 else:
-                    st.write(f'Auswirkung Teil {i}:', part.strip())
-            st.write('Score:', selected_row['Score Auswirkung'].values[0])
+                    st.write(f'Auswirkung Teil {i}:', part.strip())  # Zeigt sonst die Auswirkungsteile ohne Mapping an
+            st.write('Score:', selected_row['Score Auswirkung'].values[0])  # Zeigt den Score für die Auswirkung
 
+        # Anzeige der Finanziellen Bewertung
         with col2:
             st.write("**Finanziell**")
             for i, part in enumerate(finanziell_parts, start=1):
                 if i in finanziell_mapping:
-                    st.write(f'{finanziell_mapping[i]}:', part.strip())
+                    st.write(f'{finanziell_mapping[i]}:', part.strip())  # Zeigt die entsprechenden Teile der finanziellen Bewertung an
                 else:
-                    st.write(f'Finanziell Teil {i}:', part.strip())
-            st.write('Score:', selected_row['Score Finanzen'].values[0])
+                    st.write(f'Finanziell Teil {i}:', part.strip())  # Zeigt sonst die Finanziellen Teile ohne Mapping an
+            st.write('Score:', selected_row['Score Finanzen'].values[0])  # Zeigt den Score für die finanzielle Bewertung
 
+        # Weitere Aktionen oder Informationen können in der dritten Spalte angezeigt werden
         with col3:
-            # Hier können weitere Informationen oder Aktionen hinzugefügt werden
-            pass
+            pass  # Hier könnten zusätzliche Informationen oder Aktionen hinzugefügt werden
 
-        # Hinzufügen der Bewertung zum session state 'all_evaluations'
+        # Speichern der Bewertung in der Liste `all_evaluations` im session_state
         if 'all_evaluations' not in st.session_state:
-            st.session_state['all_evaluations'] = []
+            st.session_state['all_evaluations'] = []  # Initialisiert die Liste, wenn sie nicht existiert
 
+        # Speichern der Bewertung in einem Dictionary
         evaluation = {
             'ID': selected_row['ID'].values[0],
             'Auswirkung': selected_row['Auswirkung'].values[0],
@@ -456,59 +501,69 @@ def Bewertungsanzeige():
             'Score Finanzen': selected_row['Score Finanzen'].values[0]
         }
 
+        # Hinzufügen der Bewertung zur Liste `all_evaluations`
         st.session_state['all_evaluations'].append(evaluation)
 
-        # Erstellen und Anzeigen eines DataFrame mit allen Bewertungen
-        evaluations_df = pd.DataFrame(st.session_state['all_evaluations'])
-        #st.write("**Alle Bewertungen**")
-        #st.dataframe(evaluations_df)
-
     # Zustand speichern nach jeder Änderung
-    save_state()
+    save_state()  # Speichert den aktuellen Zustand im session_state
+
+
+#---------------------------------- Anzeigen der Longlist im Aggrid ----------------------------------#
 
 def display_grid(longlist):
-    gb = GridOptionsBuilder.from_dataframe(longlist)
-    gb.configure_side_bar()
-    gb.configure_selection('single', use_checkbox=True, groupSelectsChildren="Group checkbox select children", rowMultiSelectWithClick=False)
-    gb.configure_column('ID', width=70) 
-    gb.configure_column('Bewertet',  width=80)
-    gb.configure_column('Thema',  width=200)
+    gb = GridOptionsBuilder.from_dataframe(longlist)  # Erzeugt eine GridOptionsBuilder-Instanz basierend auf dem DataFrame `longlist`
+    gb.configure_side_bar() # Fügt eine Sidebar hinzu, die Optionen für Filter und Einstellungen enthält
+    gb.configure_selection('single', use_checkbox=True, groupSelectsChildren="Group checkbox select children", rowMultiSelectWithClick=False)  # Konfiguriert die Zeilenauswahl auf 'single' (nur eine Zeile gleichzeitig wählbar)
+    gb.configure_column('ID', width=70) # Konfiguriert die Spalte 'ID' mit einer festen Breite von 70 Pixeln
+    gb.configure_column('Bewertet',  width=80) # Konfiguriert die Spalte 'Bewertet' mit einer festen Breite von 80 Pixeln
+    gb.configure_column('Thema',  width=200) # Konfiguriert die Spalte 'Thema' mit einer festen Breite von 200 Pixeln
     grid_options = gb.build()
-    grid_response = AgGrid(longlist, gridOptions=grid_options, enable_enterprise_modules=True, update_mode=GridUpdateMode.MODEL_CHANGED, fit_columns_on_grid_load=True)
+    grid_response = AgGrid(
+        longlist,  # Der DataFrame, der als Grid angezeigt werden soll
+        gridOptions=grid_options,  # Die erstellten Grid-Optionen
+        enable_enterprise_modules=True,  # Aktiviert die Enterprise-Module für zusätzliche Funktionen
+        update_mode=GridUpdateMode.MODEL_CHANGED,  # Das Grid wird aktualisiert, wenn sich das Modell ändert
+        fit_columns_on_grid_load=True  # Die Spalten werden beim Laden des Grids automatisch angepasst
+    )
     st.session_state['selected_rows'] = grid_response['selected_rows']
+
+#----------------- Zusammenführung der IROs aus interene, exterene, themen. ESRS. etc. ---------------#
 
 # Erstellen Sie ein leeres Wörterbuch zur Speicherung von Inhalt-ID-Zuordnungen
 content_id_map = {}
 
+# Funktion zum Zusammenführen der verschiedenen DataFrames und Verwaltung der IDs
 def merge_dataframes():
-    global next_id
+    global next_id  # Verwenden einer globalen Variablen, um die ID über Sitzungen hinweg zu speichern
+
+    # Initialisiert das content_id_map im session_state, falls es noch nicht existiert
     if 'content_id_map' not in st.session_state:
         st.session_state.content_id_map = {}
     content_id_map = st.session_state.content_id_map
 
-    # Abrufen der Daten von verschiedenen Quellen
-    selected_points_df = Top_down_Nachhaltigkeitspunkte()
+    # Abrufen der Daten aus verschiedenen Quellen (Themenspezifische_ESRS, Stakeholder, Eigene)
+    selected_points_df = Themenspezifische_ESRS()
     selected_rows_st = stakeholder_Nachhaltigkeitspunkte()
     df4 = eigene_Nachhaltigkeitspunkte()
 
-    # Kombinieren der Daten in einem DataFrame
+    # Kombinieren aller Daten in einem DataFrame
     combined_df = pd.concat([selected_points_df, df4, selected_rows_st], ignore_index=True)
 
     # Entfernen von Zeilen, die nur NaN-Werte enthalten
     combined_df = combined_df.dropna(how='all')
 
-    # Entfernen von führenden und nachfolgenden Leerzeichen in den Spalten 'Thema', 'Unterthema' und 'Unter-Unterthema'
+    # Entfernen von Leerzeichen in den Spalten 'Thema', 'Unterthema' und 'Unter-Unterthema'
     combined_df['Thema'] = combined_df['Thema'].str.strip()
     combined_df['Unterthema'] = combined_df['Unterthema'].str.strip()
     combined_df['Unter-Unterthema'] = combined_df['Unter-Unterthema'].str.strip()
 
-    # Entfernen von Zeilen, in denen das 'Thema' NaN ist
+    # Entfernen von Zeilen ohne Thema
     combined_df = combined_df.dropna(subset=['Thema'])
 
-    # Gruppieren der Daten nach 'Thema', 'Unterthema' und 'Unter-Unterthema' und Zusammenführen der 'Quelle'-Werte
+    # Gruppieren nach 'Thema', 'Unterthema' und 'Unter-Unterthema' und Zusammenführen der 'Quelle'-Werte
     combined_df = combined_df.groupby(['Thema', 'Unterthema', 'Unter-Unterthema']).agg({'Quelle': lambda x: ' & '.join(sorted(set(x)))}).reset_index()
 
-    # Hinzufügen der 'Stakeholder Gesamtbew' Spalte aus 'selected_rows_st'
+    # Hinzufügen der Stakeholder-Bewertungen in den kombinierten DataFrame
     combined_df = pd.merge(combined_df, selected_rows_st[['Thema', 'Unterthema', 'Unter-Unterthema', 'Stakeholder Gesamtbew', 'Stakeholder Bew Finanzen', 'Stakeholder Bew Auswirkung']], on=['Thema', 'Unterthema', 'Unter-Unterthema'], how='left')
 
     # Entfernen von Duplikaten
@@ -519,85 +574,93 @@ def merge_dataframes():
 
     # Bestimmen der nächsten verfügbaren ID
     if 'combined_df' in st.session_state and not st.session_state.combined_df.empty:
-        max_existing_id = st.session_state.combined_df['ID'].max()
+        max_existing_id = st.session_state.combined_df['ID'].max()  # Maximal vorhandene ID finden
         next_id = max(max_existing_id + 1, next_id)
     else:
-        next_id = 1
+        next_id = 1  # Beginnt bei 1, falls noch keine IDs vorhanden sind
 
-    # Hinzufügen einer 'ID'-Spalte
+    # Zuweisen der IDs zu den Einträgen
     for index, row in combined_df.iterrows():
-        content = (row['Thema'], row['Unterthema'], row['Unter-Unterthema'])
+        content = (row['Thema'], row['Unterthema'], row['Unter-Unterthema'])  # Erstellen eines Identifikators
 
-        # Überprüfen Sie, ob der Inhalt bereits eine ID hat
+        # Überprüfen, ob der Inhalt bereits eine ID hat
         if content in content_id_map:
-            # Verwenden Sie die vorhandene ID
-            id = content_id_map[content]
+            id = content_id_map[content]  # Existierende ID verwenden
         else:
-            # Erstellen Sie eine neue ID und speichern Sie die Zuordnung
-            id = next_id
-            content_id_map[content] = id
-            next_id += 1  # Inkrementieren Sie die nächste ID
+            id = next_id  # Neue ID zuweisen
+            content_id_map[content] = id  # Speichern der Zuordnung
+            next_id += 1  # Erhöhen der ID für den nächsten Eintrag
 
-        # Setzen Sie die ID im DataFrame
+        # Setzen der ID im DataFrame
         combined_df.at[index, 'ID'] = id
-    
-    # Erstellen eines session_state von combined_df
+
+    # Speichern des kombinierten DataFrames im session_state
     st.session_state.combined_df = combined_df
 
-    # Erstellung einer Kopie von combined_df ohne Stakeholder Bewertungen und Quelle zur Darstellung der Longlist mit lediglich relevanten Spalten
+    # Kopie des DataFrames ohne Bewertungen und Quellen für die Longlist erstellen
     combined_df_without_numerical_rating_and_source = st.session_state.combined_df.drop(columns=['Stakeholder Gesamtbew', 'Stakeholder Bew Finanzen', 'Stakeholder Bew Auswirkung', 'Quelle'])
-    # Speichern Sie die neue DataFrame in 'st.session_state'
-    st.session_state['combined_df_without_numerical_rating_and_source'] = combined_df_without_numerical_rating_and_source
+    st.session_state['combined_df_without_numerical_rating_and_source'] = combined_df_without_numerical_rating_and_source  # Speichern im session_state
 
-    # Erstellen eines neuen DataFrame 'longlist', um Probleme mit der Zuordnung von 'selected_rows' zu vermeiden
+    # Erstellung eines neuen DataFrames 'longlist' für die Anzeige
     longlist = pd.DataFrame(combined_df_without_numerical_rating_and_source)
 
-    # Initialisieren der 'Bewertet'-Spalte in 'longlist'
+    # Initialisieren der 'Bewertet'-Spalte in der Longlist
     longlist = initialize_bewertet_column(longlist)
 
+    # Speichern der Longlist im session_state
     st.session_state['longlist'] = longlist
-    save_state()
+    save_state()  # Zustand speichern
 
-    # Initialize all required variables for ausgewaehlte_werte
+    # Initialisieren der Variablen für Bewertungen
     option = auswirkung_option = auswirkung_art_option = ausmass_neg_tat = umfang_neg_tat = behebbarkeit_neg_tat = ''
-    ausmass_neg_pot = umfang_neg_pot = behebbarkeit_neg_pot = wahrscheinlichkeit_neg_pot = ''  
+    ausmass_neg_pot = umfang_neg_pot = behebbarkeit_neg_pot = wahrscheinlichkeit_neg_pot = ''
     ausmass_pos_tat = umfang_pos_tat = ausmass_pos_pot = umfang_pos_pot = behebbarkeit_pos_pot = ''
     art_finanziell = wahrscheinlichkeit_finanziell = ausmass_finanziell = auswirkung_finanziell = ''
 
+    # Sidebar für die Bewertungsoptionen
     st.sidebar.markdown('---')
     st.sidebar.write("**Bewertungen hinzufügen**")
     with st.sidebar:
+        # Abschnitt für Auswirkungsbewertung
         with st.expander("Auwirkungsbewertung"):
-            auswirkung_option = st.selectbox('Eigenschaft der Auswirkung:', ['Negative Auswirkung','Positive Auswirkung', 'Keine Auswirkung'], index=2, key="auswirkung_option")
+            auswirkung_option = st.selectbox('Eigenschaft der Auswirkung:', ['Negative Auswirkung', 'Positive Auswirkung', 'Keine Auswirkung'], index=2, key="auswirkung_option")
             if auswirkung_option == 'Negative Auswirkung':
+                # Weitere Optionen für negative Auswirkung
                 auswirkung_art_option = st.selectbox('Art der Auswirkung:', ['Tatsächliche Auswirkung', 'Potenzielle Auswirkung', ''], index=2, key="auswirkung_art_option")      
                 if auswirkung_art_option == 'Tatsächliche Auswirkung':
+                    # Slider für tatsächliche negative Auswirkungen
                     ausmass_neg_tat = st.select_slider("Ausmaß:", options=["Keine", "Minimal", "Niedrig", "Medium", "Hoch", "Sehr hoch"], key="ausmass_neg_tat")
                     umfang_neg_tat = st.select_slider("Umfang:", options=["Keine", "Lokal", "Regional", "National", "International", "Global"], key="umfang_neg_tat")
                     behebbarkeit_neg_tat = st.select_slider("Behebbarkeit:", options=["Kein Aufwand", "Leicht zu beheben", "Mit Aufwand", "Mit hohem Aufwand", "Mit sehr hohem Aufwand", "Nicht behebbar"], key="behebbarkeit_neg_tat")
                 elif auswirkung_art_option == 'Potenzielle Auswirkung':
+                    # Slider für potenzielle negative Auswirkungen
                     ausmass_neg_pot = st.select_slider("Ausmaß:", options=["Keine", "Minimal", "Niedrig", "Medium", "Hoch", "Sehr hoch"], key="ausmass_neg_pot")
                     umfang_neg_pot = st.select_slider("Umfang:", options=["Keine", "Lokal", "Regional", "National", "International", "Global"], key="umfang_neg_pot")
                     behebbarkeit_neg_pot = st.select_slider("Behebbarkeit:", options=["Kein Aufwand", "Leicht zu beheben", "Mit Aufwand", "Mit hohem Aufwand", "Mit sehr hohem Aufwand", "Nicht behebbar"], key="behebbarkeit_neg_pot")
                     wahrscheinlichkeit_neg_pot = st.select_slider("Wahrscheinlichkeit:", options=["Tritt nicht ein", "Unwahrscheinlich", "Eher unwahrscheinlich", "Eher wahrscheinlich", "Wahrscheinlich", "Sicher"], key="wahrscheinlichkeit_neg_pot")
             elif auswirkung_option == 'Positive Auswirkung':
-                auswirkung_art_option = st.selectbox('Bitte wählen Sie die Art der Auswirkung:', ['Tatsächliche Auswirkung', 'Potenzielle Auswirkung', ''], index=2, key="auswirkung_art_option_pos")
+                # Optionen für positive Auswirkungen
+                auswirkung_art_option = st.selectbox('Art der Auswirkung:', ['Tatsächliche Auswirkung', 'Potenzielle Auswirkung', ''], index=2, key="auswirkung_art_option_pos")
                 if auswirkung_art_option == 'Tatsächliche Auswirkung':
+                    # Slider für tatsächliche positive Auswirkungen
                     ausmass_pos_tat = st.select_slider("Ausmaß:", options=["Keine", "Minimal", "Niedrig", "Medium", "Hoch", "Sehr hoch"], key="ausmass_pos_tat")
                     umfang_pos_tat = st.select_slider("Umfang:", options=["Keine", "Lokal", "Regional", "National", "International", "Global"], key="umfang_pos_tat")
                 elif auswirkung_art_option == 'Potenzielle Auswirkung':
+                    # Slider für potenzielle positive Auswirkungen
                     ausmass_pos_pot = st.select_slider("Ausmaß:", options=["Keine", "Minimal", "Niedrig", "Medium", "Hoch", "Sehr hoch"], key="ausmass_pos_pot")
                     umfang_pos_pot = st.select_slider("Umfang:", options=["Keine", "Lokal", "Regional", "National", "International", "Global"], key="umfang_pos_pot")
                     behebbarkeit_pos_pot = st.select_slider("Behebbarkeit:", options=["Kein Aufwand", "Leicht zu beheben", "Mit Aufwand", "Mit hohem Aufwand", "Mit sehr hohem Aufwand", "Nicht behebbar"], key="behebbarkeit_pos_pot")
     
+        # Abschnitt für finanzielle Bewertung
         with st.expander("Finanzielle Bewertung"):
             art_finanziell = st.selectbox("Eigenschaft der Auswirkung:", ['Chance', 'Risiko', 'Keine Auswirkung'], index=2, key="art_finanziell")
             if art_finanziell != 'Keine Auswirkung':
+                # Slider für finanzielle Auswirkungen
                 ausmass_finanziell = st.select_slider("Ausmaß:", options=["Keine", "Minimal", "Niedrig", "Medium", "Hoch", "Sehr hoch"], key="ausmass_finanziell")
                 wahrscheinlichkeit_finanziell = st.select_slider("Wahrscheinlichkeit:", options=["Tritt nicht ein", "Unwahrscheinlich", "Eher unwahrscheinlich", "Eher wahrscheinlich", "Wahrscheinlich", "Sicher"], key="wahrscheinlichkeit_finanziell")
                 auswirkung_finanziell = st.select_slider("Finanzielle Auswirkung:", options=["Keine", "Sehr gering", "Eher gering", "Eher hoch", "Hoch", "Sehr hoch"], key="auswirkung_finanziell")
 
-    # Store selected values
+    # Speichern der ausgewählten Werte in einem Dictionary
     ausgewaehlte_werte = {
         "option": option,
         "auswirkung_option": auswirkung_option,
@@ -620,7 +683,7 @@ def merge_dataframes():
         "auswirkung_finanziell": auswirkung_finanziell
     }
 
-    # Define the nested function
+    # Verschachtelte Funktion zum Zählen bewerteter Punkte
     def count_bewertete_punkte():
         if 'longlist' in st.session_state:
             # Überprüfen, ob die Longlist leer ist
@@ -629,9 +692,8 @@ def merge_dataframes():
                 st.session_state['checkbox_state_6'] = False
                 return  # Beendet die Funktion, wenn die Longlist leer ist
     
-            # Zählen der Zeilen, die in der Spalte 'Bewertet' den Wert 'Ja' haben
+            # Zählen der bewerteten Punkte
             yes_count = st.session_state.longlist[st.session_state.longlist['Bewertet'] == 'Ja'].shape[0]
-            # Gesamtanzahl der Zeilen
             total_count = st.session_state.longlist.shape[0]
             # Berechnung des Prozentsatzes
             if total_count > 0:
@@ -639,7 +701,7 @@ def merge_dataframes():
             else:
                 percentage = 0
     
-            # Überprüfen, ob yes_count gleich total_count ist
+            # Überprüfen, ob alle Punkte bewertet wurden
             if yes_count == total_count:
                 st.write("Abgeschlossen ✔")
                 st.session_state['checkbox_state_6'] = True
@@ -650,26 +712,33 @@ def merge_dataframes():
             st.write("Keine Inhalte vorhanden")
             st.session_state['checkbox_state_6'] = False
 
-    # Proceed with the rest of the logic
+    # Bewertung, Löschen und Anzeigen der Longlist
     longlist = submit_bewertung(longlist, ausgewaehlte_werte)
     longlist = delete_bewertung(longlist)
     
-    # Anzeige und Struktur der Seite in merge_dataframes, um immer aktuelle session states zu haben und dabei korrekte übergabe von Daten
+    # Struktur für die Anzeige der Seite
     col1, col2 = st.columns([5, 1])
     with col1:
         st.header("Bewertung der Nachhaltigkeitspunkte (Longlist)")
     with col2:
         container = st.container(border=False)
         with container:
-                count_bewertete_punkte()
+            count_bewertete_punkte()  # Zeigt den Bewertungsfortschritt an
+    
+    st.markdown("""
+        Die Longlist enthält alle Punkte, die für die Bewertung berücksichtigt werden sollen, nachdem Sie alle vorherigen Schritte durchlaufen haben. Um eine Bewertung vorzunehmen, markieren Sie die Checkbox des gewünschten Punktes und wählen Sie die entsprechenden Bewertungskriterien in der Sidebar aus. Unterhalb der Longlist können Sie die bereits vorgenommenen Bewertungen einsehen und gegebenenfalls löschen. 
+        Die Spalte "Bewertet" hilft Ihnen dabei, den Überblick zu behalten, welche Inhalte bereits bewertet wurden.
+    """)
                 
+    # Anzeige der Longlist als Grid
     display_grid(longlist)
-    save_state()
+    save_state()  # Zustand speichern
 
-# Ensure next_id is maintained across sessions
+# Initialisieren der next_id für die Verwaltung von IDs
 if 'next_id' not in st.session_state:
     st.session_state.next_id = 1
 next_id = st.session_state.next_id
+
 
 def reset_session_state_keys():
     keys_to_reset = [
@@ -682,6 +751,9 @@ def reset_session_state_keys():
     for key in keys_to_reset:
         if key in st.session_state:
             del st.session_state[key]
+
+
+#---------------------------------- Anzeigen für die Übersicht und aktuellen Stand ----------------------------------#
 
 def bewertung_Uebersicht():
     if 'longlist' not in st.session_state or st.session_state['longlist'].empty:
@@ -728,13 +800,13 @@ def anzahl_punkte_Longlist():
         count = len(st.session_state.combined_df)
     st.metric(label="**Longlist**", value=count)
 
-# Funktion, die zählt wie viele themespezifische Punkte in der Longlist sind. Inhalte werden aufgenommen wenn combined_df "Top-Down|Top-Down Bewertung|Top-Down & Top-Down Bewertung" enthält. 
+# Funktion, die zählt wie viele themespezifische Punkte in der Longlist sind. Inhalte werden aufgenommen wenn combined_df "Themenspezifische_ESRS|Themenspezifische_ESRS Bewertung|Themenspezifische_ESRS & Themenspezifische_ESRS Bewertung" enthält. 
 def count_top_down_points():
     count = 0
     if 'combined_df' in st.session_state:
         combined_df = st.session_state.combined_df
         # Filtern der Zeilen, die die angegebenen Schlüsselwörter enthalten
-        count = combined_df[combined_df['Quelle'].str.contains("Top-Down|Top-Down Bewertung|Top-Down & Top-Down Bewertung", na=False)].shape[0]
+        count = combined_df[combined_df['Quelle'].str.contains("Themenspezifische_ESRS|Themenspezifische_ESRS Bewertung|Themenspezifische_ESRS & Themenspezifische_ESRS Bewertung", na=False)].shape[0]
         # Ausgabe der Anzahl als st.metric
         st.metric(label="davon aus themenspezifischer ESRS:", value=count)
         
@@ -748,15 +820,17 @@ def count_internal_points():
         # Ausgabe der Anzahl als st.metric
         st.metric(label="davon interne Punkte:", value=count)
     
-# Funktio, die zählt wie viele Stakeholderpunkte in der Longlist sind. "~combined_df" bedeutet, dass alle Zeilen aus der Longlist genommen werden, die nicht "Top-Down|Top-Down Bewertung|Top-Down..." sind
+# Funktio, die zählt wie viele Stakeholderpunkte in der Longlist sind. "~combined_df" bedeutet, dass alle Zeilen aus der Longlist genommen werden, die nicht "Themenspezifische_ESRS|Themenspezifische_ESRS Bewertung|Themenspezifische_ESRS..." sind
 def count_stakeholder_points():
     count = 0
     if 'combined_df' in st.session_state:
         combined_df = st.session_state.combined_df
         # Filtern der Zeilen, die die angegebenen Schlüsselwörter enthalten
-        count = combined_df[~combined_df['Quelle'].str.contains("Top-Down|Top-Down Bewertung|Top-Down & Top-Down Bewertung|Intern|Eigene|Eigene & Intern", na=False)].shape[0]
+        count = combined_df[~combined_df['Quelle'].str.contains("Themenspezifische_ESRS|Themenspezifische_ESRS Bewertung|Themenspezifische_ESRS & Themenspezifische_ESRS Bewertung|Intern|Eigene|Eigene & Intern", na=False)].shape[0]
         # Ausgabe der Anzahl als st.metric
         st.metric(label="davon externe Punkte:", value=count)
+
+# ---------------------------------- Anzeigen der Longlist Seite ----------------------------------#
 
 def display_page():
     merge_dataframes()
