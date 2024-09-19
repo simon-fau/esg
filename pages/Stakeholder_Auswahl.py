@@ -2,7 +2,7 @@ import streamlit as st
 import pickle
 
 # Konstante für den Dateinamen des Sitzungszustands (wo die Daten gespeichert werden)
-STATE_FILE = 'Speicherung.pkl'
+STATE_FILE = 'SessionStates.pkl'
 
 # Funktion zum Speichern des aktuellen Sitzungszustands in einer Datei
 def save_state():

@@ -7,7 +7,7 @@ from st_aggrid import AgGrid, GridOptionsBuilder, GridUpdateMode
 #---------------------------------- Sitzungszustand-Management ----------------------------------#
 
 # Konstante für die Pickl, in dem die session_states gespeichert werden
-STATE_FILE = 'Speicherung.pkl'
+STATE_FILE = 'SessionStates.pkl'
 
 # Funktion zum Laden des gespeicherten Sitzungszustands
 def load_session_state():
@@ -72,40 +72,43 @@ def plazhalter():
 
 #---------------------------------- Funktionen zur Anpassung von Stakeholder-Daten ----------------------------------#
 
-# Funktion zur Anpassung der Werte und Stakeholder-Namen in 'stakeholder_punkte_filtered' basierend auf 'new_df_copy' für nicht einbezogene Stakeholder
+# Funktion zur Anpassung der Werte und Stakeholder-Namen in 'stakeholder_punkte_filtered' 
+# basierend auf 'new_df_copy' für nicht einbezogene Stakeholder
 def adjust_stakeholder_punkte_filtered(new_df_copy, stakeholder_punkte_filtered):
-    # Ensure that 'Status' column exists before iterating
+    # Überprüfen, ob die Spalte 'Status' in 'new_df_copy' vorhanden ist
     if 'Status' not in new_df_copy.columns:
-        st.error("The 'Status' column is missing in new_df_copy.")
-        return stakeholder_punkte_filtered
+        st.error("Die Spalte 'Status' fehlt in new_df_copy.")  # Fehlermeldung, falls die Spalte fehlt
+        return stakeholder_punkte_filtered  # Gib den unveränderten DataFrame zurück
     
+    # Iteriere über die Zeilen in 'new_df_copy', bei denen der Status 'nicht einbezogen' ist
     for idx, row in new_df_copy[new_df_copy['Status'] == 'nicht einbezogen'].iterrows():
-        stakeholder_name = row['Stakeholder']  # Extract the Stakeholder name
-        thema = row['Thema']  # Extract the topic
-        unterthema = row['Unterthema']  # Extract the subtopic
-        unter_unterthema = row['Unter-Unterthema']  # Extract the sub-subtopic
+        # Extrahiere den Namen des Stakeholders, das Thema, Unterthema und Unter-Unterthema aus der aktuellen Zeile
+        stakeholder_name = row['Stakeholder']
+        thema = row['Thema']
+        unterthema = row['Unterthema']
+        unter_unterthema = row['Unter-Unterthema']
 
-        # Find matching entries in 'stakeholder_punkte_filtered'
+        # Suche nach übereinstimmenden Einträgen in 'stakeholder_punkte_filtered'
         matches = stakeholder_punkte_filtered[
-            (stakeholder_punkte_filtered['Stakeholder'].str.contains(stakeholder_name)) &
-            (stakeholder_punkte_filtered['Thema'] == thema) &
-            (stakeholder_punkte_filtered['Unterthema'] == unterthema) &
-            (stakeholder_punkte_filtered['Unter-Unterthema'] == unter_unterthema)
+            (stakeholder_punkte_filtered['Stakeholder'].str.contains(stakeholder_name)) &  # Überprüfen, ob der Stakeholder-Name enthalten ist
+            (stakeholder_punkte_filtered['Thema'] == thema) &  # Überprüfen, ob das Thema übereinstimmt
+            (stakeholder_punkte_filtered['Unterthema'] == unterthema) &  # Überprüfen, ob das Unterthema übereinstimmt
+            (stakeholder_punkte_filtered['Unter-Unterthema'] == unter_unterthema)  # Überprüfen, ob das Unter-Unterthema übereinstimmt
         ]
         
-        # Update the scores for the found matches
+        # Aktualisiere die Werte für die gefundenen Übereinstimmungen
         for match_idx, match_row in matches.iterrows():
+            # Subtrahiere die Werte aus 'new_df_copy' von den bestehenden Werten in 'stakeholder_punkte_filtered'
             stakeholder_punkte_filtered.at[match_idx, 'Stakeholder Bew Auswirkung'] -= row['Stakeholder Bew Auswirkung']
             stakeholder_punkte_filtered.at[match_idx, 'Stakeholder Bew Finanzen'] -= row['Stakeholder Bew Finanzen']
             stakeholder_punkte_filtered.at[match_idx, 'Stakeholder Gesamtbew'] -= row['Stakeholder Gesamtbew']
             
-            # Update the stakeholder name by removing the current stakeholder's name
+            # Entferne den aktuellen Stakeholder-Namen aus der Liste der Stakeholder, um doppelte Einträge zu vermeiden
             updated_stakeholders = match_row['Stakeholder'].replace(stakeholder_name, '').replace(',,', ',').strip(', ')
+            # Aktualisiere den Stakeholder-Namen in der Tabelle
             stakeholder_punkte_filtered.at[match_idx, 'Stakeholder'] = updated_stakeholders
 
-    return stakeholder_punkte_filtered  # Return the adjusted dataframe
-
-
+    return stakeholder_punkte_filtered  # Gib den angepassten DataFrame zurück
 
  #---------------------------------- Dienstprogramme für Bewertungen und Filterung ----------------------------------#
 
@@ -188,57 +191,68 @@ def display_aggrid(df):
 
 # Funktion zur Anzeige der Stakeholder-Punkte-Tabelle
 def stakeholder_punkte():
-    # Check if 'stakeholder_punkte_filtered' is in session state
+    # Überprüfen, ob 'stakeholder_punkte_filtered' im Sitzungszustand vorhanden ist
     if 'stakeholder_punkte_filtered' in st.session_state:
-        # Ensure it's a DataFrame
+        # Sicherstellen, dass es sich um einen DataFrame handelt
         if isinstance(st.session_state.stakeholder_punkte_filtered, pd.DataFrame):
-            # Check if 'Stakeholder' column exists
+            # Überprüfen, ob die Spalte 'Stakeholder' im DataFrame existiert
             if 'Stakeholder' in st.session_state.stakeholder_punkte_filtered.columns:
-                # Remove rows where 'Stakeholder' column is empty or just spaces
+                # Entferne Zeilen, in denen die 'Stakeholder'-Spalte leer oder nur Leerzeichen enthält
                 st.session_state.stakeholder_punkte_filtered = st.session_state.stakeholder_punkte_filtered[
                     st.session_state.stakeholder_punkte_filtered['Stakeholder'].str.strip() != ''
                 ]
                 
-                # Save updated state
+                # Speichere den aktualisierten Sitzungszustand
                 save_session_state({'stakeholder_punkte_filtered': st.session_state.stakeholder_punkte_filtered})
                 
-                # Ensure it's not empty
+                # Überprüfen, ob der DataFrame nicht leer ist
                 if not st.session_state.stakeholder_punkte_filtered.empty:
+                    # Zeige die Tabelle mit AgGrid an und speichere die Antwort
                     response = display_aggrid(st.session_state.stakeholder_punkte_filtered)
-                    st.session_state.grid_response = response
-                    save_session_state({'grid_response': st.session_state.grid_response})
+                    st.session_state.grid_response = response  # Speichere das Ergebnis der Grid-Interaktion
+                    save_session_state({'grid_response': st.session_state.grid_response})  # Speichere den aktualisierten Zustand
                 else:
+                    # Zeige eine Nachricht an, wenn keine Daten vorhanden sind.Diese Rückmeldungen können geändert werden, für den Entwickler als Debugging-Hilfe. Aktuell sind die für den Endnutzer ausgelegt.
                     st.info("Keine Stakeholder-Bewertungen vorhanden.")
             else:
-                st.error("Die Spalte 'Stakeholder' ist nicht in den Daten vorhanden.")
+                # Zeige eine Fehlermeldung an, wenn die 'Stakeholder'-Spalte nicht existiert. Diese Rückmeldungen können geändert werden, für den Entwickler als Debugging-Hilfe. Aktuell sind die für den Endnutzer ausgelegt.
+                st.info("Keine Stakeholder-Bewertungen vorhanden.")
         else:
-            st.error("Die Daten sind nicht im korrekten Format (erwartet: Pandas DataFrame).")
+            # Zeige eine Fehlermeldung an, wenn die Daten kein DataFrame sind. Diese Rückmeldungen können geändert werden, für den Entwickler als Debugging-Hilfe. Aktuell sind die für den Endnutzer ausgelegt.
+            st.info("Keine Stakeholder-Bewertungen vorhanden.")
     else:
+        # Zeige eine Nachricht an, wenn keine Stakeholder-Bewertungen im Sitzungszustand vorhanden sind.Diese Rückmeldungen können geändert werden, für den Entwickler als Debugging-Hilfe. Aktuell sind die für den Endnutzer ausgelegt.
         st.info("Keine Stakeholder-Bewertungen vorhanden.")
-
-
 
 #---------------------------------- Seitenleiste und Fortschrittsanzeige ----------------------------------#
 
-# Funktion zur Anzeige von Stakeholdern in der Seitenleiste. DAbei werden nur Stakeholder angezeigt, die in valid_stakeholder enthalten sind
+# Funktion zur Anzeige von Stakeholdern in der Seitenleiste. 
+# Dabei werden nur Stakeholder angezeigt, die in 'valid_stakeholder' enthalten sind
 def display_sidebar_items():
+    # Entferne ungültige Stakeholder aus der Seitenleiste
     remove_invalid_stakeholders()
 
+    # Zeige die Inhalte in der Seitenleiste an
     with st.sidebar:
+        st.markdown("---")  # Trennlinie in der Seitenleiste
 
-        st.markdown("---")
-        # Multiselect-Box für Stakeholder, die sich sowohl in Einbezogene_Stakeholder als auch in der Sidebar befinden
-        valid_options = [stakeholder for stakeholder in st.session_state.Einbezogene_Stakeholder if stakeholder in st.session_state.sidebar_companies]
+        # Multiselect-Box, um Stakeholder auszuwählen, die sowohl in 'Einbezogene_Stakeholder' 
+        # als auch in 'sidebar_companies' enthalten sind
+        valid_options = [stakeholder for stakeholder in st.session_state.Einbezogene_Stakeholder 
+                         if stakeholder in st.session_state.sidebar_companies]
         selected_stakeholders = st.multiselect('Stakeholder-Bewertung entfernen:', valid_options)
 
-        # Button zum Verschieben der ausgewählten Stakeholder von Einbezogene_Stakeholder nach Ausgeschlossene_Stakeholder
+        # Button zum Verschieben der ausgewählten Stakeholder von 'Einbezogene_Stakeholder' 
+        # nach 'Ausgeschlossene_Stakeholder'
         if st.button('Entfernen'):
-            move_stakeholders(selected_stakeholders)
+            move_stakeholders(selected_stakeholders)  # Verschiebe die ausgewählten Stakeholder
 
-        st.markdown("---")
+        st.markdown("---")  # Trennlinie in der Seitenleiste
         st.write("**Bereits in Bewertung aufgenommen:**")
+        
+        # Zeige alle Stakeholder an, die bereits in der Seitenleiste erscheinen
         for item in st.session_state.sidebar_companies:
-            st.write(item)
+            st.write(item)  # Zeige den Namen des Stakeholders in der Seitenleiste an
 
 # Funktion zur Anzeige der Fortschrittsanzeige
 def display_not_in_sidebar_count():
@@ -263,121 +277,152 @@ def display_not_in_sidebar_count():
 
 #---------------------------------- Status-Update und Datenaktualisierung ----------------------------------#
 
-# Funktion zur Aktualisierung des Status von Stakeholdern in einem DataFrame. Wenn es änderungen in Stakeholder-Managenmte oder Auswahl gibt, wird valid_stakeholder aktualisiert
+# Funktion zur Aktualisierung des Status von Stakeholdern in einem DataFrame. 
+# Wenn es Änderungen im Stakeholder-Management oder in der Auswahl gibt, wird 'valid_stakeholder' aktualisiert
 def update_status(df):
-    # Ensure that the 'Stakeholder' column exists in the dataframe before applying the lambda function
+    # Sicherstellen, dass die Spalte 'Stakeholder' im DataFrame existiert, bevor die Funktion ausgeführt wird
     if 'Stakeholder' in df.columns:
+        # Prüfen, ob 'Einbezogene_Stakeholder' und 'ranking_table' im Sitzungszustand existieren
         if 'Einbezogene_Stakeholder' in st.session_state and 'ranking_table' in st.session_state:
+            # Erstelle eine Menge gültiger Stakeholder aus der 'ranking_table' und 'Einbezogene_Stakeholder'
             valid_stakeholders = set(st.session_state.ranking_table['Gruppe'].tolist()).intersection(set(st.session_state.Einbezogene_Stakeholder))
+            # Aktualisiere die 'Status'-Spalte: 'einbezogen' für gültige Stakeholder, 'nicht einbezogen' für alle anderen
             df['Status'] = df['Stakeholder'].apply(lambda x: 'einbezogen' if x in valid_stakeholders else 'nicht einbezogen')
         else:
-            df['Status'] = 'nicht einbezogen'  # If no valid stakeholders are found
+            # Falls keine gültigen Stakeholder gefunden werden, setze den Status auf 'nicht einbezogen'
+            df['Status'] = 'nicht einbezogen'
     else:
-        st.error("The 'Stakeholder' column is missing in the dataframe.")
-    return df
+        # Fehlermeldung, falls die Spalte 'Stakeholder' im DataFrame fehlt
+        st.error("Die Spalte 'Stakeholder' fehlt im DataFrame.")
+    return df  # Gib den aktualisierten DataFrame zurück
 
 
 # Funktion zur Aktualisierung der Kopie der neuen Daten und Anpassung der Stakeholder-Punkte
 def refresh_new_df_copy():
+    # Überprüfen, ob 'new_df_copy' im Sitzungszustand existiert und ob es ein DataFrame ist
     if 'new_df_copy' in st.session_state and isinstance(st.session_state.new_df_copy, pd.DataFrame):
-        # Ensure that the 'Stakeholder' column exists
+        # Sicherstellen, dass die Spalte 'Stakeholder' existiert
         if 'Stakeholder' not in st.session_state.new_df_copy.columns:
-            st.error("The 'Stakeholder' column is missing in new_df_copy.")
+            st.error("Die Spalte 'Stakeholder' fehlt in new_df_copy.")  # Fehlermeldung, wenn die Spalte fehlt
             return
         
-        # Ensure that the 'Status' column exists by updating the status of the dataframe
+        # Sicherstellen, dass die Spalte 'Status' existiert, indem der Status aktualisiert wird
         if 'Status' not in st.session_state.new_df_copy.columns:
             st.session_state.new_df_copy = update_status(st.session_state.new_df_copy)
         
-        # Now adjust stakeholder points based on the status
+        # Nun die Stakeholder-Punkte basierend auf dem Status anpassen
         st.session_state.stakeholder_punkte_filtered = adjust_stakeholder_punkte_filtered(
             st.session_state.new_df_copy,
             st.session_state.stakeholder_punkte_filtered
         )
+        # Den aktualisierten Sitzungszustand speichern
         save_session_state({'new_df_copy': st.session_state.new_df_copy,
                             'stakeholder_punkte_filtered': st.session_state.stakeholder_punkte_filtered})
     else:
-        st.error("new_df_copy is missing or is not a valid DataFrame.")
+        # Fehlermeldung, wenn 'new_df_copy' fehlt oder kein gültiger DataFrame ist
+        st.error("new_df_copy fehlt oder ist kein gültiger DataFrame.")
 
 
-
-# Function to remove entries related to a stakeholder from new_df_copy and stakeholder_punkte_filtered
+# Funktion zum Entfernen von Einträgen eines Stakeholders aus 'new_df_copy' und 'stakeholder_punkte_filtered'
 def remove_stakeholder_entries(stakeholder_name):
+    # Überprüfen, ob 'new_df_copy' im Sitzungszustand existiert
     if 'new_df_copy' in st.session_state:
-        # Remove all entries related to the stakeholder from new_df_copy
+        # Entferne alle Einträge in 'new_df_copy', die dem angegebenen Stakeholder zugeordnet sind
         st.session_state.new_df_copy = st.session_state.new_df_copy[
             ~st.session_state.new_df_copy['Stakeholder'].str.contains(stakeholder_name, case=False, na=False)
         ]
+        # Speichere den aktualisierten Zustand
         save_session_state({'new_df_copy': st.session_state.new_df_copy})
 
+    # Überprüfen, ob 'stakeholder_punkte_filtered' im Sitzungszustand existiert
     if 'stakeholder_punkte_filtered' in st.session_state:
-        # Remove all entries related to the stakeholder from stakeholder_punkte_filtered
+        # Entferne alle Einträge in 'stakeholder_punkte_filtered', die dem angegebenen Stakeholder zugeordnet sind
         st.session_state.stakeholder_punkte_filtered = st.session_state.stakeholder_punkte_filtered[
             ~st.session_state.stakeholder_punkte_filtered['Stakeholder'].str.contains(stakeholder_name, case=False, na=False)
         ]
+        # Speichere den aktualisierten Zustand
         save_session_state({'stakeholder_punkte_filtered': st.session_state.stakeholder_punkte_filtered})
 
+    # Überprüfen, ob 'stakeholder_punkte_df' im Sitzungszustand existiert
     if 'stakeholder_punkte_df' in st.session_state:
-        # Ensure the main DataFrame is also cleared of the stakeholder
+        # Entferne alle Einträge in 'stakeholder_punkte_df', die dem angegebenen Stakeholder zugeordnet sind
         st.session_state.stakeholder_punkte_df = st.session_state.stakeholder_punkte_df[
             ~st.session_state.stakeholder_punkte_df['Stakeholder'].str.contains(stakeholder_name, case=False, na=False)
         ]
+        # Speichere den aktualisierten Zustand
         save_session_state({'stakeholder_punkte_df': st.session_state.stakeholder_punkte_df})
 
 
-# Function to add a stakeholder and ensure no residual data persists
+#---------------------------------- Funktion zum Hinzufügen eines Stakeholders ----------------------------------#
+
+# Funktion zum Hinzufügen eines Stakeholders und Sicherstellen, dass keine alten Daten erhalten bleiben
 def re_add_stakeholder(stakeholder_name, new_data):
-    # First remove any existing data for this stakeholder
+    # Zuerst alle bestehenden Daten für diesen Stakeholder entfernen
     remove_stakeholder_entries(stakeholder_name)
     
-    # Add the new data
+    # Neue Daten für 'new_df_copy' hinzufügen oder erstellen
     if 'new_df_copy' in st.session_state:
-        st.session_state.new_df_copy = pd.concat([st.session_state.new_df_copy, new_data], ignore_index=True)
+        st.session_state.new_df_copy = pd.concat([st.session_state.new_df_copy, new_data], ignore_index=True)  # Füge die neuen Daten hinzu
     else:
-        st.session_state.new_df_copy = new_data.copy()
+        st.session_state.new_df_copy = new_data.copy()  # Erstelle 'new_df_copy', wenn es noch nicht existiert
 
+    # Neue Daten für 'stakeholder_punkte_filtered' hinzufügen oder erstellen
     if 'stakeholder_punkte_filtered' in st.session_state:
         st.session_state.stakeholder_punkte_filtered = pd.concat([st.session_state.stakeholder_punkte_filtered, new_data], ignore_index=True)
     else:
         st.session_state.stakeholder_punkte_filtered = new_data.copy()
-    
+
+    # Den aktualisierten Sitzungszustand speichern
     save_session_state({'new_df_copy': st.session_state.new_df_copy,
                         'stakeholder_punkte_filtered': st.session_state.stakeholder_punkte_filtered})
 
 
-# Function to remove invalid stakeholders from the sidebar and associated data from session state
+#---------------------------------- Funktion zum Entfernen ungültiger Stakeholder ----------------------------------#
+
+# Funktion zum Entfernen ungültiger Stakeholder aus der Seitenleiste und aus dem Sitzungszustand
 def remove_invalid_stakeholders():
+    # Überprüfen, ob 'Einbezogene_Stakeholder' und 'ranking_table' im Sitzungszustand existieren
     if 'Einbezogene_Stakeholder' in st.session_state and 'ranking_table' in st.session_state:
-        # Determine valid stakeholders
+        # Bestimmen der gültigen Stakeholder, basierend auf der 'ranking_table' und den 'Einbezogene_Stakeholder'
         valid_stakeholders = set(st.session_state.ranking_table['Gruppe'].tolist()).intersection(set(st.session_state.Einbezogene_Stakeholder))
-        # Filter the sidebar companies to keep only valid stakeholders
+        
+        # Filtere die 'sidebar_companies', um nur gültige Stakeholder zu behalten
         removed_stakeholders = [item for item in st.session_state.sidebar_companies if item not in valid_stakeholders]
         st.session_state.sidebar_companies = [item for item in st.session_state.sidebar_companies if item in valid_stakeholders]
-        save_session_state({'sidebar_companies': st.session_state.sidebar_companies})
+        save_session_state({'sidebar_companies': st.session_state.sidebar_companies})  # Speichere den aktualisierten Zustand der Seitenleiste
         
-        # Remove entries of removed stakeholders from new_df_copy and stakeholder_punkte_filtered
+        # Entferne die Einträge der entfernten Stakeholder aus 'new_df_copy' und 'stakeholder_punkte_filtered'
         for stakeholder in removed_stakeholders:
             remove_stakeholder_entries(stakeholder)
 
-        # Update the new data copy
+        # Aktualisiere die neue Datenkopie
         refresh_new_df_copy()
 
-# Refresh new_df_copy by updating the status and adjusting the stakeholder points
+
+#---------------------------------- Aktualisierung der neuen Datenkopie ----------------------------------#
+
+# Aktualisiere 'new_df_copy' durch Status-Update und Anpassung der Stakeholder-Punkte
 def refresh_new_df_copy():
     if 'new_df_copy' in st.session_state and 'stakeholder_punkte_filtered' in st.session_state:
+        # Aktualisiere den Status in 'new_df_copy'
         st.session_state.new_df_copy = update_status(st.session_state.new_df_copy)
+        
+        # Passen Sie die Stakeholder-Punkte in 'stakeholder_punkte_filtered' basierend auf den neuen Daten an
         st.session_state.stakeholder_punkte_filtered = adjust_stakeholder_punkte_filtered(
             st.session_state.new_df_copy,
             st.session_state.stakeholder_punkte_filtered
         )
+        
+        # Speichern des aktualisierten Sitzungszustands
         save_session_state({'new_df_copy': st.session_state.new_df_copy,
                             'stakeholder_punkte_filtered': st.session_state.stakeholder_punkte_filtered})
+
 
 #---------------------------------- Excel-Datei hochladen und Daten verarbeiten ----------------------------------#
 
 # Funktion zum Hochladen einer Excel-Datei und Verarbeiten der enthaltenen Daten
 def excel_upload():
-    plazhalter()
+    plazhalter()  # Füge vertikale Abstände im UI ein
     uploaded_file = st.file_uploader("Laden Sie hier die Excel-Dateien der Stakeholder hoch", type=['xlsx'])  # Zeige einen Datei-Uploader für Excel-Dateien an
     
     if uploaded_file:
@@ -391,21 +436,22 @@ def excel_upload():
                 df['Quelle'] = sheet_name  # Füge die Quelle hinzu, um das Arbeitsblatt zu identifizieren
                 df_list.append(df)  # Füge den DataFrame zur Liste hinzu
             except ValueError:
-                st.info(f"Blatt '{sheet_name}' nicht in {uploaded_file.name} gefunden.")  # Zeige eine Nachricht an, wenn das Arbeitsblatt nicht gefunden wird
+                # Zeige eine Nachricht an, wenn das Arbeitsblatt nicht gefunden wird
+                st.info(f"Blatt '{sheet_name}' nicht in {uploaded_file.name} gefunden.")
         
         if df_list:
             # Kombiniere die DataFrames aus allen Arbeitsblättern
             combined_df = pd.concat(df_list, ignore_index=True)
             
-            # Ensure the 'Stakeholder' column is present, and if not, create it
+            # Sicherstellen, dass die 'Stakeholder'-Spalte vorhanden ist, und falls nicht, erstelle sie
             if 'Stakeholder' not in combined_df.columns:
-                combined_df['Stakeholder'] = ''  # Create empty 'Stakeholder' column
+                combined_df['Stakeholder'] = ''  # Erstelle eine leere 'Stakeholder'-Spalte
 
             # Aggregiere die Rankings basierend auf den kombinierten Daten
             st.session_state.ranking_df = aggregate_rankings(combined_df)
             save_session_state({'ranking_df': st.session_state.ranking_df})
             plazhalter()
-            
+
             # Erstelle einen Expander für die Vorschau der hochgeladenen Daten
             with st.expander("Vorschau der hochgeladenen Daten"):
                 # Zeige die aggregierten Daten in einer Vorschau an
@@ -413,6 +459,7 @@ def excel_upload():
                 st.session_state.grid_response = response
                 save_session_state({'grid_response': st.session_state.grid_response})
 
+            # Initialisiere 'Einbezogene_Stakeholder', falls es noch nicht existiert
             if 'Einbezogene_Stakeholder' not in st.session_state:
                 st.session_state.Einbezogene_Stakeholder = []
 
@@ -420,71 +467,81 @@ def excel_upload():
             valid_stakeholders = set(st.session_state.ranking_table['Gruppe'].tolist()).intersection(set(st.session_state.Einbezogene_Stakeholder))
             options = [opt for opt in valid_stakeholders if opt not in st.session_state.sidebar_companies]
 
+            # Selectbox zur Auswahl eines Stakeholders
             selected_option = st.selectbox('Wählen Sie den zugehörigen Stakeholder aus:', options)
             st.session_state.selected_option = selected_option
             save_session_state({'selected_option': st.session_state.selected_option})
 
+            # Button zum Übernehmen der Punkte
             if st.button('Punkte übernehmen'):
                 if st.session_state.selected_option:
                     # Füge die ausgewählte Option zur Seitenleiste hinzu
                     st.session_state.sidebar_companies.append(st.session_state.selected_option)
                     save_session_state({'sidebar_companies': st.session_state.sidebar_companies})
 
+                    # Relevante Spalten definieren und die Daten auf Grundlage der Bewertung filtern
                     relevant_columns = ['Thema', 'Unterthema', 'Unter-Unterthema', 'Stakeholder Bew Auswirkung', 'Stakeholder Bew Finanzen', 'Stakeholder Gesamtbew', 'Quelle']
                     new_df = st.session_state.ranking_df[relevant_columns]
-                    new_df = new_df[new_df['Stakeholder Gesamtbew'] >= 1]
+                    new_df = new_df[new_df['Stakeholder Gesamtbew'] >= 1]  # Filtere nur relevante Daten
                     
-                    new_df['Stakeholder'] = st.session_state.selected_option
+                    new_df['Stakeholder'] = st.session_state.selected_option  # Setze den Stakeholder-Namen
 
+                    # Aktualisiere 'new_df_copy' oder erstelle es, wenn es nicht existiert
                     if 'new_df_copy' not in st.session_state:
                         st.session_state.new_df_copy = new_df.copy()
                     else:
-                        # Ensure 'Stakeholder' exists in new_df_copy
+                        # Sicherstellen, dass die Spalte 'Stakeholder' in 'new_df_copy' existiert
                         if 'Stakeholder' not in st.session_state.new_df_copy.columns:
                             st.session_state.new_df_copy['Stakeholder'] = ''
 
-                        # Remove existing entries of the selected stakeholder
+                        # Entferne vorhandene Einträge des ausgewählten Stakeholders
                         st.session_state.new_df_copy = st.session_state.new_df_copy[
                             st.session_state.new_df_copy['Stakeholder'] != st.session_state.selected_option
                         ]
+                        # Füge die neuen Daten hinzu
                         st.session_state.new_df_copy = pd.concat([st.session_state.new_df_copy, new_df], ignore_index=True)
-                    
+
+                    # Aktualisiere den Status in 'new_df_copy'
                     st.session_state.new_df_copy = update_status(st.session_state.new_df_copy)
                     save_session_state({'new_df_copy': st.session_state.new_df_copy})
 
+                    # Falls 'stakeholder_punkte_df' nicht leer ist, führe eine Fusion der Daten durch
                     if not st.session_state.stakeholder_punkte_df.empty:
-                        # Führe eine Fusion der DataFrames durch, um die Stakeholder-Bewertungen zu aktualisieren
                         merged_df = pd.merge(
                             st.session_state.stakeholder_punkte_df, new_df, 
                             on=['Thema', 'Unterthema', 'Unter-Unterthema', 'Quelle'], how='outer', suffixes=('_x', '_y')
                         )
 
+                        # Füge die Bewertungen zusammen
                         merged_df['Stakeholder Bew Auswirkung'] = merged_df['Stakeholder Bew Auswirkung_x'].add(merged_df['Stakeholder Bew Auswirkung_y'], fill_value=0).astype(int)
                         merged_df['Stakeholder Bew Finanzen'] = merged_df['Stakeholder Bew Finanzen_x'].add(merged_df['Stakeholder Bew Finanzen_y'], fill_value=0).astype(int)
                         merged_df['Stakeholder Gesamtbew'] = merged_df['Stakeholder Gesamtbew_x'].add(merged_df['Stakeholder Gesamtbew_y'], fill_value=0).astype(int)
 
-                        # Merge and clean the 'Stakeholder' field
+                        # Kombiniere und bereinige das 'Stakeholder'-Feld
                         merged_df['Stakeholder'] = merged_df.apply(
                             lambda row: ', '.join(filter(lambda x: pd.notna(x) and x != 'nan', 
                                                         [str(row.get('Stakeholder_x', '')), str(row.get('Stakeholder_y', ''))])), 
                             axis=1
                         )
 
+                        # Entferne überflüssige Spalten
                         merged_df.drop(columns=['Stakeholder Bew Auswirkung_x', 'Stakeholder Bew Auswirkung_y', 'Stakeholder Bew Finanzen_x', 'Stakeholder Bew Finanzen_y', 'Stakeholder Gesamtbew_x', 'Stakeholder Gesamtbew_y', 'Stakeholder_x', 'Stakeholder_y'], inplace=True)
-                        st.session_state.stakeholder_punkte_df = merged_df
+                        st.session_state.stakeholder_punkte_df = merged_df  # Aktualisiere den Haupt-DataFrame
                     else:
-                        st.session_state.stakeholder_punkte_df = new_df
+                        st.session_state.stakeholder_punkte_df = new_df  # Setze die Daten, falls keine vorherigen Daten vorhanden sind
 
                     # Sortiere die Stakeholder-Punkte nach Gesamtbewertung und weise Platzierungen zu
                     st.session_state.stakeholder_punkte_df.sort_values(by='Stakeholder Gesamtbew', ascending=False, inplace=True)
                     st.session_state.stakeholder_punkte_df['Platzierung'] = st.session_state.stakeholder_punkte_df['Stakeholder Gesamtbew'].rank(method='min', ascending=False).astype(int)
                     save_session_state({'stakeholder_punkte_df': st.session_state.stakeholder_punkte_df})
 
+                    # Setze den gefilterten DataFrame
                     st.session_state.stakeholder_punkte_filtered = st.session_state.stakeholder_punkte_df
                     save_session_state({'stakeholder_punkte_filtered': st.session_state.stakeholder_punkte_filtered})
 
-                    st.success("Stakeholder Punkte erfolgreich übernommen")
+                    st.success("Stakeholder Punkte erfolgreich übernommen")  # Erfolgsmeldung
 
+                    # Setze die hochgeladene Datei zurück und lade die Seite neu
                     st.session_state.uploaded_file = None
                     save_session_state({'uploaded_file': st.session_state.uploaded_file})
                     st.rerun()
@@ -492,12 +549,12 @@ def excel_upload():
                     if not options:
                         st.info("Punkte können nicht übernommen werden. Bitte fügen Sie den entsprechenden Stakeholder hinzu und/oder nehmen sie diesen explizit in die Bewertung auf.")
                     else:
-                        st.success("Stakeholder Punkte erfolgreich übernommen")
+                        st.success("Stakeholder Punkte erfolgreich übernommen")  # Erfolgsmeldung für erfolgreichen Transfer der Punkte
 
-
-    # new_df_copy ist ein DataFrame, der alle Inhalte eines jeden Stakeholders speichert, um bei entfernen eines Stakeholders noch die INhlate und dessen Bewertungen
+    # Aktualisiere die Datenkopie, falls vorhanden
     if 'new_df_copy' in st.session_state:
-        refresh_new_df_copy()
+        refresh_new_df_copy()  # Rufe die Funktion zum Aktualisieren der Datenkopie auf
+
 
 def refresh_session_state():
     # Force save all session states to ensure they are updated

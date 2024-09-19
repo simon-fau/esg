@@ -4,11 +4,11 @@ import pickle
 import os
 
 # Datei zum Speichern des Sitzungszustands
-state_file = 'Speicherung.pkl'
+state_file = 'SessionStates.pkl'
 
 # Funktion zum Speichern des Zustands
 def save_state():
-    with open('Speicherung.pkl', 'wb') as f:
+    with open('SessionStates.pkl', 'wb') as f:
         pickle.dump(dict(st.session_state), f)
 
 def create_mdr_table():

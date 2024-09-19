@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 
 # Funktion zum Speichern des Zustands
 def save_state():
-    with open('Speicherung.pkl', 'wb') as f:
+    with open('SessionStates.pkl', 'wb') as f:
         pickle.dump(dict(st.session_state), f)
 
 def stakeholder_Nachhaltigkeitspunkte():
@@ -727,8 +727,6 @@ def anzahl_punkte_Longlist():
     if 'combined_df' in st.session_state and not st.session_state.combined_df.empty:
         count = len(st.session_state.combined_df)
     st.metric(label="**Longlist**", value=count)
-
-    
 
 # Funktion, die zählt wie viele themespezifische Punkte in der Longlist sind. Inhalte werden aufgenommen wenn combined_df "Top-Down|Top-Down Bewertung|Top-Down & Top-Down Bewertung" enthält. 
 def count_top_down_points():

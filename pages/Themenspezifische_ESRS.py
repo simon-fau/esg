@@ -17,13 +17,13 @@ def load_session_state():
         # Initialisierung des Session-States, falls nicht vorhanden
         st.session_state['relevance_selection'] = {}
     # Prüfen, ob eine gespeicherte Datei existiert, und diese laden
-    if os.path.exists('ab.pkl'):
-        with open('ab.pkl', 'rb') as f:
+    if os.path.exists('SessionStatesThemenESRS.pkl'):
+        with open('SessionStatesThemenESRS.pkl', 'rb') as f:
             st.session_state['relevance_selection'] = pickle.load(f)
 
 # Diese Funktion speichert den aktuellen Session-State in eine Datei ab.
 def save_session_state():
-    with open('ab.pkl', 'wb') as f:
+    with open('SessionStatesThemenESRS.pkl', 'wb') as f:
         pickle.dump(st.session_state['relevance_selection'], f)
 
 # Diese Bedingung stellt sicher, dass der Session-State zu Beginn geladen wird, falls noch nicht vorhanden.
