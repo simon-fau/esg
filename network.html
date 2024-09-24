@@ -88,8 +88,8 @@
                   
 
                   // parsing and collecting nodes and edges from the python
-                  nodes = new vis.DataSet([{"color": "black", "fixed": true, "font": {"color": "black"}, "id": "Mein Unternehmen", "label": "Mein Unternehmen", "shape": "dot", "title": "Mein Unternehmen", "x": 220, "y": 360}, {"color": "red", "font": {"color": "black"}, "id": "Bewohner", "label": "Bewohner", "shape": "dot", "size": 15.0, "title": "Bewohner"}]);
-                  edges = new vis.DataSet([{"from": "Mein Unternehmen", "to": "Bewohner"}]);
+                  nodes = new vis.DataSet([{"color": "black", "fixed": true, "font": {"color": "black"}, "id": "Mein Unternehmen", "label": "Mein Unternehmen", "shape": "dot", "title": "Mein Unternehmen", "x": 220, "y": 360}, {"color": "red", "font": {"color": "black"}, "id": "bbfb", "label": "bbfb", "shape": "dot", "size": 15.0, "title": "bbfb"}, {"color": "red", "font": {"color": "black"}, "id": "Mitarbeiter", "label": "Mitarbeiter", "shape": "dot", "size": 15.0, "title": "Mitarbeiter"}, {"color": "red", "font": {"color": "black"}, "id": "Bewohner", "label": "Bewohner", "shape": "dot", "size": 15.0, "title": "Bewohner"}]);
+                  edges = new vis.DataSet([{"from": "Mein Unternehmen", "to": "bbfb"}, {"from": "Mein Unternehmen", "to": "Mitarbeiter"}, {"from": "Mein Unternehmen", "to": "Bewohner"}]);
 
                   nodeColors = {};
                   allNodes = nodes.get({ returnType: "Object" });

@@ -91,5 +91,4 @@ def display_page():
             Allgemeine_Angaben["Antwort"] = st.session_state["Antwort"]
             st.table(Allgemeine_Angaben)
 
-    st.write(st.session_state.Allgemeine_Angaben)
     save_state()
