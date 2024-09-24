@@ -149,10 +149,10 @@ def filter_table(intersection_value, stakeholder_importance_value):
 def display_slider():
     st.sidebar.markdown("---")
     # Slider for intersection value
-    intersection_value = st.sidebar.slider("Grenzwert für die Relevanz angeben", min_value=0, max_value=1000, value=st.session_state['intersection_value'], step=10)
+    intersection_value = st.sidebar.slider("Schwellenwert festlegen", min_value=0, max_value=1000, value=st.session_state['intersection_value'], step=10)
 
     # Slider for stakeholder importance value
-    stakeholder_importance_value = st.sidebar.slider("Grenzwert für Stakeholder Relevanz angeben", min_value=0, max_value=1000, value=st.session_state['stakeholder_importance_value'], step=50)
+    stakeholder_importance_value = st.sidebar.slider("Grenzwert für Stakeholder Wichtigkeit angeben", min_value=0, max_value=1000, value=st.session_state['stakeholder_importance_value'], step=50)
 
     if st.sidebar.button('Auswahl anwenden'):
         st.session_state['intersection_value'] = intersection_value
@@ -215,6 +215,15 @@ def check_abgeschlossen_shortlist():
     # Checkbox erstellen und Zustand in st.session_state speichern
     st.session_state['checkbox_state_7'] = st.checkbox("Abgeschlossen", value=st.session_state['checkbox_state_7'])
 
+def placeholder():
+    st.write(" ")
+    st.write(" ")
+    st.write(" ")
+    st.write(" ")
+    st.write(" ")
+    st.write(" ")
+    st.write(" ")
+
 def display_page():
    
     col1, col2 = st.columns([7, 1])
@@ -225,6 +234,7 @@ def display_page():
     st.write("Hier können Sie die Shortlist auf Bais ihrer Bewertungen in der Longlist erstellen. Um die Shortlist zu erstellen, müssen Sie zunächst die Grenzwerte für die Relevanz der Themen und Stakeholder festlegen. Anschließend können Sie die Shortlist anhand der festgelegten Grenzwerte filtern und die Ergebnisse in einer Excel-Datei speichern.")
     display_slider()
     if 'apply_changes' in st.session_state and st.session_state['apply_changes']:
+        placeholder()
         Chart(st.session_state['intersection_value'], st.session_state['stakeholder_importance_value'])
         filter_table(st.session_state['intersection_value'], st.session_state['stakeholder_importance_value'])
     else:
@@ -232,7 +242,9 @@ def display_page():
     Excel_button()
     save_state()
     
-#---- Abschnitt zur Erstellung von unterschiedlichen Charts für die Übersicht ----#
+
+
+#-------- Abschnitt zur Erstellung von unterschiedlichen Charts für die Übersicht ---------#
 
 def chart_übersicht_allgemein_test_2(width, height):
     # Überprüfen, ob Daten ausgewählt wurden
@@ -257,7 +269,7 @@ def chart_übersicht_allgemein_test_2(width, height):
             st.info("Keine Daten vorhanden, um den Chart anzuzeigen.")
             return
 
-        # Funktionen zur Farbzuteilung
+        # Farbzuteilungs-Funktionen
         def assign_color_by_theme(theme):
             if theme in ['Klimawandel', 'Umweltverschmutzung', 'Wasser- & Meeresressourcen', 'Biodiversität', 'Kreislaufwirtschaft']:
                 return 'Environmental'
@@ -323,42 +335,43 @@ def chart_übersicht_allgemein_test_2(width, height):
             elif 'Keine Auswirkung' in financial:
                 return 'Keine finanzielle Auswirkung'
             else:
-                return 'Keine finanzielle Auswirkung'  # Default-Fall
+                return 'Keine finanzielle Auswirkung'
 
         selected_columns['Finanzielle Auswirkung'] = selected_columns['Finanziell'].apply(extract_financial_impact)
 
         # Berechnung der Stakeholder Wichtigkeit
         min_rating = st.session_state.combined_df['Stakeholder Gesamtbew'].min()
         max_rating = st.session_state.combined_df['Stakeholder Gesamtbew'].max()
-        selected_columns['Stakeholder Wichtigkeit'] = (
-            (selected_columns['Stakeholder Gesamtbew'] - min_rating) / (max_rating - min_rating)
-        ) * (1000 - 100) + 100
+
+        if min_rating == max_rating:
+            # If no variation in 'Stakeholder Gesamtbew', set a default value and show a warning
+            st.warning("Stakeholder Bewertung hat keine Unterschiede. Standardwert wird verwendet.")
+            selected_columns['Stakeholder Wichtigkeit'] = 100
+        else:
+            selected_columns['Stakeholder Wichtigkeit'] = (
+                (selected_columns['Stakeholder Gesamtbew'] - min_rating) / (max_rating - min_rating)
+            ) * (1000 - 100) + 100
+
         selected_columns['Stakeholder Wichtigkeit'] = selected_columns['Stakeholder Wichtigkeit'].fillna(100)
 
         # Layout: Obere Zeile mit Radio-Buttons und Slider
         top_col1, top_col2, top_col3_placeholder = st.columns([1, 1, 3], gap="small")
         
         with top_col1:
-    
             legend_option = st.radio("Darstellung der Graphik:", ["Kategorien", "Finanzbezogene Ansicht", "Auswirkungsbezogene Ansicht"])
 
-            container = st.container()
-            with container:
-                st.write(" ")
-                st.write(" ")
-                st.write(" ")
-                st.write(" ")
-                st.write(" ")
-                st.write(" ")
-                st.write(" ")
-
         with top_col2:
-            min_importance = st.slider(
-                "Minimale Stakeholder Wichtigkeit",
-                min_value=int(selected_columns['Stakeholder Wichtigkeit'].min()),
-                max_value=int(selected_columns['Stakeholder Wichtigkeit'].max()),
-                value=int(selected_columns['Stakeholder Wichtigkeit'].min())
-            )
+            # Add a check for min and max values before creating the slider
+            if selected_columns['Stakeholder Wichtigkeit'].min() != selected_columns['Stakeholder Wichtigkeit'].max():
+                min_importance = st.slider(
+                    "Minimale Stakeholder Wichtigkeit",
+                    min_value=int(selected_columns['Stakeholder Wichtigkeit'].min()),
+                    max_value=int(selected_columns['Stakeholder Wichtigkeit'].max()),
+                    value=int(selected_columns['Stakeholder Wichtigkeit'].min())
+                )
+            else:
+                st.warning("Keine ausreichenden Daten für die Stakeholder Bewertung.")
+                return
         
         with top_col3_placeholder:
             st.empty()
@@ -868,6 +881,9 @@ def Balken_Auswirkungsbezogen_Stakeholder():
         (pd.to_numeric(ausgewählte_spalten['Stakeholder Bew Auswirkung'], errors='coerce').notna())
     ]
 
+    # Konvertiere 'Stakeholder Bew Auswirkung' in numerische Werte
+    ausgewählte_spalten['Stakeholder Bew Auswirkung'] = pd.to_numeric(ausgewählte_spalten['Stakeholder Bew Auswirkung'], errors='coerce')
+
     # Erstellen der neuen Spalte 'Bezeichnung'
     def erstelle_name(zeile):
         unter_unterthema_anzahl = ausgewählte_spalten['Unter-Unterthema'].value_counts().get(zeile['Unter-Unterthema'], 0)
@@ -891,31 +907,34 @@ def Balken_Auswirkungsbezogen_Stakeholder():
 
     # Führe die restlichen Schritte durch, um die Top 30 nach Stakeholder Bew Auswirkung zu filtern und anzuzeigen
     gefilterte_df = ausgewählte_spalten[ausgewählte_spalten['Stakeholder Bew Auswirkung'] > 0]
-    
 
-    top_30 = gefilterte_df.nlargest(30, 'Stakeholder Bew Auswirkung').sort_values('Stakeholder Bew Auswirkung')
-    
+    # Prüfe, ob Stakeholder-Bewertung-Auswirkung vorhanden ist, und sortiere die Top 30
+    if not gefilterte_df.empty:
+        # Sortiere nach 'Stakeholder Bew Auswirkung'
+        top_30 = gefilterte_df.nlargest(30, 'Stakeholder Bew Auswirkung').sort_values('Stakeholder Bew Auswirkung')
 
-    if not top_30.empty:
-       
-        farbskala = alt.Scale(
-            domain=['Negative Auswirkung', 'Positive Auswirkung'],
-            range=['red', 'green']
-        )
+        if not top_30.empty:
+            farbskala = alt.Scale(
+                domain=['Negative Auswirkung', 'Positive Auswirkung'],
+                range=['red', 'green']
+            )
 
-        diagramm = alt.Chart(top_30).mark_bar(size=20).encode(
-            x=alt.X('Bezeichnung', sort=None, title='Nachhaltigkeitspunkt'),
-            y=alt.Y('Stakeholder Bew Auswirkung', title='Stakeholder Bewertung Auswirkung', stack=None),
-            color=alt.Color('Extrahierte_Auswirkung', title='Art der Auswirkung', scale=farbskala),
-            tooltip=['ID', 'Thema', 'Unterthema', 'Unter-Unterthema', 'Stakeholder Bew Auswirkung']
-        ).properties(
-            width=800,  
-            height=400  
-        )
+            diagramm = alt.Chart(top_30).mark_bar(size=20).encode(
+                x=alt.X('Bezeichnung', sort=None, title='Nachhaltigkeitspunkt'),
+                y=alt.Y('Stakeholder Bew Auswirkung', title='Stakeholder Bewertung Auswirkung', stack=None),
+                color=alt.Color('Extrahierte_Auswirkung', title='Art der Auswirkung', scale=farbskala),
+                tooltip=['ID', 'Thema', 'Unterthema', 'Unter-Unterthema', 'Stakeholder Bew Auswirkung']
+            ).properties(
+                width=800,  
+                height=400  
+            )
 
-        st.altair_chart(diagramm)
+            st.altair_chart(diagramm)
+        else:
+            st.warning("Keine Daten verfügbar nach Anwendung der Filter.")
     else:
-        st.warning("Keine Daten verfügbar nach Anwendung der Filter.")
+        st.warning("Keine Stakeholder Bewertung vorhanden.")
+
 
 
 def Balken_Finanzbezogen_Stakeholder():

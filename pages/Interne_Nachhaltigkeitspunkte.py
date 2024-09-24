@@ -162,16 +162,16 @@ def display_data_table():
         st.info("Keine Daten vorhanden.")  # Zeigt eine Info-Nachricht an, wenn keine Daten vorhanden sind
     
     # Button zum Hinzufügen einer leeren Zeile
-    if st.button('➕ Leere Zeile hinzufügen'):  # Überprüft, ob der Button zum Hinzufügen leerer Zeilen gedrückt wurde
+    if st.button('Leere Zeile hinzufügen'):  # Überprüft, ob der Button zum Hinzufügen leerer Zeilen gedrückt wurde
         add_empty_row()  # Fügt eine leere Zeile in den DataFrame ein
     
     # Button zum Löschen der ausgewählten Zeilen
-    if st.button('🗑️ Ausgewählte Zeilen löschen'):  # Überprüft, ob der Button zum Löschen gedrückt wurde
+    if st.button('Ausgewählte Zeilen löschen'):  # Überprüft, ob der Button zum Löschen gedrückt wurde
         if 'selected_rows' in grid_response:  # Überprüft, ob Zeilen ausgewählt wurden
             delete_selected_rows(grid_response)  # Löscht die ausgewählten Zeilen
 
     # Button zum Speichern der Änderungen in der Tabelle
-    if st.button('💾 Änderungen speichern'):  # Überprüft, ob der Speichern-Button gedrückt wurde
+    if st.button('Änderungen speichern'):  # Überprüft, ob der Speichern-Button gedrückt wurde
         st.session_state.df2 = grid_response['data'].set_index('index')  # Aktualisiert den DataFrame mit den geänderten Daten
         save_state()  # Speichert den aktuellen Zustand der Session
         st.success('Änderungen erfolgreich gespeichert.')  # Zeigt eine Erfolgsmeldung an
