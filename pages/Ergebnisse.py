@@ -1,59 +1,10 @@
 import streamlit as st
-import os
-import shutil
-from openpyxl import load_workbook
 import pandas as pd
+from openpyxl import load_workbook
 import altair as alt
 from vl_convert import vl_convert as altair_save
 from openpyxl.drawing.image import Image as ExcelImage
-
-# Define the file paths
-STATE_FILE = 'SessionStates.pkl'
-BACKUP_STATE_FILE = 'ab.pkl'
-DEFAULT_STATE_FILE = 'Grundlagen.pkl'
-DEFAULT_BACKUP_FILE = 'Grundlagen_Themen_ESRS.pkl'
-
-# Function to reset the session state
-def reset_session_state():
-    st.session_state.clear()  # Clear all session state values
-
-    # Check if 'SessionStates.pkl' and 'ab.pkl' exist, and overwrite them with the default files
-    if os.path.exists(STATE_FILE) and os.path.exists(BACKUP_STATE_FILE):
-        shutil.copy(DEFAULT_STATE_FILE, STATE_FILE)  # Overwrite 'SessionStates.pkl' with 'Grundlagen.pkl'
-        shutil.copy(DEFAULT_BACKUP_FILE, BACKUP_STATE_FILE)  # Overwrite 'ab.pkl' with 'Grundlagen_Themen_ESRS.pkl'
-        st.success("Session state has been reset, and the default settings have been restored for both 'SessionStates.pkl' and 'ab.pkl'.")
-    else:
-        st.error("State files not found. Please ensure 'SessionStates.pkl', 'ab.pkl', 'Grundlagen.pkl', and 'Grundlagen_Themen_ESRS.pkl' exist in the correct directory.")
-
-# Function to simulate the modal dialog
-def show_modal_dialog():
-    st.session_state.modal_open = True  # Flag to open the modal
-    with st.expander("⚠️ Bestätigen Sie Ihre Aktion", expanded=True):
-        st.write("Sind Sie sicher, dass Sie alle gespeicherten Inhalte aus der App entfernen möchten?")
-
-        col1, col2 = st.columns(2)
-        with col1:
-            if st.button("Ja"):
-                reset_session_state()
-                st.session_state.modal_open = False
-        with col2:
-            if st.button("Nein"):
-                st.session_state.modal_open = False
-                st.warning("Zurücksetzung abgebrochen.")
-
-# Display the settings page
-def display_settings_page():
-    st.header("Einstellungen")
-    st.markdown("Auf dieser Seite können Sie Ihre Einstellungen verwalten.")
-
-    if 'modal_open' not in st.session_state:
-        st.session_state.modal_open = False
-
-    if st.button('🔄 App neu starten'):
-        st.session_state.modal_open = True  # Trigger modal on button press
-    
-    if st.session_state.modal_open:
-        show_modal_dialog()  # Show the modal dialog if triggered
+import os
 
 # Function to create the Excel file based on filtered_df and Allgemeine_Angaben from session_state
 def Ausleitung_Excel():
@@ -354,7 +305,6 @@ def Ausleitung_Excel():
     
     try:
         workbook.save(output_file)
-        st.success(f"Die Datei '{output_file}' wurde erfolgreich erstellt.")
         
         # Provide a download link
         with open(output_file, 'rb') as file:
@@ -367,22 +317,8 @@ def Ausleitung_Excel():
     except Exception as e:
         st.error(f"Fehler beim Speichern der Excel-Datei: {str(e)}")
 
-
 def display_page():
-    col1, colplatzhalter, col2 = st.columns([1, 1, 1])
-    with col1:
-        display_settings_page()
-
-    with colplatzhalter:
-        st.write("")
-    
-    with col2:
+    st.title("Excel-Ausleitung")
+    st.write("Klicken Sie auf den Button, um die Daten in eine Excel-Datei zu exportieren.")
+    if st.button("Excel-Datei erstellen"):
         Ausleitung_Excel()
-
-    
-
-
-
-
-
-

@@ -60,7 +60,9 @@ menu_data = [
     {'id': 'Allgemeine_Angaben', 'label': "Allgemeine Angaben", 'icon': "fas fa-file-alt"},
     {'id': 'Mindestangabepflicht', 'label': "Mindestangabepflicht", 'icon': "fas fa-file-alt"},
     {'id': 'Übersicht', 'label': "Übersicht", 'icon': "fas fa-info-circle"},
-    {'id': 'Einstellungen', 'label': "Einstellungen & Ausleitung", 'icon': "fas fa-cog"}  
+    {'id': 'Reset', 'label': "Reset", 'icon': "fa fa-sync"},
+    {'id': 'Ergebnisse', 'label': "Ausleitung", 'icon': "fa fa-share"}
+
 ]
 
 # Erstellen der Navigationsleiste
@@ -146,6 +148,10 @@ elif selected_menu == 'Allgemeine_Angaben':
 elif selected_menu == 'Mindestangabepflicht':
     import pages.Mindestangabepflicht as Mindestangabepflicht_page
     Mindestangabepflicht_page.display_page()
-elif selected_menu == 'Einstellungen':
-    import pages.Einstellungen as Einstellungen_page
-    Einstellungen_page.display_page()
+elif selected_menu == 'Reset':
+    # Du kannst die eigentliche Seite weiterhin laden
+    import pages.Reset as Reset_page
+    Reset_page.display_page()
+elif selected_menu == 'Ergebnisse':
+    import pages.Ergebnisse as Ergebnisse_page
+    Ergebnisse_page.display_page()
