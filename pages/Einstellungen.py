@@ -2,6 +2,10 @@ import streamlit as st
 import os
 import shutil
 from openpyxl import load_workbook
+import pandas as pd
+import altair as alt
+from vl_convert import vl_convert as altair_save
+from openpyxl.drawing.image import Image as ExcelImage
 
 # Define the file paths
 STATE_FILE = 'SessionStates.pkl'
@@ -71,6 +75,101 @@ def Ausleitung_Excel():
     except Exception as e:
         st.error(f"Fehler beim Laden der Excel-Datei: {str(e)}")
         return
+    
+    # Check if the data required for the chart is available in session_state
+    if 'selected_columns' in st.session_state and len(st.session_state['selected_columns']) > 0:
+        selected_columns = st.session_state['selected_columns']
+        
+        # Prepare the data
+        selected_columns_df = pd.DataFrame(selected_columns)
+        columns_to_display = ['Score Finanzen', 'Score Auswirkung', 'Thema', 'Unterthema', 'Unter-Unterthema', 'Stakeholder Wichtigkeit']
+        
+        # Check if Thema column exists and handle missing values
+        if 'Thema' not in selected_columns_df.columns:
+            st.error("Die Spalte 'Thema' fehlt in den Daten.")
+            return
+        
+        selected_columns_df = selected_columns_df.dropna(subset=['Thema'])
+        selected_columns_df['Thema'] = selected_columns_df['Thema'].astype(str)
+
+        def assign_color(theme):
+            if theme in ['Klimawandel', 'Umweltverschmutzung', 'Wasser- & Meeresressourcen', 'Biodiversität', 'Kreislaufwirtschaft']:
+                return 'Environmental'
+            elif theme in ['Eigene Belegschaft', 'Belegschaft Lieferkette', 'Betroffene Gemeinschaften', 'Verbraucher und Endnutzer']:
+                return 'Social'
+            elif theme == 'Unternehmenspolitik':
+                return 'Governance'
+            else:
+                return 'Sonstige'
+        
+        selected_columns_df['color'] = selected_columns_df['Thema'].apply(assign_color)
+
+        # Create the base scatter chart
+        scatter = alt.Chart(selected_columns_df, width=1000, height=800).mark_circle().encode(
+            x=alt.X('Score Finanzen', scale=alt.Scale(domain=(0, 1000)), title='Finanzielle Wesentlichkeit'),
+            y=alt.Y('Score Auswirkung', scale=alt.Scale(domain=(0, 1000)), title='Auswirkungsbezogene Wesentlichkeit'),
+            color=alt.Color('color:N', scale=alt.Scale(
+                domain=['Environmental', 'Social', 'Governance', 'Sonstige'],
+                range=['green', 'yellow', 'blue', 'gray']
+            ), legend=alt.Legend(
+                title="Thema",
+                orient="right",
+                titleColor='black',
+                labelColor='black',
+                titleFontSize=12,
+                labelFontSize=10,
+                values=['Environmental', 'Social', 'Governance', 'Sonstige']
+            )),
+            size=alt.Size('Stakeholder Wichtigkeit:Q', scale=alt.Scale(range=[100, 1000]), legend=alt.Legend(
+                title="Stakeholder Wichtigkeit",
+                orient="right",
+                titleColor='black',
+                labelColor='black',
+                titleFontSize=12,
+                labelFontSize=10
+            )),
+            tooltip=['Score Finanzen', 'Score Auswirkung', 'Thema', 'Unterthema', 'Unter-Unterthema', 'Stakeholder Wichtigkeit']
+        )
+
+        # Add red diagonal line
+        line = alt.Chart(pd.DataFrame({
+            'x': [0, st.session_state['intersection_value']],
+            'y': [st.session_state['intersection_value'], 0]
+        })).mark_line(color='red').encode(
+            x='x:Q',
+            y='y:Q'
+        )
+
+        # Add shaded area under the line
+        area = alt.Chart(pd.DataFrame({
+            'x': [0, st.session_state['intersection_value']],
+            'y': [st.session_state['intersection_value'], 0]
+        })).mark_area(opacity=0.3, color='lightcoral').encode(
+            x='x:Q',
+            y='y:Q'
+        )
+
+        # Combine scatter, line, and area
+        chart = area + scatter + line
+
+        # Save the chart as a PNG file using vl-convert
+        chart_png_file = 'scatter_chart.png'
+        chart.save(chart_png_file, format='png')
+        
+        chart_sheet = workbook['Shortlist']
+        chart_sheet['E1'] = "Schwellenwert für wesentliche Themen:"
+        chart_sheet['E2'] = "Schwellenwert für Stakeholder Wichtigkeit:"
+        chart_sheet['E3'] = "Wesentlichkeitsmatrix der Shortlist:"
+
+        # Insert the PNG image into the Excel sheet
+        img = ExcelImage(chart_png_file)
+        img.width, img.height = 600, 400  # Set desired size of the image
+        chart_sheet.add_image(img, 'E5')  # Place the image in cell B2
+        chart_sheet['I1'] = st.session_state['intersection_value']  # Insert the intersection value
+        chart_sheet['I2'] = st.session_state['stakeholder_importance_value']
+
+    else:
+        st.info("Keine Daten für die Grafik vorhanden.")
 
     #----------Shortlist Sheet----------#
 
@@ -86,8 +185,11 @@ def Ausleitung_Excel():
     dataframe = st.session_state.filtered_df
 
     # Write the filtered data (Thema, Unterthema, Unter-Unterthema) into the 'Shortlist' sheet
-    first_empty_row = shortlist_sheet.max_row + 1  # Find the first empty row in the sheet
+    first_empty_row = 1
+    while shortlist_sheet[f'A{first_empty_row}'].value or shortlist_sheet[f'B{first_empty_row}'].value or shortlist_sheet[f'C{first_empty_row}'].value:
+        first_empty_row += 1
 
+    # Schreibe die gefilterten Daten (Thema, Unterthema, Unter-Unterthema) in das 'Shortlist'-Blatt
     for index, row in dataframe.iterrows():
         shortlist_sheet[f'A{first_empty_row}'] = row['Thema']
         shortlist_sheet[f'B{first_empty_row}'] = row['Unterthema']
@@ -198,7 +300,7 @@ def Ausleitung_Excel():
             sustainability_sheet[f'E{row_start}'] = row.get('Stakeholder Bew Auswirkung', '')       
             sustainability_sheet[f'F{row_start}'] = row.get('Stakeholder Bew Finanzen', '')
             sustainability_sheet[f'G{row_start}'] = row.get('Stakeholder Gesamtbew', '')
-            sustainability_sheet[f'H{row_start}'] = row.get('Stakeholder', '')
+            sustainability_sheet[f'H{row_start}'] = row.get('Stakeholder ', '')
             sustainability_sheet[f'J{row_start}'] = row.get('Quelle', '')       # Quelle in column J
             row_start += 1
 

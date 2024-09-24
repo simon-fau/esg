@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    #vis.vega-embed {
+      width: 100%;
+      display: flex;
+    }
+
+    #vis.vega-embed details,
+    #vis.vega-embed details summary {
+      position: relative;
+    }
+  </style>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega@5"></script>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega-lite@5.16.3"></script>
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
+</head>
+<body>
+  <div id="vis"></div>
+  <script>
+    (function(vegaEmbed) {
+      var spec = {"config": {"view": {"continuousWidth": 300, "continuousHeight": 300}}, "data": {"name": "data-9cde7e455fcfaa15acc3f7dc869d8796"}, "mark": {"type": "circle"}, "encoding": {"color": {"field": "color", "legend": {"labelColor": "black", "labelFontSize": 10, "orient": "right", "title": "Thema", "titleColor": "black", "titleFontSize": 12, "values": ["Environmental", "Social", "Governance", "Sonstige"]}, "scale": {"domain": ["Environmental", "Social", "Governance", "Sonstige"], "range": ["green", "yellow", "blue", "gray"]}, "type": "nominal"}, "size": {"field": "Stakeholder Wichtigkeit", "legend": {"labelColor": "black", "labelFontSize": 10, "orient": "right", "title": "Stakeholder Wichtigkeit", "titleColor": "black", "titleFontSize": 12}, "scale": {"range": [100, 1000]}, "type": "quantitative"}, "tooltip": [{"field": "Score Finanzen", "type": "quantitative"}, {"field": "Score Auswirkung", "type": "quantitative"}, {"field": "Thema", "type": "nominal"}, {"field": "Unterthema", "type": "nominal"}, {"field": "Unter-Unterthema", "type": "nominal"}, {"field": "Stakeholder Wichtigkeit", "type": "quantitative"}], "x": {"field": "Score Finanzen", "scale": {"domain": [0, 1000]}, "title": "Finanzielle Wesentlichkeit", "type": "quantitative"}, "y": {"field": "Score Auswirkung", "scale": {"domain": [0, 1000]}, "title": "Auswirkungsbezogene Wesentlichkeit", "type": "quantitative"}}, "height": 800, "width": 1000, "$schema": "https://vega.github.io/schema/vega-lite/v5.16.3.json", "datasets": {"data-9cde7e455fcfaa15acc3f7dc869d8796": [{"ID": 1, "Auswirkung": "Negative Auswirkung ; Tats\u00e4chliche Auswirkung ; Erh\u00f6ht ; Regional ; M\u00e4\u00dfiger Aufwand", "Finanziell": "Keine Auswirkung ;  ; ", "Score Finanzen": 0.0, "Score Auswirkung": 555.6, "Thema": "Biodiversit\u00e4t", "Unterthema": "Direkte Ursachen des Biodiversit\u00e4tsverlusts", "Unter-Unterthema": "Direkte Ausbeutung", "Stakeholder Gesamtbew": null, "Stakeholder Bew Finanzen": null, "Stakeholder Bew Auswirkung": null, "color": "Environmental", "Stakeholder Wichtigkeit": 100.0}, {"ID": 2, "Auswirkung": "Negative Auswirkung ; Potenzielle Auswirkung ; Erh\u00f6ht ; Subregional ; Geringer Aufwand ; M\u00f6glich", "Finanziell": "Chance ; Durchschnittlich ; M\u00f6glich", "Score Finanzen": 500.0, "Score Auswirkung": 458.3, "Thema": "Biodiversit\u00e4t", "Unterthema": "Direkte Ursachen des Biodiversit\u00e4tsverlusts", "Unter-Unterthema": "Klimawandel", "Stakeholder Gesamtbew": null, "Stakeholder Bew Finanzen": null, "Stakeholder Bew Auswirkung": null, "color": "Environmental", "Stakeholder Wichtigkeit": 100.0}, {"ID": 10, "Auswirkung": "Positive Auswirkung ; Potenzielle Auswirkung ; M\u00e4\u00dfig ; National ; Kein Aufwand", "Finanziell": "Risiko ; Erh\u00f6ht ; Tritt nicht ein", "Score Finanzen": 333.3, "Score Auswirkung": 333.3, "Thema": "Klimawandel", "Unterthema": "Klimaschutz", "Unter-Unterthema": "", "Stakeholder Gesamtbew": 5.0, "Stakeholder Bew Finanzen": 2.0, "Stakeholder Bew Auswirkung": 3.0, "color": "Environmental", "Stakeholder Wichtigkeit": 1000.0}]}};
+      var embedOpt = {"mode": "vega-lite"};
+
+      function showError(el, error){
+          el.innerHTML = ('<div style="color:red;">'
+                          + '<p>JavaScript Error: ' + error.message + '</p>'
+                          + "<p>This usually means there's a typo in your chart specification. "
+                          + "See the javascript console for the full traceback.</p>"
+                          + '</div>');
+          throw error;
+      }
+      const el = document.getElementById('vis');
+      vegaEmbed("#vis", spec, embedOpt)
+        .catch(error => showError(el, error));
+    })(vegaEmbed);
+
+  </script>
+</body>
+</html>
