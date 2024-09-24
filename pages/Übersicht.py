@@ -94,6 +94,13 @@ def aktueller_stand_wesentlichkeitsanalyse():
                 else:
                     st.write("✘")
 
+def placeholder():
+    st.write(" ")
+    st.write(" ")
+    st.write(" ")
+    st.write(" ")
+    st.write(" ")
+
 def display_page():
     
     # List of session states to check
@@ -202,18 +209,15 @@ def display_page():
 
     with tab2:
             st.title("Allgemeine Graphik") 
-            st.write("Hier finden Sie eine Graphik, welche alle Informationen zu den bewerteten nachhaltigkeitspunkten zusammenfasst.")
-            st.write("Sie können die Graphik durch Klicken auf die Radio Buttons, den Regler sowie Teilen der Legende an die gewünschte Ansicht anpassen.")
+            st.write("Hier finden Sie eine Graphik, welche alle Informationen zu den bewerteten IROs zusammenfasst")
+            st.write("Sie können die Graphik durch Klicken auf die Radio Buttons, den Regler sowie die Legende an die gewünschte Ansicht anpassen.")
             st.markdown("---")
-            st.write(" ")
-            st.write(" ")
-            st.write(" ")
-            st.write(" ")
+            placeholder()
             chart_übersicht_allgemein_test_2(width=900, height=800)
 
     with tab3:
-            
-        
+            st.title("Zusätzliche Graphiken")
+            st.write("Hier finden Sie zusätzliche Darstellungen der Wesentlichkeitsmatrix")
             chart_auswirkungsbezogen(width=900, height=800)
             chart_finanzbezogen(width=900, height=800)
             

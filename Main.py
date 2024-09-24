@@ -41,14 +41,14 @@ if loaded_data is not None:
 
 # Seitenkonfiguration festlegen
 st.set_page_config(
-    page_title="ESG-Tool",  # Titel der Seite
-    page_icon=os.path.join(os.path.dirname(__file__), 'Pflanze.jpg'),  # Icon der Seite
+    page_title="ESG-Tool",  # Titel der Seite mit Pflanzensymbol
+    page_icon="🌿",  # Pflanzen-Symbol als Icon der Seite
     layout="wide",  # Breites Layout
     initial_sidebar_state="expanded"  # Die Seitenleiste ist standardmäßig erweitert
 )
 
 #  Festlegung von Hintergrundfarbe, Textfarbe und Schriftgröße des Titels
-st.markdown("<h1 style='text-align: center; width: 100%; margin-left: -100; background-color: #08298A; color: #ece5f6'>ESG-Tool</h1>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align: center; width: 100%; margin-left: -100; background-color: #08298A; color: #ece5f6'>🌿ESG-Tool</h1>", unsafe_allow_html=True)
 
 # Entfernen von Abständen in Titeln und Navigationsleisten
 st.markdown("""<style>.element-container { margin: -6px !important; padding: 0px !important;}</style>""", unsafe_allow_html=True)

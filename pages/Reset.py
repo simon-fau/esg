@@ -38,8 +38,6 @@ def show_modal_dialog():
 
 # Display the settings page
 def display_settings_page():
-    st.header("Einstellungen")
-    st.markdown("Auf dieser Seite können Sie Ihre Einstellungen verwalten.")
 
     if 'modal_open' not in st.session_state:
         st.session_state.modal_open = False

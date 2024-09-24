@@ -360,7 +360,7 @@ def chart_übersicht_allgemein_test_2(width, height):
         
         with top_col1:
             legend_option = st.radio("Darstellung der Graphik:", ["Kategorien", "Finanzbezogene Ansicht", "Auswirkungsbezogene Ansicht"])
-
+            placeholder()
         with top_col2:
             # Add a check for min and max values before creating the slider
             if selected_columns['Stakeholder Wichtigkeit'].min() != selected_columns['Stakeholder Wichtigkeit'].max():
