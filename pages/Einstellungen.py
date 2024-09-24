@@ -157,16 +157,16 @@ def Ausleitung_Excel():
         chart.save(chart_png_file, format='png')
         
         chart_sheet = workbook['Shortlist']
-        chart_sheet['E1'] = "Schwellenwert für wesentliche Themen:"
-        chart_sheet['E2'] = "Schwellenwert für Stakeholder Wichtigkeit:"
-        chart_sheet['E3'] = "Wesentlichkeitsmatrix der Shortlist:"
+        chart_sheet['G1'] = "Schwellenwert für wesentliche Themen:"
+        chart_sheet['G2'] = "Schwellenwert für Stakeholder Wichtigkeit:"
+        chart_sheet['G3'] = "Wesentlichkeitsmatrix der Shortlist:"
 
         # Insert the PNG image into the Excel sheet
         img = ExcelImage(chart_png_file)
         img.width, img.height = 600, 400  # Set desired size of the image
-        chart_sheet.add_image(img, 'E5')  # Place the image in cell B2
-        chart_sheet['I1'] = st.session_state['intersection_value']  # Insert the intersection value
-        chart_sheet['I2'] = st.session_state['stakeholder_importance_value']
+        chart_sheet.add_image(img, 'G5')  # Place the image in cell B2
+        chart_sheet['K1'] = st.session_state['intersection_value']  # Insert the intersection value
+        chart_sheet['K2'] = st.session_state['stakeholder_importance_value']
 
     else:
         st.info("Keine Daten für die Grafik vorhanden.")
@@ -194,6 +194,8 @@ def Ausleitung_Excel():
         shortlist_sheet[f'A{first_empty_row}'] = row['Thema']
         shortlist_sheet[f'B{first_empty_row}'] = row['Unterthema']
         shortlist_sheet[f'C{first_empty_row}'] = row['Unter-Unterthema']
+        shortlist_sheet[f'D{first_empty_row}'] = row['Score Finanzen']
+        shortlist_sheet[f'E{first_empty_row}'] = row['Score Auswirkung']
         first_empty_row += 1
 
     #----------Allgemeine Angaben Sheet----------#
@@ -253,7 +255,7 @@ def Ausleitung_Excel():
     ranking_table = st.session_state['ranking_table']
 
     # Write the ranking_table DataFrame to 'Stakeholder' sheet starting at row 2
-    first_empty_row_stakeholder = stakeholder_sheet.max_row + 1  # Start from the first empty row
+    first_empty_row_stakeholder = 3 # Start from the first empty row
 
     for index, row in ranking_table.iterrows():
         stakeholder_sheet[f'A{first_empty_row_stakeholder}'] = row['Ranking']
@@ -268,7 +270,7 @@ def Ausleitung_Excel():
         table_right_df = st.session_state['ranking_table'][st.session_state['ranking_table']['Gruppe'].isin(st.session_state.Einbezogene_Stakeholder)]
 
         # Start writing to column E, row 2
-        row = 2
+        row = 3
         for index, data in table_right_df.iterrows():
             stakeholder_sheet[f'E{row}'] = data['Ranking']
             stakeholder_sheet[f'F{row}'] = data['Gruppe']
@@ -300,9 +302,52 @@ def Ausleitung_Excel():
             sustainability_sheet[f'E{row_start}'] = row.get('Stakeholder Bew Auswirkung', '')       
             sustainability_sheet[f'F{row_start}'] = row.get('Stakeholder Bew Finanzen', '')
             sustainability_sheet[f'G{row_start}'] = row.get('Stakeholder Gesamtbew', '')
-            sustainability_sheet[f'H{row_start}'] = row.get('Stakeholder ', '')
-            sustainability_sheet[f'J{row_start}'] = row.get('Quelle', '')       # Quelle in column J
+            sustainability_sheet[f'H{row_start}'] = row.get('Stakeholder', '')
+            sustainability_sheet[f'I{row_start}'] = row.get('Quelle', '')       # Quelle in column J
             row_start += 1
+
+    #----------Longlist----------#
+
+    # Ensure that the 'Longlist' sheet exists
+    if 'Longlist' not in workbook.sheetnames:
+        # Create a new sheet if it doesn't exist
+        workbook.create_sheet('Longlist')
+
+    # Select the 'Longlist' worksheet
+    longlist_sheet = workbook['Longlist']
+
+    # Check if longlist exists in the session state
+    if 'longlist' in st.session_state:
+        # Retrieve longlist from session state
+        longlist_df = st.session_state['longlist']
+
+        for r_idx, row in longlist_df.iterrows():
+            for c_idx, value in enumerate(row, start=1):
+                longlist_sheet.cell(row=r_idx + 2, column=c_idx, value=value)  # Write data starting from row 2
+    else:
+        st.info("Keine Daten für 'Longlist' vorhanden.")
+
+       #----------Interne Nachhaltigkeitspunkte----------#
+
+    # Ensure that the 'Interne Nachhaltigkeitspunkte' sheet exists
+    if 'Interne Nachhaltigkeitspunkte' not in workbook.sheetnames:
+        # Create a new sheet if it doesn't exist
+        workbook.create_sheet('Interne Nachhaltigkeitspunkte')
+
+    # Select the 'Interne Nachhaltigkeitspunkte' worksheet
+    internal_sustainability_sheet = workbook['Interne Nachhaltigkeitspunkte']
+
+    # Check if df2 exists in the session state
+    if 'df2' in st.session_state:
+        # Retrieve df2 from session state
+        df2 = st.session_state['df2']
+
+        # Write the data to the 'Interne Nachhaltigkeitspunkte' sheet
+        for r_idx, row in df2.iterrows():
+            for c_idx, value in enumerate(row, start=1):
+                internal_sustainability_sheet.cell(row=r_idx + 2, column=c_idx, value=value)  # Write data starting from row 3
+    else:
+        st.info("Keine Daten für 'Interne Nachhaltigkeitspunkte' vorhanden.")
 
     # Save the new Excel file with the name 'Ergebnisse_WA.xlsx'
     output_file = 'Ergebnisse_WA.xlsx'
@@ -321,6 +366,7 @@ def Ausleitung_Excel():
             )
     except Exception as e:
         st.error(f"Fehler beim Speichern der Excel-Datei: {str(e)}")
+
 
 def display_page():
     col1, colplatzhalter, col2 = st.columns([1, 1, 1])

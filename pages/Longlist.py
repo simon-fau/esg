@@ -834,3 +834,7 @@ def display_page():
     
     with st.expander("Bewertungen"):
         Bewertungsanzeige()
+    st.write(st.session_state['longlist'])
+    st.write(st.session_state['selected_data'])
+    st.write(st.session_state['selected_columns'])
+    st.write(st.session_state['selected_evaluation'])
