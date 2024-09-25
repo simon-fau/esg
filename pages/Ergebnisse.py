@@ -5,6 +5,8 @@ import altair as alt
 from vl_convert import vl_convert as altair_save
 from openpyxl.drawing.image import Image as ExcelImage
 import os
+from pages.Themenspezifische_ESRS import calculate_percentages
+from pages.Longlist import bewertung_Uebersicht_Nein
 
 # Function to create the Excel file based on filtered_df and Allgemeine_Angaben from session_state
 def Ausleitung_Excel():
@@ -27,6 +29,8 @@ def Ausleitung_Excel():
         st.error(f"Fehler beim Laden der Excel-Datei: {str(e)}")
         return
     
+    #----------Wesentlichkeitsmatrix der Shortlist----------#
+
     # Check if the data required for the chart is available in session_state
     if 'selected_columns' in st.session_state and len(st.session_state['selected_columns']) > 0:
         selected_columns = st.session_state['selected_columns']
@@ -121,6 +125,203 @@ def Ausleitung_Excel():
 
     else:
         st.info("Keine Daten für die Grafik vorhanden.")
+
+    #----------Wesentlichkeitsmatrix ohne Schwellenwerte----------#
+
+     # Check if the data required for the chart is available in session_state
+    if 'selected_columns' in st.session_state and len(st.session_state['selected_columns']) > 0:
+        selected_columns = st.session_state['selected_columns']
+        
+        # Prepare the data
+        selected_columns_df = pd.DataFrame(selected_columns)
+        columns_to_display = ['Score Finanzen', 'Score Auswirkung', 'Thema', 'Unterthema', 'Unter-Unterthema', 'Stakeholder Wichtigkeit']
+        
+        # Check if Thema column exists and handle missing values
+        if 'Thema' not in selected_columns_df.columns:
+            st.error("Die Spalte 'Thema' fehlt in den Daten.")
+            return
+        
+        selected_columns_df = selected_columns_df.dropna(subset=['Thema'])
+        selected_columns_df['Thema'] = selected_columns_df['Thema'].astype(str)
+
+        def assign_color(theme):
+            if theme in ['Klimawandel', 'Umweltverschmutzung', 'Wasser- & Meeresressourcen', 'Biodiversität', 'Kreislaufwirtschaft']:
+                return 'Environmental'
+            elif theme in ['Eigene Belegschaft', 'Belegschaft Lieferkette', 'Betroffene Gemeinschaften', 'Verbraucher und Endnutzer']:
+                return 'Social'
+            elif theme == 'Unternehmenspolitik':
+                return 'Governance'
+            else:
+                return 'Sonstige'
+        
+        selected_columns_df['color'] = selected_columns_df['Thema'].apply(assign_color)
+
+        # Create the base scatter chart
+        scatter = alt.Chart(selected_columns_df, width=1000, height=800).mark_circle().encode(
+            x=alt.X('Score Finanzen', scale=alt.Scale(domain=(0, 1000)), title='Finanzielle Wesentlichkeit'),
+            y=alt.Y('Score Auswirkung', scale=alt.Scale(domain=(0, 1000)), title='Auswirkungsbezogene Wesentlichkeit'),
+            color=alt.Color('color:N', scale=alt.Scale(
+                domain=['Environmental', 'Social', 'Governance', 'Sonstige'],
+                range=['green', 'yellow', 'blue', 'gray']
+            ), legend=alt.Legend(
+                title="Thema",
+                orient="right",
+                titleColor='black',
+                labelColor='black',
+                titleFontSize=12,
+                labelFontSize=10,
+                values=['Environmental', 'Social', 'Governance', 'Sonstige']
+            )),
+            size=alt.Size('Stakeholder Wichtigkeit:Q', scale=alt.Scale(range=[100, 1000]), legend=alt.Legend(
+                title="Stakeholder Wichtigkeit",
+                orient="right",
+                titleColor='black',
+                labelColor='black',
+                titleFontSize=12,
+                labelFontSize=10
+            )),
+            tooltip=['Score Finanzen', 'Score Auswirkung', 'Thema', 'Unterthema', 'Unter-Unterthema', 'Stakeholder Wichtigkeit']
+        )
+
+        # Combine scatter, line, and area
+        chart = scatter
+
+        # Save the chart as a PNG file using vl-convert
+        chart_png_file = 'scatter_chart_without_thresholds.png'
+        chart.save(chart_png_file, format='png')
+        
+        chart_sheet_2 = workbook['Übersicht']
+
+        # Insert the PNG image into the Excel sheet
+        img = ExcelImage(chart_png_file)
+        img.width, img.height = 600, 400  # Set desired size of the image
+        chart_sheet_2.add_image(img, 'C21')  # Place the image in cell B2
+
+    else:
+        st.info("Keine Daten für die Grafik vorhanden.")
+
+    #----------Fortschritt WA----------#
+
+    # Select the 'Übersicht' worksheet
+    overview_sheet = workbook['Übersicht']
+
+    # Update 'Übersicht' sheet starting at C3 with progress data from Wesentlichkeitsanalyse
+    session_states_to_check = [
+        ('checkbox_state_1', '1. Stakeholder Management'),
+        ('checkbox_state_2', '2. Stakeholder Auswahl'),
+        ('checkbox_state_3', '3. Themenspezifische ESRS'),
+        ('checkbox_state_4', '4. Interne Nachhaltigkeitspunkte'),
+        ('checkbox_state_5', '5. Externe Nachhaltigkeitspunkte'),
+        ('checkbox_state_6', '6. Bewertung der Longlist'),
+        ('checkbox_state_7', '7. Shortlist')
+    ]
+    
+    row_start = 3  # Start from C3
+    col_name = 'B'  # Task names column
+    col_status = 'C'  # Status column
+    
+    # Retrieve and write the current progress status to Excel
+    completed_count = 0
+    for key, name in session_states_to_check:
+        overview_sheet[f'{col_name}{row_start}'] = name
+        
+        if key == 'checkbox_state_5':  # Custom handling for checkbox_state_5
+            if 'Einbezogene_Stakeholder' in st.session_state and 'sidebar_companies' in st.session_state:
+                if not st.session_state['Einbezogene_Stakeholder'] and not st.session_state['sidebar_companies']:
+                    overview_sheet[f'{col_status}{row_start}'] = "✘"
+                elif not st.session_state['Einbezogene_Stakeholder']:
+                    overview_sheet[f'{col_status}{row_start}'] = "✔"
+                    completed_count += 1
+                else:
+                    count = len([opt for opt in st.session_state['Einbezogene_Stakeholder'] if opt not in st.session_state['sidebar_companies']])
+                    if st.session_state.get(key) == True:
+                        overview_sheet[f'{col_status}{row_start}'] = "✔"
+                        completed_count += 1
+                    else:
+                        overview_sheet[f'{col_status}{row_start}'] = f"Es fehlt noch {count} Stakeholder."
+            else:
+                overview_sheet[f'{col_status}{row_start}'] = "✘"
+        elif key == 'checkbox_state_3':  # Custom handling for checkbox_state_3
+            if st.session_state.get(key) == True:
+                overview_sheet[f'{col_status}{row_start}'] = "✔"
+                completed_count += 1
+            else:
+                if 'checkbox_count' in st.session_state and st.session_state['checkbox_count'] > 0:
+                    percentage_missing = calculate_percentages()  # Assuming this function is available
+                    overview_sheet[f'{col_status}{row_start}'] = f"Es fehlen noch {percentage_missing}%."
+                else:
+                    overview_sheet[f'{col_status}{row_start}'] = "✘"
+        elif key == 'checkbox_state_6':  # Custom handling for checkbox_state_6
+            if 'longlist' in st.session_state and not st.session_state['longlist'].empty:
+                if st.session_state.get(key) == True:
+                    overview_sheet[f'{col_status}{row_start}'] = "✔"
+                    completed_count += 1
+                else:
+                    nein_prozent = bewertung_Uebersicht_Nein()  # Assuming this function is available
+                    overview_sheet[f'{col_status}{row_start}'] = f"Es fehlen noch {nein_prozent}%."
+            else:
+                overview_sheet[f'{col_status}{row_start}'] = "✘"
+        else:  # Default handling for other states
+            if st.session_state.get(key) == True:
+                overview_sheet[f'{col_status}{row_start}'] = "✔"
+                completed_count += 1
+            else:
+                overview_sheet[f'{col_status}{row_start}'] = "✘"
+        
+        row_start += 1
+
+    #----------Fortschritt Themenspezifische ESRS----------#
+
+    # Add checkbox count and percentage to the 'Übersicht' sheet in cell C11
+    if 'checkbox_count' in st.session_state:
+        checkbox_count = st.session_state['checkbox_count']
+        total_checkboxes = 93
+        number_of_missing_checkboxes = total_checkboxes - checkbox_count
+        
+        # Calculate percentage complete
+        percentage_complete = round((checkbox_count / total_checkboxes) * 100, 0)
+        
+        # Write checkbox count in C11
+        overview_sheet['C11'] = checkbox_count
+        
+        # Write the remaining checkbox count and percentage complete
+        overview_sheet['C12'] = number_of_missing_checkboxes
+
+    #----------Anzahl Shortlist Punkte----------#
+
+    # Add Shortlist count to the 'Übersicht' sheet in cell C17
+    count_shortlist = 0  # Default to 0
+    if 'filtered_df' in st.session_state and not st.session_state['filtered_df'].empty:
+        count_shortlist = len(st.session_state['filtered_df'])
+    
+    # Write the Shortlist count in C17
+    overview_sheet['C17'] = count_shortlist
+
+    #----------Fortschritt Longlist----------#
+
+    # Add Longlist count to the 'Übersicht' sheet in cell C12
+    count_longlist = 0  # Default to 0
+    if 'combined_df' in st.session_state and not st.session_state.combined_df.empty:
+        count_longlist = len(st.session_state.combined_df)
+        
+    # Write the Longlist count in C12
+    overview_sheet['C14'] = count_longlist 
+
+    #----------Fortschritt Bewertungen in der Longlist----------#
+
+    # Add Ja and Nein Bewertungen to the 'Übersicht' sheet in C13 and D13
+    if 'longlist' in st.session_state and not st.session_state['longlist'].empty:
+        # Count the number of Bewertungen in the Longlist
+        bewertung_counts = st.session_state['longlist']['Bewertet'].value_counts()
+
+        # Calculate Ja and Nein Bewertungen
+        total_bewertungen = bewertung_counts.sum()
+        ja_bewertungen = bewertung_counts.get('Ja', 0)
+        nein_bewertungen = total_bewertungen - ja_bewertungen
+
+        # Write the counts to cells C13 and D13
+        overview_sheet['C15'] = ja_bewertungen
+        overview_sheet['E15'] = nein_bewertungen
 
     #----------Shortlist Sheet----------#
 
@@ -309,7 +510,7 @@ def Ausleitung_Excel():
         # Provide a download link
         with open(output_file, 'rb') as file:
             btn = st.download_button(
-                label="Ergebnisse_WA.xlsx herunterladen",
+                label="Ergebnisse herunterladen",
                 data=file,
                 file_name=output_file,
                 mime='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
@@ -320,5 +521,4 @@ def Ausleitung_Excel():
 def display_page():
     st.title("Excel-Ausleitung")
     st.write("Klicken Sie auf den Button, um die Daten in eine Excel-Datei zu exportieren.")
-    if st.button("Excel-Datei erstellen"):
-        Ausleitung_Excel()
+    Ausleitung_Excel()
