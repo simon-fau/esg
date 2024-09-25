@@ -187,15 +187,15 @@ def Ausleitung_Excel():
         chart = scatter
 
         # Save the chart as a PNG file using vl-convert
-        chart_png_file = 'scatter_chart_without_thresholds.png'
-        chart.save(chart_png_file, format='png')
+        chart_png_file_2 = 'scatter_chart_without_thresholds.png'
+        chart.save(chart_png_file_2, format='png')
         
         chart_sheet_2 = workbook['Übersicht']
 
         # Insert the PNG image into the Excel sheet
-        img = ExcelImage(chart_png_file)
+        img = ExcelImage(chart_png_file_2)
         img.width, img.height = 600, 400  # Set desired size of the image
-        chart_sheet_2.add_image(img, 'C21')  # Place the image in cell B2
+        chart_sheet_2.add_image(img, 'C19')  # Place the image in cell B2
 
     else:
         st.info("Keine Daten für die Grafik vorhanden.")
@@ -314,14 +314,11 @@ def Ausleitung_Excel():
         # Count the number of Bewertungen in the Longlist
         bewertung_counts = st.session_state['longlist']['Bewertet'].value_counts()
 
-        # Calculate Ja and Nein Bewertungen
-        total_bewertungen = bewertung_counts.sum()
+        # Calculate Ja Bewertungen
         ja_bewertungen = bewertung_counts.get('Ja', 0)
-        nein_bewertungen = total_bewertungen - ja_bewertungen
 
         # Write the counts to cells C13 and D13
         overview_sheet['C15'] = ja_bewertungen
-        overview_sheet['E15'] = nein_bewertungen
 
     #----------Shortlist Sheet----------#
 

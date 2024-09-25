@@ -78,6 +78,7 @@ def display_page():
         st.session_state.Allgemeine_Angaben = Tabelle()
     Allgemeine_Angaben = st.session_state.Allgemeine_Angaben
     st.title("Allgemeine Angaben")
+    st.write ("Unabhängig von den Ergebnissen der Wesentlichkeitsanalyse sind folgende Angaben, gemäß ESRS 1 Art. 29, zu machen:")
     
     tab1, tab2 = st.tabs(["Inhalte hinzufügen", "Übersicht"])
     

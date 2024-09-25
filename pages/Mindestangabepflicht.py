@@ -58,7 +58,7 @@ def add_entries(df_mdr):
 
 def display_page():
     df_mdr = create_mdr_table()
-    st.title("Mindestangaben ESRS MDR")
+    st.title("Mindestangaben- Raus rahmen?")
 
     tab1, tab2 = st.tabs(["Inhalte hinzufügen", "Übersicht"])
 
