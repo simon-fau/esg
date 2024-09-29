@@ -160,55 +160,6 @@ def display_slider():
         st.session_state['apply_changes'] = True
         st.rerun()
 
-template_path = os.path.join(os.path.dirname(__file__), 'Templates', 'Ausführung.xlsx')
-
-def transfer_data_to_excel(dataframe):
-    # Kopie der Template-Datei erstellen
-    temp_excel_path = 'Ausführung.xlsx'
-    shutil.copyfile(template_path, temp_excel_path)
-
-    # Laden der Kopie der Excel-Datei
-    workbook = load_workbook(temp_excel_path)
-    sheet = workbook['Shortlist']
-
-    # Setze die Lasche auf die gewünschte Tabelle
-    sheet.title = 'Shortlist'
-
-    first_empty_row = 2
-
-    # Übertragen der Daten in die Excel-Datei
-    for index, row in dataframe.iterrows():
-        sheet[f'A{first_empty_row}'] = row['Thema']
-        sheet[f'B{first_empty_row}'] = row['Unterthema']
-        sheet[f'C{first_empty_row}'] = row['Unter-Unterthema']
-        first_empty_row += 1
-
-    # Speichern der bearbeiteten Kopie der Excel-Datei
-    workbook.save(temp_excel_path)
-    st.success('Inhalte erfolgreich zur Excel-Datei hinzugefügt.')
-
-def download_excel():
-    # Pfad zur kopierten und bearbeiteten Excel-Datei
-    temp_excel_path = 'Ausführung.xlsx'
-    workbook = load_workbook(temp_excel_path)
-    with io.BytesIO() as virtual_workbook:
-        workbook.save(virtual_workbook)
-        virtual_workbook.seek(0)
-        return virtual_workbook.read()
-    
-def Excel_button():
-    st.sidebar.markdown("---")
-    st.sidebar.write("Aktualisieren Sie die Excel-Datei, sofern es Änderungen an der Shortlist gab.")
-    if st.sidebar.button('🔃 Shortlist aktualisieren'):
-        transfer_data_to_excel(st.session_state.filtered_df)
-    
-    # Download-Button für die Excel-Datei
-    if st.sidebar.download_button(label="⬇️ Shortlist herunterladen",
-                          data=download_excel(),
-                          file_name="Shortlist.xlsx",
-                          mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"):
-        st.success("Download gestartet!")
-
 def check_abgeschlossen_shortlist():
     if 'checkbox_state_7' not in st.session_state:
         st.session_state['checkbox_state_7'] = False
@@ -239,11 +190,9 @@ def display_page():
         filter_table(st.session_state['intersection_value'], st.session_state['stakeholder_importance_value'])
     else:
         Chart(100, 500)  # Display initial chart without any filter
-    Excel_button()
+
     save_state()
     
-    
-
 
 #-------- Abschnitt zur Erstellung von unterschiedlichen Charts für die Übersicht ---------#
 

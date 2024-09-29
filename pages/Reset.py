@@ -83,3 +83,4 @@ def display_page():
     st.write("Auf dieser Seite können Sie die App zurücksetzen und die Standardeinstellungen wiederherstellen.")
     display_settings_page()
 
+ 

@@ -22,12 +22,12 @@ def stakeholder_Nachhaltigkeitspunkte():
         st.session_state.stakeholder_punkte_filtered = pd.DataFrame(columns=["Platzierung", "Thema", "Unterthema", "Unter-Unterthema", "Stakeholder Gesamtbew", "Stakeholder Bew Finanzen", "Stakeholder Bew Auswirkung", "Quelle"])	
     
     # Erstelle eine Kopie des DataFrame
-    selected_rows_st = st.session_state.stakeholder_punkte_filtered.copy()
+    stakeholder_df = st.session_state.stakeholder_punkte_filtered.copy()
 
     # Speichere die ausgewählten Zeilen im session_state
-    st.session_state.selected_rows_st = selected_rows_st
+    st.session_state.stakeholder_df = stakeholder_df
     
-    return selected_rows_st
+    return stakeholder_df
 
 # Abruf der internen Nachhaltigkeitspunkte
 def eigene_Nachhaltigkeitspunkte():
@@ -35,9 +35,9 @@ def eigene_Nachhaltigkeitspunkte():
     if 'df2' not in st.session_state:
         st.session_state.df2 = pd.DataFrame(columns=["Thema", "Unterthema", "Unter-Unterthema"])
     # Erstellen Sie eine Kopie von df2
-    df4 = st.session_state.df2.copy()
-    df4['Quelle'] = 'Eigene'
-    return df4
+    eigene_df = st.session_state.df2.copy()
+    eigene_df['Quelle'] = 'Eigene'
+    return eigene_df
 
 # Abruf der themenspezifischen ESRS-Nachhaltigkeitspunkte
 def Themenspezifische_ESRS():
@@ -52,12 +52,12 @@ def Themenspezifische_ESRS():
             if isinstance(value, bool) and value and key.startswith('Relevant_'):
                 data.append(extract_data_from_key(key))
         
-        selected_points_df = pd.DataFrame(data)
-        selected_points_df['Quelle'] = 'Themenspezifische_ESRS Bewertung'
+        themen_df = pd.DataFrame(data)
+        themen_df['Quelle'] = 'Themenspezifische_ESRS Bewertung'
         
-        # Speichern des DataFrame 'selected_points_df' im session_state
-        st.session_state['selected_points_df'] = selected_points_df
-        return selected_points_df
+        # Speichern des DataFrame 'themen_df' im session_state
+        st.session_state['themen_df'] = themen_df
+        return themen_df
     else:
         # Return an empty DataFrame if 'relevance_selection' is not in session_state
         return pd.DataFrame(columns=["Thema", "Unterthema", "Unter-Unterthema", "Quelle"])
@@ -100,7 +100,7 @@ def map_key_to_theme_and_subthemes(key, unterthema_raw):
         # Zuordnung der Themen auf Basis der Suffixe
         'E1': 'Klimawandel',
         'E2': 'Umweltverschmutzung',
-        'E3': 'Meeres- und Wasserressourcen',
+        'E3': 'Wasser- und Meeresressourcen',
         'E4': 'Biodiversität',
         'E5': 'Kreislaufwirtschaft',
         'S1': 'Eigene Belegschaft',
@@ -127,7 +127,7 @@ def map_key_to_theme_and_subthemes(key, unterthema_raw):
 # Zuordnung von Biodiversität
 def map_biodiversity_key(unterthema_raw):
     unterthema_map = {
-        'Direkte Ursachen des Biodiversitätsverlusts': ['Klimawandel', 'Land- Süßwasser- und Meeresnutzungsänderungen', 'Direkte Ausbeutung', 'Invasive gebietsfremde Arten', 'Umweltverschmutzung', 'Sonstige'],
+        'Direkte Ursachen des Biodiversitätsverlusts': ['Klimawandel', 'Land-, Süßwasser- und Meeresnutzungsänderungen', 'Direkte Ausbeutung', 'Invasive gebietsfremde Arten', 'Umweltverschmutzung', 'Sonstige'],
         'Auswirkungen auf den Zustand der Arten': ['Populationsgröße von Arten', 'Globales Ausrottungsrisiko von Arten'],
         'Auswirkungen auf den Umfang und den Zustand von Ökosystemen': ['Landdegradation', 'Wüstenbildung', 'Bodenversiegelung'],
         'Auswirkungen und Abhängigkeiten von Ökosystemdienstleistungen': ['Auswirkungen und Abhängigkeiten von Ökosystemdienstleistungen']
@@ -140,9 +140,9 @@ def map_biodiversity_key(unterthema_raw):
 # Zuordnung der eigenen Belegschaft
 def map_own_workforce_key(unterthema_raw):
     unterthema_map = {
-        'Arbeitsbedingungen': ['Sichere Beschäftigung', 'Arbeitszeit', 'Angemessene Entlohnung', 'Sozialer Dialog', 'Vereinigungsfreiheit, Existenz von Betriebsräten und Rechte der Arbeitnehmer auf Information, Anhörung und Mitbestimmung', 'Tarifverhandlungen, einschließlich der Quote der durch Tarifverträge abgedeckten Arbeitskräften', 'Vereinbarkeit von Beruf und Privatleben', 'Gesundheitsschutz und Sicherheit'],
+        'Arbeitsbedingungen': ['Sichere Beschäftigung', 'Arbeitszeit', 'Angemessene Entlohnung', 'Sozialer Dialog', 'Vereinigungsfreiheit, Existenz von Betriebsräten und Rechte der Arbeitnehmer auf Information, Anhörung und Mitbestimmung', 'Tarifverhandlungen, einschließlich der Quote der durch Tarifverträge abgedeckten Arbeitskräften', 'Vereinbarkeit von Berufs- und Privatleben', 'Gesundheitsschutz und Sicherheit'],
         'Gleichbehandlung und Chancengleichheit für alle': ['Gleichstellung der Geschlechter und gleicher Lohn für gleiche Arbeit', 'Schulungen und Kompetenzentwicklung', 'Beschäftigung und Inklusion von Menschen mit Behinderungen', 'Maßnahmen gegen Gewalt und Belästigung am Arbeitsplatz', 'Vielfalt'],
-        'Sonstige arbeitsbezogene Rechte': ['Kinderarbeit', 'Zwangarbeit', 'Wasser- und Sanitäreinrichtungen', 'Angemessene Unterbringungen', 'Datenschutz']
+        'Sonstige arbeitsbezogene Rechte': ['Kinderarbeit', 'Zwangsarbeit', 'Wasser- und Sanitäreinrichtungen', 'Angemessene Unterbringung', 'Datenschutz']
     }
     for unterthema, values in unterthema_map.items():
         if unterthema_raw in values:
@@ -152,9 +152,9 @@ def map_own_workforce_key(unterthema_raw):
 # Zuordnung der Belegschaft Lieferkette
 def map_valuechain_workforce_key(unterthema_raw):
     unterthema_map = {
-        'Arbeitsbedingungen': ['Sichere Beschäftigung', 'Arbeitszeit', 'Angemessene Entlohnung', 'Sozialer Dialog', 'Vereinigungsfreiheit, Existenz von Betriebsräten und Rechte der Arbeitnehmer auf Information, Anhörung und Mitbestimmung', 'Tarifverhandlungen, einschließlich der Quote der durch Tarifverträge abgedeckten Arbeitskräften', 'Vereinbarkeit von Beruf und Privatleben', 'Gesundheitsschutz und Sicherheit'],
+        'Arbeitsbedingungen': ['Sichere Beschäftigung', 'Arbeitszeit', 'Angemessene Entlohnung', 'Sozialer Dialog', 'Vereinigungsfreiheit, Existenz von Betriebsräten und Rechte der Arbeitnehmer auf Information, Anhörung und Mitbestimmung', 'Tarifverhandlungen, einschließlich der Quote der durch Tarifverträge abgedeckten Arbeitskräften', 'Vereinbarkeit von Berufs- und Privatleben', 'Gesundheitsschutz und Sicherheit'],
         'Gleichbehandlung und Chancengleichheit für alle': ['Gleichstellung der Geschlechter und gleicher Lohn für gleiche Arbeit', 'Schulungen und Kompetenzentwicklung', 'Beschäftigung und Inklusion von Menschen mit Behinderungen', 'Maßnahmen gegen Gewalt und Belästigung am Arbeitsplatz', 'Vielfalt'],
-        'Sonstige arbeitsbezogene Rechte': ['Kinderarbeit', 'Zwangarbeit', 'Wasser- und Sanitäreinrichtungen', 'Angemessene Unterbringungen', 'Datenschutz']
+        'Sonstige arbeitsbezogene Rechte': ['Kinderarbeit', 'Zwangsarbeit', 'Wasser- und Sanitäreinrichtungen', 'Angemessene Unterbringung', 'Datenschutz']
     }
     for unterthema, values in unterthema_map.items():
         if unterthema_raw in values:
@@ -164,9 +164,9 @@ def map_valuechain_workforce_key(unterthema_raw):
 # Zuordnung der betroffenen Gemeinschaften
 def map_community_key(unterthema_raw):
     unterthema_map = {
-        'Wirtschaftliche, soziale und kulturelle Rechte von Gemeinschaften': ['Angemessene Unterbringungen', 'Angemessene Ernährung', 'Wasser- und Sanitäreinrichtungen', 'Bodenbezogene Auswirkungen', 'Sicherheitsbezogene Auswirkungen'],
+        'Wirtschaftliche, soziale und kulturelle Rechte von Gemeinschaften': ['Angemessene Unterbringung', 'Angemessene Ernährung', 'Wasser- und Sanitäreinrichtungen', 'Bodenbezogene Auswirkungen', 'Sicherheitsbezogene Auswirkungen'],
         'Bürgerrechte und politische Rechte von Gemeinschaften': ['Meinungsfreiheit', 'Versammlungsfreiheit', 'Auswirkungen auf Menschenrechtsverteidiger'],
-        'Rechte von indigenen Völkern': ['Freiwillige und in Kenntnis der Sachlage erteilte vorherige Zustimmung', 'Selbstbestimmung', 'Kulturelle Rechte']
+        'Rechte indigener Völker': ['Freiwillige und in Kenntnis der Sachlage erteilte vorherige Zustimmung', 'Selbstbestimmung', 'Kulturelle Rechte']
     }
     for unterthema, values in unterthema_map.items():
         if unterthema_raw in values:
@@ -176,9 +176,9 @@ def map_community_key(unterthema_raw):
 # Zuordnung der Verbraucher und Endnutzer
 def map_consumer_key(unterthema_raw):
     unterthema_map = {
-        'Informationsbezogene Auswirkungen für Verbraucher und Endnutzer': ['Datenschutz', 'Meinungsfreiheit', 'Zugang zu (hochwertigen) Informationen'],
-        'Persönliche Sicherheit von Verbrauchern und Endnutzern': ['Gesundheitsschutz und Sicherheit', 'Persönliche Sicherheit', 'Kinderschutz'],
-        'Soziale Inklusion von Verbrauchern und Endnutzern': ['Nichtdiskriminierung', 'Selbstbestimmung', 'Zugang zu Produkten und Dienstleistungen', 'Verantwortliche Vermarktungspraktiken']
+        'Informationsbezogene Auswirkungen für Verbraucher und/oder Endnutzer': ['Datenschutz', 'Meinungsfreiheit', 'Zugang zu (hochwertigen) Informationen'],
+        'Persönliche Sicherheit von Verbrauchern und/oder Endnutzern': ['Gesundheitsschutz und Sicherheit', 'Persönliche Sicherheit', 'Kinderschutz'],
+        'Soziale Inklusion von Verbrauchern und/oder Endnutzern': ['Nichtdiskriminierung', 'Selbstbestimmung', 'Zugang zu Produkten und Dienstleistungen', 'Verantwortliche Vermarktungspraktiken']
     }
     for unterthema, values in unterthema_map.items():
         if unterthema_raw in values:
@@ -539,12 +539,12 @@ def merge_dataframes():
     content_id_map = st.session_state.content_id_map
 
     # Abrufen der Daten aus verschiedenen Quellen (Themenspezifische_ESRS, Stakeholder, Eigene)
-    selected_points_df = Themenspezifische_ESRS()
-    selected_rows_st = stakeholder_Nachhaltigkeitspunkte()
-    df4 = eigene_Nachhaltigkeitspunkte()
+    themen_df = Themenspezifische_ESRS()
+    stakeholder_df = stakeholder_Nachhaltigkeitspunkte()
+    eigene_df = eigene_Nachhaltigkeitspunkte()
 
     # Kombinieren aller Daten in einem DataFrame
-    combined_df = pd.concat([selected_points_df, df4, selected_rows_st], ignore_index=True)
+    combined_df = pd.concat([themen_df, eigene_df, stakeholder_df], ignore_index=True)
 
     # Entfernen von Zeilen, die nur NaN-Werte enthalten
     combined_df = combined_df.dropna(how='all')
@@ -561,7 +561,7 @@ def merge_dataframes():
     combined_df = combined_df.groupby(['Thema', 'Unterthema', 'Unter-Unterthema']).agg({'Quelle': lambda x: ' & '.join(sorted(set(x)))}).reset_index()
 
     # Hinzufügen der Stakeholder-Bewertungen in den kombinierten DataFrame
-    combined_df = pd.merge(combined_df, selected_rows_st[['Thema', 'Unterthema', 'Unter-Unterthema', 'Stakeholder Gesamtbew', 'Stakeholder Bew Finanzen', 'Stakeholder Bew Auswirkung']], on=['Thema', 'Unterthema', 'Unter-Unterthema'], how='left')
+    combined_df = pd.merge(combined_df, stakeholder_df[['Thema', 'Unterthema', 'Unter-Unterthema', 'Stakeholder Gesamtbew', 'Stakeholder Bew Finanzen', 'Stakeholder Bew Auswirkung']], on=['Thema', 'Unterthema', 'Unter-Unterthema'], how='left')
 
     # Entfernen von Duplikaten
     combined_df = combined_df.drop_duplicates(subset=['Thema', 'Unterthema', 'Unter-Unterthema'])
@@ -834,7 +834,4 @@ def display_page():
     
     with st.expander("Bewertungen"):
         Bewertungsanzeige()
-    st.write(st.session_state['longlist'])
-    st.write(st.session_state['selected_data'])
-    st.write(st.session_state['selected_columns'])
-    st.write(st.session_state['selected_evaluation'])
+    

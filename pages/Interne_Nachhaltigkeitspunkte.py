@@ -9,7 +9,7 @@ import io
 
 # Pfade und Konstanten
 TEMPLATE_PATH = os.path.join(os.path.dirname(__file__), 'Templates', 'Stakeholder_Input_Vorlage_V1.xlsx')
-TEMP_EXCEL_PATH = 'Stakeholder_Input_Vorlage_V1_Copy.xlsx'  # Pfad für die temporäre Excel-Kopie
+TEMP_EXCEL_PATH = os.path.join(os.path.dirname(__file__), 'Templates', 'Stakeholder_Input_Vorlage_V1_Copy.xlsx')  # Pfad für die temporäre Excel-Kopie
 STATE_FILE = 'SessionStates.pkl'  # Datei zum Speichern des Sitzungszustands
 
 # -------------------- Sitzungszustand --------------------
@@ -169,6 +169,8 @@ def display_data_table():
     if st.button('Ausgewählte Zeilen löschen'):  # Überprüft, ob der Button zum Löschen gedrückt wurde
         if 'selected_rows' in grid_response:  # Überprüft, ob Zeilen ausgewählt wurden
             delete_selected_rows(grid_response)  # Löscht die ausgewählten Zeilen
+        else:
+            st.warning('Bitte wählen Sie zuerst die Zeilen aus, die Sie löschen möchten.')
 
     # Button zum Speichern der Änderungen in der Tabelle
     if st.button('Änderungen speichern'):  # Überprüft, ob der Speichern-Button gedrückt wurde
@@ -287,3 +289,5 @@ def display_page():
         mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"  # MIME-Typ der Excel-Datei
     ):
         st.success("Download gestartet!")  # Zeigt eine Erfolgsmeldung nach dem Start des Downloads an
+
+    save_state()  # Speichert den aktuellen Zustand der Session

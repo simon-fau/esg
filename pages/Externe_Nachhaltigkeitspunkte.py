@@ -143,6 +143,9 @@ def aggregate_rankings(df):
     # Weise Platzierungen basierend auf der Gesamtbewertung zu
     ranking['Platzierung'] = ranking['Stakeholder Gesamtbew'].rank(method='min', ascending=False).astype(int)
     
+    # Entferne Zeilen, bei denen das Thema "Unbekannt" ist
+    ranking = ranking[ranking['Thema'] != 'Unbekannt']
+    
     # Gib die relevanten Spalten des Rankings zurück
     return ranking[['Platzierung', 'Thema', 'Unterthema', 'Unter-Unterthema', 'Stakeholder Bew Auswirkung', 'Stakeholder Bew Finanzen', 'Stakeholder Gesamtbew', 'Quelle']]
 
@@ -420,11 +423,11 @@ def refresh_new_df_copy():
 
 #---------------------------------- Excel-Datei hochladen und Daten verarbeiten ----------------------------------#
 
-# Funktion zum Hochladen einer Excel-Datei und Verarbeiten der enthaltenen Daten
+# Funktion zum Hochladen und Verarbeiten einer Excel-Datei
 def excel_upload():
     plazhalter()  # Füge vertikale Abstände im UI ein
     uploaded_file = st.file_uploader("Laden Sie hier die Excel-Dateien der Stakeholder hoch", type=['xlsx'])  # Zeige einen Datei-Uploader für Excel-Dateien an
-    
+
     if uploaded_file:
         df_list = []
         # Iteriere durch die erwarteten Arbeitsblätter in der Excel-Datei
@@ -438,11 +441,11 @@ def excel_upload():
             except ValueError:
                 # Zeige eine Nachricht an, wenn das Arbeitsblatt nicht gefunden wird
                 st.info(f"Blatt '{sheet_name}' nicht in {uploaded_file.name} gefunden.")
-        
+
         if df_list:
             # Kombiniere die DataFrames aus allen Arbeitsblättern
             combined_df = pd.concat(df_list, ignore_index=True)
-            
+
             # Sicherstellen, dass die 'Stakeholder'-Spalte vorhanden ist, und falls nicht, erstelle sie
             if 'Stakeholder' not in combined_df.columns:
                 combined_df['Stakeholder'] = ''  # Erstelle eine leere 'Stakeholder'-Spalte

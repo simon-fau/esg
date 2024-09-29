@@ -11,7 +11,7 @@ def load_pickle(file_path):
         return None  # Wenn die Datei nicht existiert, None zurückgeben
 
     # Überprüfen, ob die Datei leer ist
-    if os.path.getsize(file_path) == 0:
+    if os.path.getsize(file_path) == 0: 
         return None  
 
     # Versuchen, die Pickle-Datei zu laden, mit Fehlerbehandlung
@@ -53,6 +53,7 @@ st.markdown("<h1 style='text-align: center; width: 100%; margin-left: -100; back
 # Entfernen von Abständen in Titeln und Navigationsleisten
 st.markdown("""<style>.element-container { margin: -6px !important; padding: 0px !important;}</style>""", unsafe_allow_html=True)
 
+
 # Definition der Navigationsleiste
 menu_data = [
     {'id': 'how_to', 'label': "How To", 'icon': "fa fa-home"},
@@ -62,14 +63,13 @@ menu_data = [
     {'id': 'Übersicht', 'label': "Übersicht", 'icon': "fas fa-info-circle"},
     {'id': 'Reset', 'label': "Reset", 'icon': "fa fa-sync"},
     {'id': 'Ergebnisse', 'label': "Ausleitung", 'icon': "fa fa-share"}
-
 ]
 
 # Erstellen der Navigationsleiste
 selected_menu = hc.nav_bar(
-    menu_definition=menu_data, # Menüdefinition von oben
+    menu_definition=menu_data, # Menüdefinition
     hide_streamlit_markers=False,  # Streamlit-Markierungen nicht verstecken
-    sticky_nav=True,  # Navigation bleibt am Bildschirm haften
+    sticky_nav=True,  # Navigation bleibt am Bildschirm haften und nicht neu geladen
     sticky_mode='pinned',  # "Gepinnt"-Modus für die Navigation
     override_theme={'menu_background': '#0431B4'}  # Hintergrundfarbe der Navigationsleiste anpassen
 )

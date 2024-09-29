@@ -33,7 +33,7 @@ def allgemeine_informationen():
 
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:  
-        st.image('ESRS_Übersicht.png', caption='Übersicht der ESRS Standards')
+        st.image('Pictures/ESRS_Übersicht.png', caption='Übersicht der ESRS Standards')
         Platzhalter()
 
     with st.expander("Ziel und Zweck der ESRS", expanded=False):

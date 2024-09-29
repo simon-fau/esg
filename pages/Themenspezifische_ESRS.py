@@ -62,7 +62,7 @@ def checkboxes_count():
     percentage_complete = round((checkbox_count / total_checkboxes) * 100, 0)
     
     # Berechnung des Fortschritts für die st.progress Anzeige
-    percentage_complete_normalized = min(max(percentage_complete / 100.0, 0.0), 0)
+    percentage_complete_normalized = min(max(percentage_complete / 100.0, 0.0), 1.0)
     
     # Anzeige des Fortschritts und verbleibenden Checkboxen
     st.metric(label="**Themenspezifische ESRS**", value=checkbox_count)
@@ -296,7 +296,7 @@ def display_E4_Biodiversität():
     sections = [
         ("Direkte Ursachen des Biodiversitätsverlusts", [
             ("Klimawandel", "Klimawandel"),
-            ("Land-, Süßwasser- und Meeresnutzungsänderungen", "Land-_Süßwasser-_und_Meeresnutzungsänderungen"),
+            ("Land-, Süßwasser- und Meeresnutzungsänderungen", "Land-,_Süßwasser-_und_Meeresnutzungsänderungen"),
             ("Direkte Ausbeutung", "Direkte_Ausbeutung"),
             ("Invasive gebietsfremde Arten", "Invasive_gebietsfremde_Arten"),
             ("Umweltverschmutzung", "Umweltverschmutzung"),
@@ -333,14 +333,14 @@ def display_S1_Eigene_Belegschaft():
             ("Sichere Beschäftigung", "Sichere Beschäftigung"), ("Arbeitszeit", "Arbeitszeit"), ("Angemessene Entlohnung", "Angemessene_Entlohnung"), ("Sozialer Dialog", "Sozialer_Dialog"),
             ("Vereinigungsfreiheit, Existenz von Betriebsräten und Rechte der Arbeitnehmer auf Information, Anhörung und Mitbestimmung", "Vereinigungsfreiheit,_Existenz_von_Betriebsräten_und_Rechte_der_Arbeitnehmer_auf_Information,_Anhörung_und_Mitbestimmung"),
             ("Tarifverhandlungen, einschließlich der Quote der durch Tarifverträge abgedeckten Arbeitskräften", "Tarifverhandlungen,_einschließlich_der_Quote_der_durch_Tarifverträge_abgedeckten_Arbeitskräften"),
-            ("Vereinbarkeit von Beruf und Privatleben", "Vereinbarkeit_von_Beruf_und_Privatleben"), ("Gesundheitsschutz und Sicherheit", "Gesundheitsschutz_und_Sicherheit")
+            ("Vereinbarkeit von Berufs- und Privatleben", "Vereinbarkeit_von_Berufs-_und_Privatleben"), ("Gesundheitsschutz und Sicherheit", "Gesundheitsschutz_und_Sicherheit")
         ]),
         ("Gleichbehandlung und Chancengleichheit für alle", [
             ("Gleichstellung der Geschlechter und gleicher Lohn für gleiche Arbeit", "Gleichstellung_der_Geschlechter_und_gleicher_Lohn_für_gleiche_Arbeit"), ("Schulungen und Kompetenzentwicklung", "Schulungen_und_Kompetenzentwicklung"),
             ("Beschäftigung und Inklusion von Menschen mit Behinderungen", "Beschäftigung_und_Inklusion_von_Menschen_mit_Behinderungen"), ("Maßnahmen gegen Gewalt und Belästigung am Arbeitsplatz", "Maßnahmen_gegen_Gewalt_und_Belästigung_am_Arbeitsplatz"), ("Vielfalt", "Vielfalt")
         ]),
         ("Sonstige arbeitsbezogene Rechte", [
-            ("Kinderarbeit", "Kinderarbeit"), ("Zwangarbeit", "Zwangarbeit"), ("Angemessene Unterbringungen", "Angemessene_Unterbringungen"), ("Wasser- und Sanitäreinrichtungen", "Wasser-_und_Sanitäreinrichtungen"), ("Datenschutz", "Datenschutz")
+            ("Kinderarbeit", "Kinderarbeit"), ("Zwangsarbeit", "Zwangsarbeit"), ("Angemessene Unterbringung", "Angemessene_Unterbringung"), ("Wasser- und Sanitäreinrichtungen", "Wasser-_und_Sanitäreinrichtungen"), ("Datenschutz", "Datenschutz")
         ])
     ]
     # Aufruf der display_complex_section Funktion, um die Untersektionen und Themen in diesem Bereich anzuzeigen
@@ -354,14 +354,14 @@ def display_S2_Belegschaft_Lieferkette():
             ("Sichere Beschäftigung", "Sichere Beschäftigung"), ("Arbeitszeit", "Arbeitszeit"), ("Angemessene Entlohnung", "Angemessene_Entlohnung"), ("Sozialer Dialog", "Sozialer_Dialog"),
             ("Vereinigungsfreiheit, Existenz von Betriebsräten und Rechte der Arbeitnehmer auf Information, Anhörung und Mitbestimmung", "Vereinigungsfreiheit,_Existenz_von_Betriebsräten_und_Rechte_der_Arbeitnehmer_auf_Information,_Anhörung_und_Mitbestimmung"),
             ("Tarifverhandlungen, einschließlich der Quote der durch Tarifverträge abgedeckten Arbeitskräften", "Tarifverhandlungen,_einschließlich_der_Quote_der_durch_Tarifverträge_abgedeckten_Arbeitskräften"),
-            ("Vereinbarkeit von Beruf und Privatleben", "Vereinbarkeit_von_Beruf_und_Privatleben"), ("Gesundheitsschutz und Sicherheit", "Gesundheitsschutz_und_Sicherheit")
+            ("Vereinbarkeit von Berufs- und Privatleben", "Vereinbarkeit_von_Berufs-_und_Privatleben"), ("Gesundheitsschutz und Sicherheit", "Gesundheitsschutz_und_Sicherheit")
         ]),
         ("Gleichbehandlung und Chancengleichheit für alle", [
             ("Gleichstellung der Geschlechter und gleicher Lohn für gleiche Arbeit", "Gleichstellung_der_Geschlechter_und_gleicher_Lohn_für_gleiche_Arbeit"), ("Schulungen und Kompetenzentwicklung", "Schulungen_und_Kompetenzentwicklung"),
             ("Beschäftigung und Inklusion von Menschen mit Behinderungen", "Beschäftigung_und_Inklusion_von_Menschen_mit_Behinderungen"), ("Maßnahmen gegen Gewalt und Belästigung am Arbeitsplatz", "Maßnahmen_gegen_Gewalt_und_Belästigung_am_Arbeitsplatz"), ("Vielfalt", "Vielfalt")
         ]),
         ("Sonstige arbeitsbezogene Rechte", [
-            ("Kinderarbeit", "Kinderarbeit"), ("Zwangarbeit", "Zwangarbeit"), ("Angemessene Unterbringungen", "Angemessene_Unterbringungen"), ("Wasser- und Sanitäreinrichtungen", "Wasser-_und_Sanitäreinrichtungen"), ("Datenschutz", "Datenschutz")
+            ("Kinderarbeit", "Kinderarbeit"), ("Zwangsarbeit", "Zwangsarbeit"), ("Angemessene Unterbringung", "Angemessene_Unterbringung"), ("Wasser- und Sanitäreinrichtungen", "Wasser-_und_Sanitäreinrichtungen"), ("Datenschutz", "Datenschutz")
         ])
     ]
     # Aufruf der display_complex_section Funktion, um die Untersektionen und Themen in diesem Bereich anzuzeigen
@@ -372,13 +372,13 @@ def display_S3_Betroffene_Gemeinschaften():
     # Definition der Untersektionen und Themen für betroffene Gemeinschaften
     sections = [
         ("Wirtschaftliche, soziale und kulturelle Rechte von Gemeinschaften", [
-            ("Angemessene Unterbringungen", "Angemessene_Unterbringungen"), ("Angemessene Ernährung", "Angemessene_Ernährung"), ("Wasser- und Sanitäreinrichtungen", "Wasser-_und_Sanitäreinrichtungen"),
+            ("Angemessene Unterbringung", "Angemessene_Unterbringung"), ("Angemessene Ernährung", "Angemessene_Ernährung"), ("Wasser- und Sanitäreinrichtungen", "Wasser-_und_Sanitäreinrichtungen"),
             ("Bodenbezogene Auswirkungen", "Bodenbezogene_Auswirkungen"), ("Sicherheitsbezogene Auswirkungen", "Sicherheitsbezogene_Auswirkungen")
         ]),
         ("Bürgerrechte und politische Rechte von Gemeinschaften", [
             ("Meinungsfreiheit", "Meinungsfreiheit"), ("Versammlungsfreiheit", "Versammlungsfreiheit"), ("Auswirkungen auf Menschenrechtsverteidiger", "Auswirkungen_auf_Menschenrechtsverteidiger")
         ]),
-        ("Rechte von indigenen Völkern", [
+        ("Rechte indigener Völker", [
             ("Freiwillige und in Kenntnis der Sachlage erteilte vorherige Zustimmung", "Freiwillige_und_in_Kenntnis_der_Sachlage_erteilte_vorherige_Zustimmung"), ("Selbstbestimmung", "Selbstbestimmung"), ("Kulturelle Rechte", "Kulturelle_Rechte")
         ])
     ]
@@ -408,7 +408,7 @@ def display_G1_Unternehmenspolitik():
     topics = [
         ("Unternehmenskultur", "Unternehmenskultur"), ("Schutz von Hinweisgebern (Whistleblowers)", "Schutz_von_Hinweisgebern_(Whistleblowers)"), ("Tierschutz", "Tierschutz"),
         ("Politisches Engagement und Lobbytätigkeiten", "Politisches_Engagement_und_Lobbytätigkeiten"), ("Management der Beziehungen zu Lieferanten, einschließlich Zahlungspraktiken", "Management_der_Beziehungen_zu_Lieferanten,_einschließlich_Zahlungspraktiken"),
-        ("Vermeidung und Aufdeckung einschließlich Schulung", "Vermeidung_und_Aufdeckung_einschließlich_Schulung"), ("Vorkommnisse", "Vorkommnisse")
+        ("Vermeidung und Aufdeckung einschließlich Schulung", "Vermeidung_und_Aufdeckung_einschließlich_Schulung"), ("Vorkomnisse", "Vorkomnisse")
     ]
     # Aufruf der display_section Funktion, um die Themen in diesem Bereich anzuzeigen
     display_section(topics, "G1", "Unternehmenspolitik")

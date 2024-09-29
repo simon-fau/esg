@@ -16,7 +16,7 @@ def Ausleitung_Excel():
         return
 
     # Load the existing 'Ergebnisse.xlsx' file
-    template_file = 'Ergebnisse.xlsx'
+    template_file = os.path.join(os.path.dirname(__file__), 'Templates', 'Ergebnisse.xlsx')
     
     if not os.path.exists(template_file):
         st.error(f"Die Datei {template_file} wurde nicht gefunden.")
@@ -108,20 +108,20 @@ def Ausleitung_Excel():
         chart = area + scatter + line
 
         # Save the chart as a PNG file using vl-convert
-        chart_png_file = 'scatter_chart.png'
+        chart_png_file = os.path.join(os.path.dirname(__file__), '..', 'Pictures', 'scatter_chart.png')
         chart.save(chart_png_file, format='png')
         
         chart_sheet = workbook['Shortlist']
-        chart_sheet['G1'] = "Schwellenwert für wesentliche Themen:"
-        chart_sheet['G2'] = "Schwellenwert für Stakeholder Wichtigkeit:"
-        chart_sheet['G3'] = "Wesentlichkeitsmatrix der Shortlist:"
+        chart_sheet['H1'] = "Schwellenwert für wesentliche Themen:"
+        chart_sheet['H2'] = "Schwellenwert für Stakeholder Wichtigkeit:"
+        chart_sheet['H3'] = "Wesentlichkeitsmatrix der Shortlist:"
 
         # Insert the PNG image into the Excel sheet
         img = ExcelImage(chart_png_file)
         img.width, img.height = 600, 400  # Set desired size of the image
-        chart_sheet.add_image(img, 'G5')  # Place the image in cell B2
-        chart_sheet['K1'] = st.session_state['intersection_value']  # Insert the intersection value
-        chart_sheet['K2'] = st.session_state['stakeholder_importance_value']
+        chart_sheet.add_image(img, 'H5')  # Place the image in cell B2
+        chart_sheet['L1'] = st.session_state['intersection_value']  # Insert the intersection value
+        chart_sheet['L2'] = st.session_state['stakeholder_importance_value']
 
     else:
         st.info("Keine Daten für die Grafik vorhanden.")
@@ -187,7 +187,7 @@ def Ausleitung_Excel():
         chart = scatter
 
         # Save the chart as a PNG file using vl-convert
-        chart_png_file_2 = 'scatter_chart_without_thresholds.png'
+        chart_png_file_2 = os.path.join(os.path.dirname(__file__), '..', 'Pictures', 'scatter_chart_without_thresholds.png')
         chart.save(chart_png_file_2, format='png')
         
         chart_sheet_2 = workbook['Übersicht']
@@ -345,6 +345,7 @@ def Ausleitung_Excel():
         shortlist_sheet[f'C{first_empty_row}'] = row['Unter-Unterthema']
         shortlist_sheet[f'D{first_empty_row}'] = row['Score Finanzen']
         shortlist_sheet[f'E{first_empty_row}'] = row['Score Auswirkung']
+        shortlist_sheet[f'F{first_empty_row}'] = row['Stakeholder Wichtigkeit']
         first_empty_row += 1
 
     #----------Allgemeine Angaben Sheet----------#
