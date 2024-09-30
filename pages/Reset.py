@@ -18,17 +18,16 @@ def reset_session_state():
     if os.path.exists(STATE_FILE) and os.path.exists(BACKUP_STATE_FILE):
         shutil.copy(DEFAULT_STATE_FILE, STATE_FILE)  # Overwrite 'SessionStates.pkl' with 'Grundlagen.pkl'
         shutil.copy(DEFAULT_BACKUP_FILE, BACKUP_STATE_FILE)  # Overwrite 'SessionStatesThemenESRS.pkl' with 'Grundlagen_Themen_ESRS.pkl'
-        st.success("Session state has been reset, and the default settings have been restored for both 'SessionStates.pkl' and 'SessionStatesThemenESRS.pkl'.")
+        st.success("App wurde erfolgreich zurückgesetzt. Alle gespeicherten Inhalte wurden entfernt.")
     else:
-        st.error("State files not found. Please ensure 'SessionStates.pkl', 'SessionStatesThemenESRS.pkl', 'Grundlagen.pkl', and 'Grundlagen_Themen_ESRS.pkl' exist in the correct directory.")
+        st.error("Die erforderlichen Pickle-Dateien 'SessionStates.pkl' und 'SessionStatesThemenESRS.pkl' fehlen. Bitte überprüfen Sie, ob die Dateien im verzeichnis vorliegen.")
 
 # Function to simulate the modal dialog
 def show_modal_dialog():
-    st.session_state.modal_open = True  # Flag to open the modal
     with st.expander("⚠️ Bestätigen Sie Ihre Aktion", expanded=True):
         st.write("Sind Sie sicher, dass Sie alle gespeicherten Inhalte aus der App entfernen möchten?")
 
-        col1, col2 = st.columns(2)
+        col1, col2, col3 = st.columns([1, 1, 4])
         with col1:
             if st.button("Ja"):
                 reset_session_state()
@@ -61,7 +60,6 @@ def download_pickle_files_as_zip():
     else:
         st.warning("One or both of the required pickle files are missing. Please check that 'SessionStates.pkl' and 'SessionStatesThemenESRS.pkl' exist.")
 
-
 # Display the settings page
 def display_settings_page():
     if 'modal_open' not in st.session_state:
@@ -76,11 +74,9 @@ def display_settings_page():
     # Add the download section for pickle files
     st.subheader("Speicherstände herunterladen")
     download_pickle_files_as_zip()
-    
 
 def display_page():
     st.subheader("Reset")
     st.write("Auf dieser Seite können Sie die App zurücksetzen und die Standardeinstellungen wiederherstellen.")
     display_settings_page()
 
- 

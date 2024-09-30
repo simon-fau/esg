@@ -180,11 +180,12 @@ def display_page():
     col1, col2 = st.columns([7, 1])
     with col1:
         st.header("Erstellung der Shortlist")
-    with col2:
-        check_abgeschlossen_shortlist()
-        st.write("Hier können Sie die Shortlist auf Basis Ihrer Bewertungen in der Longlist erstellen. Um die Shortlist zu erstellen, müssen Sie zunächst die Grenzwerte für die Relevanz der Themen und Stakeholder festlegen. Sobald Sie sich für Schwellenwerte entschieden haben, wird Ihnen die Shortlist unterhalb der Wesentlichkeitsmatrix ausgegeben.")
+        st.write("Hier können Sie die Shortlist auf Basis Ihrer Bewertungen in der Longlist erstellen. Um die Shortlist zu erstellen, müssen Sie zunächst die Grenzwerte für die Relevanz der Themen und Stakeholder festlegen.")
+        st.write("Sobald Sie sich für Schwellenwerte entschieden haben, wird Ihnen die Shortlist unterhalb der Wesentlichkeitsmatrix ausgegeben.")
         st.write("- Empfehlung Schwellenwert für Wesentlichkeit: 250 - 400")
         st.write("- Empfehlung Schwellenwert für Stakeholder-Wichtigkeit: 700 - 850 ")
+    with col2:
+        check_abgeschlossen_shortlist()
     display_slider()
     if 'apply_changes' in st.session_state and st.session_state['apply_changes']:
         placeholder()
