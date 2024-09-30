@@ -569,27 +569,41 @@ def merge_dataframes():
     # Hinzufügen einer 'ID'-Spalte
     combined_df.insert(0, 'ID', None)
 
-    # Bestimmen der nächsten verfügbaren ID
     if 'combined_df' in st.session_state and not st.session_state.combined_df.empty:
         max_existing_id = st.session_state.combined_df['ID'].max()  # Maximal vorhandene ID finden
-        next_id = max(max_existing_id + 1, next_id)
+        if pd.isnull(max_existing_id):  # Falls keine IDs vorhanden sind, bei 1 starten
+            next_id = 1
+        else:
+            next_id = max(max_existing_id + 1, next_id)
     else:
         next_id = 1  # Beginnt bei 1, falls noch keine IDs vorhanden sind
 
-    # Zuweisen der IDs zu den Einträgen
     for index, row in combined_df.iterrows():
         content = (row['Thema'], row['Unterthema'], row['Unter-Unterthema'])  # Erstellen eines Identifikators
 
         # Überprüfen, ob der Inhalt bereits eine ID hat
         if content in content_id_map:
             id = content_id_map[content]  # Existierende ID verwenden
+
+            # Überprüfen, ob die ID bereits im DataFrame verwendet wird
+            if id in combined_df['ID'].values:
+                # Wenn die ID bereits verwendet wird, die nächst höhere freie ID zuweisen
+                id = next_id
+                next_id += 1  # Erhöhen der ID für den nächsten Eintrag
+                content_id_map[content] = id  # Aktualisieren der Zuordnung mit der neuen ID
         else:
-            id = next_id  # Neue ID zuweisen
-            content_id_map[content] = id  # Speichern der Zuordnung
+            # Neue ID zuweisen, da der Content keine ID hat
+            id = next_id
             next_id += 1  # Erhöhen der ID für den nächsten Eintrag
+            content_id_map[content] = id  # Speichern der Zuordnung
 
         # Setzen der ID im DataFrame
         combined_df.at[index, 'ID'] = id
+
+    # Speichern der neuen IDs und Zuordnungen in der Session
+    st.session_state.next_id = next_id
+    st.session_state.content_id_map = content_id_map
+
 
     # Speichern des kombinierten DataFrames im session_state
     st.session_state.combined_df = combined_df
@@ -722,7 +736,7 @@ def merge_dataframes():
             count_bewertete_punkte()  # Zeigt den Bewertungsfortschritt an
     
     st.markdown("""
-        Die Longlist enthält alle Punkte, die für die Bewertung berücksichtigt werden sollen, nachdem Sie alle vorherigen Schritte durchlaufen haben. Um eine Bewertung vorzunehmen, markieren Sie die Checkbox des gewünschten Punktes und wählen Sie die entsprechenden Bewertungskriterien in der Sidebar aus. Unterhalb der Longlist können Sie die bereits vorgenommenen Bewertungen einsehen und gegebenenfalls löschen. 
+        Die Longlist umfasst alle potenziell wesentlichen Punkte, die in den vorherigen Schritten identifiziert wurden. Um eine Bewertung vorzunehmen, markieren Sie die Checkbox des gewünschten Punktes und wählen Sie die entsprechenden Bewertungskriterien in der Sidebar aus. Unterhalb der Longlist können Sie die bereits vorgenommenen Bewertungen einsehen und gegebenenfalls löschen. 
         Die Spalte "Bewertet" hilft Ihnen dabei, den Überblick zu behalten, welche Inhalte bereits bewertet wurden.
     """)
                 

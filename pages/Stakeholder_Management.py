@@ -306,7 +306,7 @@ def display_page():
             check_abgeschlossen_stakeholder_management()
     
     st.markdown("""
-        Hier können Sie ihre Stakeholder effektiv verwalten und analysieren. Sie können relevante Informationen über verschiedene Stakeholdergruppen hinzufügen, bearbeiten und visualisieren. Die Daten helfen Ihnen, Strategien für den Umgang mit Ihren Stakeholdern zu entwickeln und zu priorisieren, basierend auf verschiedenen Kriterien wie Engagement-Level und Kommunikationshäufigkeit.          
+        Hier können Sie alle ihre Stakeholder verwalten und ein Ranking basierend auf deren Eigenschaften erstellen lassen.
     """)
     
     # Zwei Tabs für die Übersicht und das Ranking & Netzwerkdiagramm

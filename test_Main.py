@@ -1,39 +1,49 @@
-import unittest
-from pages.Stakeholder_Management import calculate_score  # Importiere die Funktion, die du testen möchtest
+import os
+import pickle
+import pytest
+import tempfile
+from unittest import mock
+from Main import load_pickle  # Angenommen, deine Funktion ist in Main.py
 
-class TestCalculateScore(unittest.TestCase):
-    def test_calculate_score_high_values(self):
-        """Testet, ob der Score korrekt berechnet wird, wenn alle Werte hoch sind."""
-        row = {
-            'Level des Engagements': 'Hoch',
-            'Kommunikation': 'Regelmäßig',
-            'Zeithorizont': 'Langfristig',
-            'Auswirkung auf Interessen': 'Hoch'
-        }
-        score = calculate_score(row)
-        self.assertEqual(score, 100)  # Der maximale Score sollte 100 sein
+# Test für nicht existierende Datei
+def test_load_pickle_file_not_exist():
+    result = load_pickle('non_existent_file.pkl')
+    assert result is None
 
-    def test_calculate_score_low_values(self):
-        """Testet, ob der Score korrekt berechnet wird, wenn alle Werte niedrig sind."""
-        row = {
-            'Level des Engagements': 'Niedrig',
-            'Kommunikation': 'Nie',
-            'Zeithorizont': 'Kurzfristig',
-            'Auswirkung auf Interessen': 'Niedrig'
-        }
-        score = calculate_score(row)
-        self.assertEqual(score, 0)  # Der minimale Score sollte 0 sein
+# Test für leere Datei
+def test_load_pickle_empty_file():
+    with tempfile.NamedTemporaryFile(delete=False) as temp_file:
+        file_path = temp_file.name
+        pass  # Erstelle eine leere Datei
+    try:
+        result = load_pickle(file_path)
+        assert result is None
+    finally:
+        os.remove(file_path)  # Leere Datei löschen
 
-    def test_calculate_score_mixed_values(self):
-        """Testet, ob der Score korrekt berechnet wird, wenn die Werte gemischt sind."""
-        row = {
-            'Level des Engagements': 'Mittel',
-            'Kommunikation': 'Gelegentlich',
-            'Zeithorizont': 'Mittelfristig',
-            'Auswirkung auf Interessen': 'Mittel'
-        }
-        score = calculate_score(row)
-        self.assertEqual(score, 50)  # Bei gemischten Werten sollte der Score etwa 50 sein
+# Test für korrektes Laden einer Pickle-Datei
+def test_load_pickle_valid_file():
+    data = {"key": "value"}
+    with tempfile.NamedTemporaryFile(delete=False) as temp_file:
+        file_path = temp_file.name
+        with open(file_path, 'wb') as f:
+            pickle.dump(data, f)
+    try:
+        result = load_pickle(file_path)
+        assert result == data  # Die geladenen Daten sollten den gespeicherten entsprechen
+    finally:
+        os.remove(file_path)  # Temporäre Datei löschen
 
-if __name__ == '__main__':
-    unittest.main()
+# Test für eine fehlerhafte Pickle-Datei
+def test_load_pickle_corrupted_file():
+    with tempfile.NamedTemporaryFile(delete=False) as temp_file:
+        file_path = temp_file.name
+        with open(file_path, 'wb') as f:
+            f.write(b'not a pickle')  # Schreibe ungültige Daten
+    try:
+        with mock.patch('streamlit.error') as mock_error:  # Mock für st.error
+            result = load_pickle(file_path)
+            assert result is None
+            mock_error.assert_called_once_with("UnpicklingError: Die Pickle-Datei ist nicht korrekt formatiert.")
+    finally:
+        os.remove(file_path)  # Temporäre Datei löschen

@@ -4,6 +4,7 @@ import hydralit_components as hc
 import pickle
 import pandas as pd
 
+
 # Funktion zum Laden einer Pickle-Datei mit Fehlerbehandlung
 def load_pickle(file_path):
     # Überprüfen, ob die Datei existiert
@@ -155,3 +156,4 @@ elif selected_menu == 'Reset':
 elif selected_menu == 'Ergebnisse':
     import pages.Ergebnisse as Ergebnisse_page
     Ergebnisse_page.display_page()
+

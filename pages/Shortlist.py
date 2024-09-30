@@ -15,9 +15,9 @@ def save_state():
 
 # Set initial session state values if they are not already set
 if 'intersection_value' not in st.session_state:
-    st.session_state['intersection_value'] = 100
+    st.session_state['intersection_value'] = 350
 if 'stakeholder_importance_value' not in st.session_state:
-    st.session_state['stakeholder_importance_value'] = 500
+    st.session_state['stakeholder_importance_value'] = 1000
 if 'filtered_df' not in st.session_state:
     st.session_state['filtered_df'] = pd.DataFrame()  # Initialize as an empty DataFrame
 
@@ -182,14 +182,17 @@ def display_page():
         st.header("Erstellung der Shortlist")
     with col2:
         check_abgeschlossen_shortlist()
-    st.write("Hier können Sie die Shortlist auf Bais ihrer Bewertungen in der Longlist erstellen. Um die Shortlist zu erstellen, müssen Sie zunächst die Grenzwerte für die Relevanz der Themen und Stakeholder festlegen. Anschließend können Sie die Shortlist anhand der festgelegten Grenzwerte filtern und die Ergebnisse in einer Excel-Datei speichern.")
+        st.write("Hier können Sie die Shortlist auf Basis Ihrer Bewertungen in der Longlist erstellen. Um die Shortlist zu erstellen, müssen Sie zunächst die Grenzwerte für die Relevanz der Themen und Stakeholder festlegen. Sobald Sie sich für Schwellenwerte entschieden haben, wird Ihnen die Shortlist unterhalb der Wesentlichkeitsmatrix ausgegeben.")
+        st.write("- Empfehlung Schwellenwert für Wesentlichkeit: 250 - 400")
+        st.write("- Empfehlung Schwellenwert für Stakeholder-Wichtigkeit: 700 - 850 ")
     display_slider()
     if 'apply_changes' in st.session_state and st.session_state['apply_changes']:
         placeholder()
         Chart(st.session_state['intersection_value'], st.session_state['stakeholder_importance_value'])
         filter_table(st.session_state['intersection_value'], st.session_state['stakeholder_importance_value'])
     else:
-        Chart(100, 500)  # Display initial chart without any filter
+        placeholder()
+        Chart(350,1000)  # Display initial chart without any filter
 
     save_state()
     
