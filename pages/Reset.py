@@ -4,12 +4,6 @@ import shutil
 import zipfile
 from io import BytesIO
 
-import streamlit as st
-import os
-import shutil
-import zipfile
-from io import BytesIO
-
 # Definiere die Dateipfade für die Pickle-Dateien
 STATE_FILE = 'SessionStates.pkl'
 BACKUP_STATE_FILE = 'SessionStatesThemenESRS.pkl'

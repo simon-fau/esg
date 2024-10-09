@@ -4,7 +4,6 @@ import hydralit_components as hc
 import pickle
 import pandas as pd
 
-
 # Funktion zum Laden einer Pickle-Datei mit Fehlerbehandlung
 def load_pickle(file_path):
     # Überprüfen, ob die Datei existiert
@@ -53,7 +52,6 @@ st.markdown("<h1 style='text-align: center; width: 100%; margin-left: -100; back
 
 # Entfernen von Abständen in Titeln und Navigationsleisten
 st.markdown("""<style>.element-container { margin: -6px !important; padding: 0px !important;}</style>""", unsafe_allow_html=True)
-
 
 # Definition der Navigationsleiste
 menu_data = [
