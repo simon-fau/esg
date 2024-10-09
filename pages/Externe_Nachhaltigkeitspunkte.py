@@ -78,7 +78,7 @@ def adjust_stakeholder_punkte_filtered(new_df_copy, stakeholder_punkte_filtered)
     # Überprüfen, ob die Spalte 'Status' in 'new_df_copy' vorhanden ist
     if 'Status' not in new_df_copy.columns:
         st.error("Die Spalte 'Status' fehlt in new_df_copy.")  # Fehlermeldung, falls die Spalte fehlt
-        return stakeholder_punkte_filtered  # Gib den unveränderten DataFrame zurück
+        return stakeholder_punkte_filtered  # Gib das unveränderte DataFrame zurück
     
     # Iteriere über die Zeilen in 'new_df_copy', bei denen der Status 'nicht einbezogen' ist
     for idx, row in new_df_copy[new_df_copy['Status'] == 'nicht einbezogen'].iterrows():
@@ -581,34 +581,35 @@ def move_stakeholders(selected_stakeholders):
 
 #---------------------------------- Hauptseite anzeigen ----------------------------------#
 
-# Main function to display the page content
+# Hauptfunktion zur Anzeige des Seiteninhalts
 def display_page():
     
-    # Update the new data copy and other necessary session data
+    # Aktualisiert die neue Datenkopie und andere notwendige Sitzungsdaten
     refresh_new_df_copy()
     
-    # Create two columns for layout
+    # Erstellt zwei Spalten für das Layout
     col1, col2 = st.columns([3, 1.3])
     with col1:
-        st.header("Stakeholder-Management")  # Set the main header of the page
+        st.header("Stakeholder-Management")  # Setzt die Hauptüberschrift der Seite
     with col2:
         container = st.container(border=True)
         with container:
-            display_not_in_sidebar_count()  # Show the count of missing stakeholder evaluations
+            display_not_in_sidebar_count()  # Zeigt die Anzahl der Stakeholder-Bewertungen an, die fehlen
     
-    # Add a description of the page
+    # Fügt eine Beschreibung der Seite hinzu
     st.markdown("""
         Hier können Sie Stakeholder-Bewertungen verwalten und aktualisieren. Laden Sie hierzu die von den Stakeholdern bereitgestellten Excel-Datein hoch und fügen Sie diese zur Bewertung hinzu. Von jeder hochgeladenen Excel wird Ihnen eine Vorschau der bewerteten Punkte angezeigt. Diesen Punkten müssen Sie dann, die entsprechenden Stakeholder über die Selectbox zuordnen.
         Im Tab "Übersicht Stakeholderbewertung" können Sie die aggregierten Stakeholder-Bewertungen einsehen.
     """)
 
-    # Create tabs for stakeholder rating selection and ranking
+    # Erstellt Tabs für die Auswahl und das Ranking der Stakeholder-Bewertungen
     tab1, tab2 = st.tabs(["Hochladen der Bewertungen", "Übersicht der Bewertung"])
     with tab1:
-        excel_upload()  # Allow uploading and processing of Excel files
-        display_sidebar_items()  # Show already rated stakeholders in the sidebar
+        excel_upload()  # Ermöglicht das Hochladen und Verarbeiten von Excel-Dateien
+        display_sidebar_items()  # Zeigt bereits bewertete Stakeholder in der Sidebar an
 
     with tab2:
-        stakeholder_punkte()  # Display stakeholder points in a table
+        stakeholder_punkte()  # Zeigt die Stakeholder-Punkte in einer Tabelle an
     
-    refresh_session_state()  # Refresh the session state to ensure all data is up to date
+    # Aktualisiert den Sitzungsstatus, um sicherzustellen, dass alle Daten auf dem neuesten Stand sind
+    refresh_session_state()

@@ -1,6 +1,7 @@
 import streamlit as st
 import os
 
+# Erstellt Platzhalter für Abstand in der Streamlit-App
 def Platzhalter():
     """Creates empty lines for spacing in the Streamlit app."""
     st.write("")
@@ -16,8 +17,10 @@ def allgemeine_informationen():
          "Zusätzlich finden Sie eine detaillierte Anleitung zum Ablauf der Wesentlichkeitsanalyse im Tab 'Anleitung zur Nutzung des ESG-Tools'.")
     Platzhalter()
 
+    # Spalten für die Anzeige des Bildes und der Informationen
     col1, col2, col3 = st.columns([1, 2, 1])
     with col2:  
+        # Pfad zum Bild
         current_dir = os.path.dirname(os.path.abspath(__file__))
         image_path = os.path.join(current_dir, '..', 'Pictures', 'ESRS_Übersicht.png')
 
@@ -28,6 +31,7 @@ def allgemeine_informationen():
             st.error(f"Bilddatei {image_path} nicht gefunden.")
         Platzhalter()
 
+    # Ausklappbare Abschnitte für die Informationen. Nicht ausgeklappt zu Beginn
     with st.expander("Ziel und Zweck der ESRS", expanded=False):
         st.write("""
         - **Standardisierung**: Die ESRS streben an, die Nachhaltigkeitsberichterstattung zu vereinheitlichen, 

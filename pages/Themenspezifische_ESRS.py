@@ -2,6 +2,7 @@ import streamlit as st
 import pickle
 import pandas as pd
 import os
+import time
 
 # Diese Funktion zeigt eine Markdown-Anleitung zur Bewertung der Relevanz von Themen.
 def Text():
@@ -142,6 +143,7 @@ def display_section(topics, section_key, section_title):
                 # Aktualisierung des Session-State mit den neuen Werten
                 st.session_state['relevance_selection'] = {**st.session_state['relevance_selection'], **current_selection}
                 st.success("Auswahl erfolgreich gespeichert!")
+                time.sleep(2) # Kurze Verzögerung, um die Erfolgsmeldung anzuzeigen
                 
                 # Speichern des Session-States in einer Datei
                 save_session_state()
@@ -251,7 +253,7 @@ def display_complex_section(sections, section_key, section_title):
                     **overall_selection
                 }
                 st.success("Auswahl erfolgreich gespeichert!")
-                
+                time.sleep(2) # Kurze Verzögerung, um die Erfolgsmeldung anzuzeigen
                 # Speichern des Session-States in einer Datei
                 save_session_state()
                 
