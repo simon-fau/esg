@@ -62,7 +62,7 @@ menu_data = [
     {'id': 'Übersicht', 'label': "Übersicht", 'icon': "fas fa-info-circle"},
     {'id': 'Reset', 'label': "Reset", 'icon': "fa fa-sync"},
     {'id': 'Ergebnisse', 'label': "Ausleitung", 'icon': "fa fa-share"}
-    {'id': 'document_AI', 'label': "KI-Auswertung", 'icon': "fa fa-brain"}
+    {'id': 'document_AI', 'label': "KI-Auswertung"}
 ]
 
 # Erstellen der Navigationsleiste
