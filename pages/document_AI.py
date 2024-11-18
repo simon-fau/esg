@@ -9,7 +9,7 @@ MODEL_ID = "prebuilt-document"
 
 
 # Excel-Liste mit den Anforderungen
-REQUIREMENTS_FILE = r"\\home.rrze.uni-erlangen.de\yd03ycuj\Documents\ESRS_KI.xlsx"
+REQUIREMENTS_FILE = "ESRS_KI.xlsx"
 
 # Funktion: Anforderungen laden
 @st.cache
