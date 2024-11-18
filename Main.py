@@ -155,4 +155,7 @@ elif selected_menu == 'Reset':
 elif selected_menu == 'Ergebnisse':
     import pages.Ergebnisse as Ergebnisse_page
     Ergebnisse_page.display_page()
+elif selected_menu == 'document_AI':
+    import pages.document_AI as document_AI_page
+    document_AI_page.display_page()
 
