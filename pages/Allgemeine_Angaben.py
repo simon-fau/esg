@@ -4,19 +4,13 @@ import pickle
 import os
 
 # Datei zum Speichern des Sitzungszustands
-state_file = 'aa_session_state.pkl'
+state_file = 'SessionStates.pkl'
 
-# Funktion zum Laden des Sitzungszustands
-def load_session_state():
-    if os.path.exists(state_file):
-        with open(state_file, 'rb') as f:
-            return pickle.load(f)
-    else:
-        return {}
+# Funktion zum Speichern des Zustands
+def save_state():
+    with open('SessionStates.pkl', 'wb') as f:
+        pickle.dump(dict(st.session_state), f)
 
-# Laden des Sitzungszustands aus der Datei
-loaded_state = load_session_state()
-st.session_state.update(loaded_state)
 
 def Tabelle():
     # Daten für die Tabelle erstellen
@@ -63,34 +57,39 @@ def Tabelle():
         ]
     }
 
-# DataFrame erstellen
-    df = pd.DataFrame(data)
+    # DataFrame erstellen
+    Allgemeine_Angaben = pd.DataFrame(data)
     if "Antwort" not in st.session_state:
-        st.session_state["Antwort"] = [""] * len(df)
-    df["Antwort"] = st.session_state["Antwort"]  # Spalte für Antworten hinzufügen
-    return df
+        st.session_state["Antwort"] = [""] * len(Allgemeine_Angaben)
+    Allgemeine_Angaben["Antwort"] = st.session_state["Antwort"]  # Spalte für Antworten hinzufügen
+    return Allgemeine_Angaben
 
-def add_entries(df):
+def add_entries(Allgemeine_Angaben):
     # Tabelle anzeigen
-    for i in range(len(df)):
-        antworten = st.text_area(f"{df['Referenz'][i]} - {df['Beschreibung'][i]}", 
-                               key=f"answer{i}", value=st.session_state["Antwort"][i])
-        st.session_state["Antwort"][i] = antworten
+    for i in range(len(Allgemeine_Angaben)):
+        antworten = st.text_area(f"{Allgemeine_Angaben['Referenz'][i]} - {Allgemeine_Angaben['Beschreibung'][i]}", 
+                               key=f"answer{i}", value=st.session_state["Antwort"][i], on_change=update_answers, args=(i,))
+        
+def update_answers(i):
+    st.session_state["Antwort"][i] = st.session_state[f"answer{i}"]
 
 def display_page():
-    df = Tabelle()
+    if "Allgemeine_Angaben" not in st.session_state:
+        st.session_state.Allgemeine_Angaben = Tabelle()
+    Allgemeine_Angaben = st.session_state.Allgemeine_Angaben
     st.title("Allgemeine Angaben")
+    st.write ("Unabhängig von den Ergebnissen der Wesentlichkeitsanalyse sind folgende Angaben, gemäß ESRS 1 Art. 29, zu machen:")
     
     tab1, tab2 = st.tabs(["Inhalte hinzufügen", "Übersicht"])
     
     with tab1:
-        add_entries(df)
+        add_entries(Allgemeine_Angaben)
     
     with tab2:
         if not any(st.session_state["Antwort"]):
             st.info("Noch keine Einträge vorhanden.")
         else:
-            df["Antwort"] = st.session_state["Antwort"]
-            st.table(df)
+            Allgemeine_Angaben["Antwort"] = st.session_state["Antwort"]
+            st.table(Allgemeine_Angaben)
 
-
+    save_state()

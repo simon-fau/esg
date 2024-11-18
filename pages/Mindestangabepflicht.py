@@ -4,19 +4,12 @@ import pickle
 import os
 
 # Datei zum Speichern des Sitzungszustands
-state_file = 'session_state_mdr.pkl'
+state_file = 'SessionStates.pkl'
 
-# Funktion zum Laden des Sitzungszustands
-def load_session_state():
-    if os.path.exists(state_file):
-        with open(state_file, 'rb') as f:
-            return pickle.load(f)
-    else:
-        return {}
-
-# Laden des Sitzungszustands aus der Datei
-loaded_state = load_session_state()
-st.session_state.update(loaded_state)
+# Funktion zum Speichern des Zustands
+def save_state():
+    with open('SessionStates.pkl', 'wb') as f:
+        pickle.dump(dict(st.session_state), f)
 
 def create_mdr_table():
     # Daten für die Tabelle erstellen
@@ -42,30 +35,42 @@ def create_mdr_table():
 
     # DataFrame erstellen
     df_mdr = pd.DataFrame(data_mdr)
-    if "Antworten" not in st.session_state:
-        st.session_state["Antworten"] = [""] * len(df_mdr)
-    df_mdr["Antworten"] = st.session_state["Antworten"]  # Spalte für Antworten hinzufügen
+    if "Antworten_MDR" not in st.session_state:
+        st.session_state["Antworten_MDR"] = [""] * len(df_mdr)
+    df_mdr["Antworten_MDR"] = st.session_state["Antworten_MDR"]  # Spalte für Antworten_MDR hinzufügen
     return df_mdr
+
+# Funktion zur Aktualisierung der Antworten_MDR
+def update_answers(i):
+    st.session_state["Antworten_MDR"][i] = st.session_state[f"answer_mdr_{i}"]
+    save_state()  # Speichern des Zustands nach jeder Änderung
 
 def add_entries(df_mdr):
     # Tabelle anzeigen
     for i in range(len(df_mdr)):
-        antwort = st.text_area(f"{df_mdr['Referenz'][i]} - {df_mdr['Beschreibung'][i]}", 
-                               key=f"answer_mdr_{i}", value=st.session_state["Antworten"][i])
-        st.session_state["Antworten"][i] = antwort
+        st.text_area(
+            f"{df_mdr['Referenz'][i]} - {df_mdr['Beschreibung'][i]}",
+            key=f"answer_mdr_{i}",
+            value=st.session_state["Antworten_MDR"][i],
+            on_change=update_answers,
+            args=(i,)
+        )
 
 def display_page():
     df_mdr = create_mdr_table()
-    st.title("Mindestangaben ESRS MDR")
-    
+    st.title("Mindestangaben")
+
     tab1, tab2 = st.tabs(["Inhalte hinzufügen", "Übersicht"])
-    
+
     with tab1:
         add_entries(df_mdr)
-    
+
     with tab2:
-        if not any(st.session_state["Antworten"]):
+        if not any(st.session_state["Antworten_MDR"]):
             st.info("Noch keine Einträge vorhanden.")
         else:
-            df_mdr["Antworten"] = st.session_state["Antworten"]
+            df_mdr["Antworten_MDR"] = st.session_state["Antworten_MDR"]
             st.table(df_mdr)
+
+
+    save_state()  # Sicherstellen, dass der Zustand am Ende gespeichert wird
