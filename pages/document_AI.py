@@ -8,7 +8,7 @@ API_KEY = "DNjmy8Ljo0XverRQ9e1a9vu104RcZ5mAegO0B3jwN7PxFKY6mkblJQQJ99AKACPV0roXJ
 MODEL_ID = "prebuilt-document"
 
 # Excel-Liste mit den Anforderungen
-REQUIREMENTS_FILE = "T:\Nachhaltigkeitsplattform\Offizielle Dokumente\2023-11-06 - SR TEG - Draft List of ESRS Data Points - Implementation Guidance_materiality assessment.xlsx"
+REQUIREMENTS_FILE = "C:\Users\yd03ycuj\ESRSExcel.xlsx"
 
 # Funktion: Anforderungen laden
 @st.cache
