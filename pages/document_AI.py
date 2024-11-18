@@ -7,8 +7,11 @@ FORM_RECOGNIZER_ENDPOINT = "https://sustainability-fau.cognitiveservices.azure.c
 API_KEY = "DNjmy8Ljo0XverRQ9e1a9vu104RcZ5mAegO0B3jwN7PxFKY6mkblJQQJ99AKACPV0roXJ3w3AAALACOGE42s"
 MODEL_ID = "prebuilt-document"
 
+import os
+
+requirement_excel = os.path.join('C:', 'Users', 'yd03ycuj', 'ESRSExcel.xlsx')
 # Excel-Liste mit den Anforderungen
-REQUIREMENTS_FILE = r"C:\Users\yd03ycuj\ESRSExcel.xlsx"
+REQUIREMENTS_FILE = requirement_excel
 
 # Funktion: Anforderungen laden
 @st.cache
