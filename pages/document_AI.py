@@ -45,34 +45,35 @@ def match_requirements(extracted_data, requirements_df):
     return pd.DataFrame(results)
 
 # Streamlit UI
-st.title("Nachhaltigkeitsdaten-Extraktion")
-st.write("Lade ein Dokument hoch und vergleiche extrahierte Daten mit den Anforderungen aus der Excel-Liste.")
-
-# Datei-Upload
-uploaded_file = st.file_uploader("Dokument hochladen", type=["pdf", "jpg", "png"])
-
-# Anforderungen laden
-requirements = load_requirements(REQUIREMENTS_FILE)
-
-if uploaded_file:
-    file_bytes = uploaded_file.read()
-    content_type = "application/pdf" if uploaded_file.type == "application/pdf" else "image/jpeg"
+def display_page():
+    st.title("Nachhaltigkeitsdaten-Extraktion")
+    st.write("Lade ein Dokument hoch und vergleiche extrahierte Daten mit den Anforderungen aus der Excel-Liste.")
     
-    with st.spinner("Dokument wird analysiert..."):
-        analysis_result = analyze_document(file_bytes, content_type)
+    # Datei-Upload
+    uploaded_file = st.file_uploader("Dokument hochladen", type=["pdf", "jpg", "png"])
     
-    st.subheader("Analysierte Inhalte")
-    st.json(analysis_result)  # Zeige Rohdaten an (optional)
+    # Anforderungen laden
+    requirements = load_requirements(REQUIREMENTS_FILE)
     
-    # Anforderungen abgleichen
-    st.subheader("Abgleich mit Anforderungen")
-    matched_data = match_requirements(analysis_result, requirements)
-    st.dataframe(matched_data)
-
-    # Export der Ergebnisse
-    st.download_button(
-        "Ergebnisse als Excel herunterladen",
-        data=matched_data.to_csv(index=False),
-        file_name="extraction_results.csv",
-        mime="text/csv"
-    )
+    if uploaded_file:
+        file_bytes = uploaded_file.read()
+        content_type = "application/pdf" if uploaded_file.type == "application/pdf" else "image/jpeg"
+        
+        with st.spinner("Dokument wird analysiert..."):
+            analysis_result = analyze_document(file_bytes, content_type)
+        
+        st.subheader("Analysierte Inhalte")
+        st.json(analysis_result)  # Zeige Rohdaten an (optional)
+        
+        # Anforderungen abgleichen
+        st.subheader("Abgleich mit Anforderungen")
+        matched_data = match_requirements(analysis_result, requirements)
+        st.dataframe(matched_data)
+    
+        # Export der Ergebnisse
+        st.download_button(
+            "Ergebnisse als Excel herunterladen",
+            data=matched_data.to_csv(index=False),
+            file_name="extraction_results.csv",
+            mime="text/csv"
+        )
